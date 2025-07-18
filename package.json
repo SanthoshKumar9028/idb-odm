@@ -1,0 +1,14 @@
+{
+  "name": "idb-odm",
+  "version": "1.0.0",
+  "description": "Object Data Modeling package for browser indxeddb",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "indxeddb"
+  ],
+  "author": "Santhoshkumar",
+  "license": "ISC"
+}
