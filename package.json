@@ -1,14 +1,23 @@
 {
   "name": "idb-odm",
   "version": "1.0.0",
-  "description": "Object Data Modeling package for browser indxeddb",
+  "description": "Object Data Modeling package for browser IndexedDB",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run build --workspace=iodm-query --workspace=iodm",
+    "build:docs": "npm run build:docs --workspace=iodm-query --workspace=iodm"
   },
   "keywords": [
-    "indxeddb"
+    "IndexedDB"
   ],
   "author": "Santhoshkumar",
-  "license": "ISC"
+  "license": "ISC",
+  "workspaces": [
+    "packages/iodm-query",
+    "packages/iodm",
+    "packages/app"
+  ],
+  "devDependencies": {
+    "@types/node": "^24.0.15"
+  }
 }
