@@ -11,7 +11,7 @@
     "IndexedDB"
   ],
   "author": "Santhoshkumar",
-  "license": "ISC",
+  "license": "MIT",
   "workspaces": [
     "packages/iodm-query",
     "packages/iodm",
