@@ -13,7 +13,7 @@
     "indexeddb"
   ],
   "author": "Santhoshkumar",
-  "license": "ISC",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

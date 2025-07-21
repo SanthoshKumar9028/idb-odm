@@ -1,0 +1,1 @@
+export interface BaseQueryExecutorCommonOptions { idb: IDBDatabase; objectStoreNames: string; transaction?: IDBTransaction }
