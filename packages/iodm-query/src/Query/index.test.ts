@@ -6,12 +6,26 @@ interface ITestUser {
   age: number
 }
 
-describe("IQuery", () => {
-  it('should find empty result', async () => {
-    const query = new Query<ITestUser[]>(null as unknown as IDBDatabase);
-    const data = await query.findById({$query: ""});
+describe("Query", () => {
+  const mockIdb: any = {
+    transaction: () => ({
+      objectStore() {
+        return {
+          getAll() {
+            const event = { onsuccess(...params: any[]) { } };
+            setTimeout(() => event.onsuccess({ result: [{ name: "test", age: 20 }] }), 0);
+            return event;
+          }
+        }
+      }
+    })
+  }
 
-    expect(data).toEqual([]);
+  it('should find empty result', async () => {
+    const query = new Query<ITestUser[]>(mockIdb, "test");
+    const data = await query.find({ $query: "" });
+
+    expect(data).toEqual([{ name: "test", age: 20 }]);
   });
 });
 
