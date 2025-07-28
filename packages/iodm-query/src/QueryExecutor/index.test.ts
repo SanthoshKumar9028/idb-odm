@@ -1,53 +1,169 @@
-import { describe, it, expect } from "vitest";
-import { BaseQueryExecutor } from ".";
+import { describe, it, expect, vi } from 'vitest';
+import { BaseQueryExecutor } from '.';
+import {
+  QueryExecutorInsertManyResponse,
+  QueryExecutorInsertOneResponse,
+} from './type';
 
-describe("BaseQueryExecutor", () => {
-    const queryExecutor = new BaseQueryExecutor();
+describe('BaseQueryExecutor', () => {
+  const queryExecutor = new BaseQueryExecutor();
 
-    const mockIdb: any = {
-        transaction: () => ({
-            objectStore() {
-                return {
-                    getAll() {
-                        const event = { onsuccess(...params: any[]) { } };
-                        setTimeout(() => event.onsuccess({ result: [{ one: 1 }] }), 0);
-                        return event;
-                    }
-                }
-            }
-        })
-    }
+  const transaction: any = {
+    objectStore() {
+      return {
+        getAll() {
+          const event = { onsuccess(...params: any[]) {} };
+          setTimeout(
+            () => event.onsuccess({ target: { result: [{ one: 1 }] } }),
+            0
+          );
+          return event;
+        },
+      };
+    },
+  };
+  const mockIdb: any = {
+    transaction,
+  };
 
-    it("should throw error", async () => {
-        await expect(queryExecutor.find({ $query: "" })).rejects.toThrowError();
-        await expect(queryExecutor.find({ $query: "" }, { idb: mockIdb, storeNames: "" })).rejects.toThrowError();
+  describe('find', () => {
+    it('should return array', async () => {
+      const data = await queryExecutor.find(
+        { $query: '' },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+      expect(data).toEqual([{ one: 1 }]);
+    });
+  });
+
+  describe('findById', () => {
+    const transaction: any = {
+      objectStore() {
+        return {
+          getAll() {
+            const event = { onsuccess(...params: any[]) {} };
+            setTimeout(
+              () => event.onsuccess({ target: { result: { one: 1 } } }),
+              0
+            );
+            return event;
+          },
+        };
+      },
+    };
+    const mockIdb: any = { transaction };
+
+    it('should return value', async () => {
+      const data = await queryExecutor.find(
+        { $query: '' },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+      expect(data).toEqual({ one: 1 });
+    });
+  });
+
+  describe('insertMany', () => {
+    const transaction: any = {
+      objectStore() {
+        return {
+          add: vi
+            .fn()
+            .mockImplementationOnce(() => {
+              const event = { onsuccess(...params: any[]) {} };
+              setTimeout(() => event.onsuccess({}), 0);
+              return event;
+            })
+            .mockImplementation(() => {
+              const event = { onerror(...params: any[]) {} };
+              setTimeout(() => event.onerror({ preventDefault() {} }), 0);
+              return event;
+            }),
+        };
+      },
+    };
+    const mockIdb: any = { transaction };
+
+    it('should return both success and error response', async () => {
+      const insertRes =
+        await queryExecutor.insertMany<QueryExecutorInsertManyResponse>(
+          [{ one: 1 }, { two: 2 }],
+          {
+            idb: mockIdb,
+            storeName: 'test',
+            transaction,
+          }
+        );
+
+      expect(insertRes.result[0].status).toBe('success');
+      expect(insertRes.result[1].status).toBe('error');
     });
 
-    describe("find", () => {
-        it("should return array", async () => {
-            const data = await queryExecutor.find({ $query: "" }, { idb: mockIdb, storeNames: "test" });
-            expect(data).toEqual([{ one: 1 }]);
-        });
-    })
+    it('should error', async () => {
+      const insertPromise =
+        queryExecutor.insertMany<QueryExecutorInsertManyResponse>(
+          [{ one: 1 }, { two: 2 }],
+          {
+            idb: mockIdb,
+            storeName: 'test',
+            transaction,
+            throwOnError: true,
+          }
+        );
 
-    describe("findById", () => {
-        const mockIdb: any = {
-            transaction: () => ({
-                objectStore() {
-                    return {
-                        getAll() {
-                            const event = { onsuccess(...params: any[]) { } };
-                            setTimeout(() => event.onsuccess({ result: { one: 1 } }), 0);
-                            return event;
-                        }
-                    }
-                }
-            })
-        }
+      expect(() => insertPromise).rejects.toThrow();
+    });
+  });
 
-        it("should return value", async () => {
-            const data = await queryExecutor.find({ $query: "" }, { idb: mockIdb, storeNames: "test" });
-            expect(data).toEqual({ one: 1 });
-        });
-    })
-})
+  describe('insertOne', () => {
+    const mockAdd = vi
+      .fn()
+      .mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(() => event.onsuccess({}), 0);
+        return event;
+      })
+      .mockImplementation(() => {
+        const event = { onerror(...params: any[]) {} };
+        setTimeout(() => event.onerror({ preventDefault() {} }), 0);
+        return event;
+      });
+
+    const transaction: any = {
+      objectStore() {
+        return {
+          add: mockAdd,
+        };
+      },
+    };
+    const mockIdb: any = { transaction };
+
+    it('should return both success and error response', async () => {
+      const insertRes =
+        await queryExecutor.insertOne<QueryExecutorInsertOneResponse>(
+          { one: 1 },
+          {
+            idb: mockIdb,
+            storeName: 'test',
+            transaction,
+          }
+        );
+
+      expect(insertRes.result.status).toBe('success');
+    });
+
+    it('should error', async () => {
+      const insertPromise2 =
+        queryExecutor.insertOne<QueryExecutorInsertOneResponse>(
+          { one: 1 },
+          {
+            idb: mockIdb,
+            storeName: 'test',
+            transaction,
+            throwOnError: true,
+          }
+        );
+
+      expect(() => insertPromise2).rejects.toThrow();
+    });
+  });
+});

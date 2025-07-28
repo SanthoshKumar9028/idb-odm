@@ -1,41 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import './App.css';
 
-import {IQuery} from "iodm-query";
-import {IModel} from "iodm";
+import { Query } from 'iodm-query';
 
-new IQuery().find()
-new IModel().find()
+interface IPost {
+  id: string;
+  title: string;
+  content: string;
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
+  const [query, setQuery] = useState<Query<IPost> | null>(null);
+
+  useEffect(() => {
+    const openReq = window.indexedDB.open('test-db', 1);
+
+    openReq.onupgradeneeded = (ev) => {
+      if (!ev.target || !('result' in ev.target)) return;
+
+      const db = ev.target.result as IDBDatabase;
+
+      const store = db.createObjectStore('posts', {
+        keyPath: 'id',
+      });
+
+      store.add({ id: '1', title: 'awsome title', content: 'awsome content' });
+      store.add({ id: '2', title: 'awsome title', content: 'awsome content' });
+    };
+
+    openReq.onsuccess = (ev) => {
+      if (!ev.target || !('result' in ev.target)) return;
+
+      setQuery(new Query<IPost>(ev.target.result as IDBDatabase, 'posts'));
+    };
+
+    openReq.onerror = (ev) => console.error('idb error', ev);
+  }, []);
 
   return (
     <>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <button
+          onClick={async () => {
+            if (!query) return;
+
+            const post = await query.find({$query: IDBKeyRange.lowerBound("2")});
+            console.log('then data', post);
+          }}
+        >
+          find
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

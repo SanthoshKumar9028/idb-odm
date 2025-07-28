@@ -1,4 +1,5 @@
-export { IQuery } from './Query/index';
+export { Query } from './Query/index';
+export type { IQuery, TQueryKeys } from "./Query/type";
 
 /**
  * This is a simple add function with updated content

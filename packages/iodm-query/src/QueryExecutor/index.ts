@@ -1,70 +1,108 @@
-import type { BaseQueryExecutorCommonOptions, ISearchKey } from "./type"
+import type {
+  QueryExecutorCommonOptions,
+  QueryExecutorInsertOptions,
+  ISearchKey,
+  InsertSuccess,
+  InsertError,
+  QueryExecutorInsertManyResponse,
+} from './type';
 
 export class BaseQueryExecutor {
-    find<ResultType>(query: { $query: ISearchKey; }, options?: BaseQueryExecutorCommonOptions): Promise<ResultType> {
-        return new Promise((res, rej) => {
-            const { idb, storeNames, transaction } = options || {};
-            if (!idb) {
-                return rej(new Error('idb is requred'));
-            }
-            if (!storeNames) {
-                return rej(new Error('store name is requred'));
-            }
-            let tnx = transaction;
+  find<ResultType>(
+    query: { $query: ISearchKey },
+    options: QueryExecutorCommonOptions
+  ): Promise<ResultType> {
+    return new Promise((res, rej) => {
+      const { storeName, transaction } = options;
 
-            if (!tnx) {
-                tnx = idb.transaction(storeNames);
+      const objectStore = transaction.objectStore(storeName);
+
+      const getReq = objectStore.getAll(query.$query);
+
+      getReq.onsuccess = (event) => {
+        let result = [] as ResultType;
+
+        if (event.target && 'result' in event.target) {
+          result = event.target.result as ResultType;
+        }
+        res(result);
+      };
+      getReq.onerror = (event) => {
+        rej(event);
+      };
+    });
+  }
+
+  findById<ResultType>(
+    id: Exclude<ISearchKey, null | undefined>,
+    options: QueryExecutorCommonOptions
+  ): Promise<ResultType> {
+    return new Promise((res, rej) => {
+      const { storeName, transaction } = options;
+
+      const objectStore = transaction.objectStore(storeName);
+
+      const getReq = objectStore.get(id);
+
+      getReq.onsuccess = (event) => {
+        let result = undefined as ResultType;
+
+        if (event.target && 'result' in event.target) {
+          result = event.target.result as ResultType;
+        }
+
+        res(result);
+      };
+      getReq.onerror = (event) => {
+        rej(event);
+      };
+    });
+  }
+
+  async insertMany<ResultType>(
+    payload: unknown[],
+    options: QueryExecutorInsertOptions
+  ): Promise<ResultType> {
+    const { storeName, transaction, throwOnError } = options;
+
+    const objectStore = transaction.objectStore(storeName);
+    const insertRes: QueryExecutorInsertManyResponse = {
+      result: [],
+    };
+
+    for (let i = 0; i < payload.length; ++i) {
+      const addRes = await new Promise<InsertSuccess | InsertError>(
+        (res, rej) => {
+          const addReq = objectStore.add(payload[i]);
+
+          addReq.onsuccess = (event) => {
+            res({ status: 'success', event });
+          };
+          addReq.onerror = (event) => {
+            if (throwOnError) rej(event);
+            else {
+              event.preventDefault();
+              res({ status: 'error', event });
             }
+          };
+        }
+      );
 
-            const objectStore = tnx.objectStore(storeNames);
-
-            const getReq = objectStore.getAll(query.$query);
-
-            getReq.onsuccess = (event) => {
-                let result = [] as ResultType;
-
-                if ('result' in event) {
-                    result = event.result as ResultType
-                }
-                res(result);
-            }
-            getReq.onerror = (event) => {
-                rej(event);
-            }
-        })
+      insertRes.result.push(addRes);
     }
 
-    findById<ResultType>(id: Exclude<ISearchKey, | null | undefined>, options?: BaseQueryExecutorCommonOptions): Promise<ResultType> {
-        return new Promise((res, rej) => {
-            const { idb, storeNames, transaction } = options || {};
-            if (!idb) {
-                return rej(new Error('idb is requred'));
-            }
-            if (!storeNames) {
-                return rej(new Error('store name is requred'));
-            }
-            let tnx = transaction;
+    return insertRes as ResultType;
+  }
 
-            if (!tnx) {
-                tnx = idb.transaction(storeNames);
-            }
+  async insertOne<ResultType>(
+    payload: unknown,
+    options: QueryExecutorInsertOptions
+  ): Promise<ResultType> {
+    const insertRes = await this.insertMany<QueryExecutorInsertManyResponse>(
+      [payload],
+      options
+    );
 
-            const objectStore = tnx.objectStore(storeNames);
-
-            const getReq = objectStore.get(id);
-
-            getReq.onsuccess = (event) => {
-                let result = undefined as ResultType;
-
-                if ('result' in event) {
-                    result = event.result as ResultType
-                }
-
-                res(result);
-            }
-            getReq.onerror = (event) => {
-                rej(event);
-            }
-        })
-    }
+    return { result: insertRes.result[0] } as ResultType;
+  }
 }
