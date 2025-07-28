@@ -27,10 +27,29 @@ describe('Query', () => {
     }),
   };
 
-  it('should find empty result', async () => {
-    const query = new Query<ITestUser[]>(mockIdb, 'test');
-    const data = await query.find({ $query: '' });
+  it('should throw error is one of the query operations is not called', async () => {
+    await expect(new Query<ITestUser[]>(mockIdb, 'test')).rejects.toThrow(
+      'operations must be called'
+    );
+  });
 
-    expect(data).toEqual([{ name: 'test', age: 20 }]);
+  describe('findById', () => {
+    it('should validate arguments', async () => {
+      const query = new Query<ITestUser[]>(mockIdb, 'test');
+
+      await expect(query.findById('')).rejects.toThrow(
+        'search key is required'
+      );
+    });
+  });
+
+  describe('insertOne', () => {
+    it('should validate arguments', async () => {
+      const query = new Query<ITestUser[]>(mockIdb, 'test');
+
+      await expect(query.insertOne(null)).rejects.toThrow(
+        'Atleast one document is requred'
+      );
+    });
   });
 });

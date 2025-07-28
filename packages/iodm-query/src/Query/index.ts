@@ -2,13 +2,15 @@ import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
 import type { ISearchKey } from '../QueryExecutor/type';
 import type {
   IQuery,
-  TQueryKeys,
   IQuerySelectors,
-  IQueryBaseOptions,
+  IQueryOptions,
+  TQueryOptions,
+  IQueryInsertOneOptions,
+  IQueryInsertManyOptions,
 } from './type';
 
 /**
- * Query wrapper for IndexedDB
+ * Query builder for IndexedDB
  *
  * @example
  * const query = new Query(idb, "store-name");
@@ -16,58 +18,47 @@ import type {
  * const item = await query.findById(id);
  */
 export class Query<ResultType = unknown> implements IQuery<ResultType> {
-  private type: TQueryKeys;
   private idb: IDBDatabase;
   private storeName: string;
-  private querySelectors: Partial<IQuerySelectors>;
-  private transaction?: IDBTransaction;
-  private insertList: unknown[];
+  private options?: TQueryOptions;
 
   constructor(idb: IDBDatabase, storeName: string) {
     this.idb = idb;
     this.storeName = storeName;
-    this.type = '_find';
-    this.querySelectors = {};
-    this.insertList = [];
   }
 
   /**
-   * Used to find list of item from the IndexedDB
+   * Finds list of item from the IndexedDB
    *
    * @example
    * const query = new Query(idb, "store-name");
    * const data = await query.find({ $query: "text" });
    *
-   * @param param0 Search query object
-   * @param param1 Query options
+   * @param querySelectors Search query object
+   * @param options Query options
    * @returns this
    */
   find(
-    { $query }: IQuerySelectors = { $query: null },
-    { transaction }: IQueryBaseOptions = {}
+    querySelectors: IQuerySelectors = { $query: null },
+    options: IQueryOptions = {}
   ) {
-    this.type = '_find';
-    this.querySelectors.$query = $query;
-    this.transaction = transaction;
+    this.options = { type: '_find', ...options, querySelectors };
     return this;
   }
 
   private async _find(): Promise<ResultType> {
-    if (!this.idb) {
-      throw new Error('idb is requred');
-    }
-    if (!this.storeName) {
-      throw new Error('store name is requred');
+    if (this.options?.type !== '_find') {
+      throw new Error('Invalid find method options');
     }
 
-    let transaction = this.transaction;
+    let transaction = this.options?.transaction;
 
     if (!transaction) {
       transaction = this.idb.transaction(this.storeName, 'readonly');
     }
 
     return QueryExecutorFactory.getInstance().find<ResultType>(
-      { $query: this.querySelectors.$query },
+      { $query: this.options.querySelectors.$query },
       {
         idb: this.idb,
         transaction,
@@ -77,47 +68,45 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
   }
 
   /**
-   * Used to find single item from the IndexedDB
+   * Finds single item from the IndexedDB
    *
    * @example
    * const query = new Query(idb, "store-name");
    * const item = await query.findById("id");
    *
-   * @param param0 Search id
-   * @param param1 Query options
+   * @param id Search id
+   * @param options Query options
    * @returns this
    */
   findById(
     id: Exclude<ISearchKey, null | undefined>,
-    { transaction }: IQueryBaseOptions = {}
+    options: IQueryOptions = {}
   ) {
-    this.type = '_findById';
-    this.querySelectors.$query = id;
-    this.transaction = transaction;
+    this.options = {
+      type: '_findById',
+      ...options,
+      querySelectors: { $query: id },
+    };
     return this;
   }
 
   private async _findById(): Promise<ResultType> {
-    if (!this.idb) {
-      throw new Error('idb is requred');
+    if (this.options?.type !== '_findById') {
+      throw new Error('Invalid findById method options');
     }
 
-    if (!this.storeName) {
-      throw new Error('store name is requred');
-    }
-
-    if (!this.querySelectors.$query) {
+    if (!this.options.querySelectors.$query) {
       throw new Error('search key is required');
     }
 
-    let transaction = this.transaction;
+    let transaction = this.options.transaction;
 
     if (!transaction) {
       transaction = this.idb.transaction(this.storeName, 'readonly');
     }
 
     return QueryExecutorFactory.getInstance().findById<ResultType>(
-      this.querySelectors.$query,
+      this.options.querySelectors.$query,
       {
         idb: this.idb,
         transaction: transaction,
@@ -126,42 +115,91 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
     );
   }
 
-  insertOne(payload: unknown, { transaction }: IQueryBaseOptions) {
-    this.type = '_insertOne';
-    this.transaction = transaction;
-    this.insertList = [payload];
+  /**
+   * Inserts a single Document into IndexedDB object sote
+   *
+   * @example
+   * const query = new Query(idb, "store-name");
+   * await query.insertOne(document, options);
+   *
+   * @param payload Document to insert
+   * @param options Query options
+   * @returns this
+   */
+  insertOne(payload: unknown, options: IQueryInsertOneOptions = {}) {
+    this.options = { type: '_insertOne', ...options, insertList: [payload] };
     return this;
   }
 
   private async _insertOne(): Promise<ResultType> {
-    if (!this.idb) {
-      throw new Error('idb is requred');
+    if (this.options?.type !== '_insertOne') {
+      throw new Error('Invalid insertOne method options');
     }
 
-    if (!this.storeName) {
-      throw new Error('store name is requred');
-    }
+    const payload = this.options.insertList[0];
 
-    if (this.insertList.length === 0) {
+    if (!payload) {
       throw new Error(
-        'atleast one document is requred to perform insertOne operations'
+        'Atleast one document is requred to perform insertOne operations'
       );
     }
 
-    let transaction = this.transaction;
+    this.options.insertList = [];
+
+    let transaction = this.options.transaction;
 
     if (!transaction) {
-      transaction = this.idb.transaction(this.storeName, 'readonly');
+      transaction = this.idb.transaction(this.storeName, 'readwrite');
     }
-
-    const payload = this.insertList[0];
-
-    this.insertList = [];
 
     return QueryExecutorFactory.getInstance().insertOne<ResultType>(payload, {
       idb: this.idb,
       transaction: transaction,
       storeName: this.storeName,
+    });
+  }
+
+  /**
+   * Inserts multiple documents into IndexedDB object store
+   *
+   * @example
+   * const query = new Query(idb, "store-name");
+   * await query.insertMany([document1, document2, ...], options);
+   *
+   * @remarks
+   * All document insert operations done using a single transaction,
+   * by default when error is thrown during a document the entrire transaction will not be
+   * aborted. This behavious can be changed using the throwOnError option
+   *
+   * @param payload Array of documents
+   * @param options Query options
+   * @returns this
+   */
+  insertMany(payload: unknown[], options: IQueryInsertManyOptions = {}) {
+    this.options = { type: '_insertMany', ...options, insertList: payload };
+    return this;
+  }
+
+  private async _insertMany(): Promise<ResultType> {
+    if (this.options?.type !== '_insertOne') {
+      throw new Error('Invalid insertOne method options');
+    }
+
+    const payload = this.options.insertList.slice();
+
+    this.options.insertList = [];
+
+    let transaction = this.options.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readwrite');
+    }
+
+    return QueryExecutorFactory.getInstance().insertMany<ResultType>(payload, {
+      idb: this.idb,
+      transaction: transaction,
+      storeName: this.storeName,
+      throwOnError: this.options.throwOnError,
     });
   }
 
@@ -174,8 +212,14 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    *
    * @returns Return the result of the query
    */
-  exec() {
-    return this[this.type]();
+  async exec() {
+    if (!this.options?.type) {
+      throw new Error(
+        'Once of the query operations must be called before calling exec'
+      );
+    }
+
+    return this[this.options.type]();
   }
 
   then(

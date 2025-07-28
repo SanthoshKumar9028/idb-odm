@@ -79,7 +79,7 @@ export class BaseQueryExecutor {
             res({ status: 'success', event });
           };
           addReq.onerror = (event) => {
-            if (throwOnError) rej(event);
+            if (throwOnError) { rej(event); }
             else {
               event.preventDefault();
               res({ status: 'error', event });
