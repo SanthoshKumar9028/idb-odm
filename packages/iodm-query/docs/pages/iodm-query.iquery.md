@@ -2,13 +2,14 @@
 
 [Home](./index.md) &gt; [iodm-query](./iodm-query.md) &gt; [IQuery](./iodm-query.iquery.md)
 
-## IQuery class
+## IQuery interface
 
 **Signature:**
 
 ```typescript
-export declare class IQuery 
+export interface IQuery<ResultType> extends IBaseQuery<ResultType> 
 ```
+**Extends:** IBaseQuery&lt;ResultType&gt;
 
 ## Methods
 
@@ -19,26 +20,25 @@ Method
 
 </th><th>
 
-Modifiers
-
-
-</th><th>
-
 Description
 
 
 </th></tr></thead>
 <tbody><tr><td>
 
-[find()](./iodm-query.iquery.find.md)
+[exec()](./iodm-query.iquery.exec.md)
 
 
 </td><td>
 
 
-</td><td>
+</td></tr>
+<tr><td>
 
-**_(BETA)_**
+[then(onFulfilled, onRejected)](./iodm-query.iquery.then.md)
+
+
+</td><td>
 
 
 </td></tr>

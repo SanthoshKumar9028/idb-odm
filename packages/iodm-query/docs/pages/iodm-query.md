@@ -19,20 +19,22 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[IQuery](./iodm-query.iquery.md)
+[Query](./iodm-query.query.md)
 
 
 </td><td>
+
+Query builder for IndexedDB
 
 
 </td></tr>
 </tbody></table>
 
-## Functions
+## Interfaces
 
 <table><thead><tr><th>
 
-Function
+Interface
 
 
 </th><th>
@@ -43,12 +45,52 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[add(a, b)](./iodm-query.add.md)
+[IQuery](./iodm-query.iquery.md)
 
 
 </td><td>
 
-This is a simple add function with updated content
+
+</td></tr>
+</tbody></table>
+
+## Type Aliases
+
+<table><thead><tr><th>
+
+Type Alias
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[Prettify](./iodm-query.prettify.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[TQueryInternalKeys](./iodm-query.tqueryinternalkeys.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[TQueryKeys](./iodm-query.tquerykeys.md)
+
+
+</td><td>
 
 
 </td></tr>
