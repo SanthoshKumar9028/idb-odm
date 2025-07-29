@@ -13,15 +13,22 @@ import type {
  * Query builder for IndexedDB
  *
  * @example
+ * ```ts
  * const query = new Query(idb, "store-name");
  * const list = await query.find({ $query: "text" });
  * const item = await query.findById(id);
+ * ```
  */
 export class Query<ResultType = unknown> implements IQuery<ResultType> {
   private idb: IDBDatabase;
   private storeName: string;
   private options?: TQueryOptions;
 
+  /**
+   * 
+   * @param idb Instance of the IndexedDB database
+   * @param storeName Query operations will be performed on store object that having this store name
+   */
   constructor(idb: IDBDatabase, storeName: string) {
     this.idb = idb;
     this.storeName = storeName;
@@ -31,12 +38,15 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    * Finds list of item from the IndexedDB
    *
    * @example
+   * ```ts
    * const query = new Query(idb, "store-name");
    * const data = await query.find({ $query: "text" });
+   * ``` 
    *
    * @param querySelectors Search query object
    * @param options Query options
-   * @returns this
+   * 
+   * @returns
    */
   find(
     querySelectors: IQuerySelectors = { $query: null },
@@ -71,12 +81,14 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    * Finds single item from the IndexedDB
    *
    * @example
+   * ```ts
    * const query = new Query(idb, "store-name");
    * const item = await query.findById("id");
+   * ```
    *
    * @param id Search id
    * @param options Query options
-   * @returns this
+   * @returns
    */
   findById(
     id: Exclude<ISearchKey, null | undefined>,
@@ -116,15 +128,17 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
   }
 
   /**
-   * Inserts a single Document into IndexedDB object sote
+   * Inserts a single Document into IndexedDB object store
    *
    * @example
+   * ```ts
    * const query = new Query(idb, "store-name");
    * await query.insertOne(document, options);
+   * ```
    *
    * @param payload Document to insert
    * @param options Query options
-   * @returns this
+   * @returns
    */
   insertOne(payload: unknown, options: IQueryInsertOneOptions = {}) {
     this.options = { type: '_insertOne', ...options, insertList: [payload] };
@@ -140,7 +154,7 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
 
     if (!payload) {
       throw new Error(
-        'Atleast one document is requred to perform insertOne operations'
+        'At least one document is required to perform insertOne operations'
       );
     }
 
@@ -163,17 +177,19 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    * Inserts multiple documents into IndexedDB object store
    *
    * @example
+   * ```ts
    * const query = new Query(idb, "store-name");
    * await query.insertMany([document1, document2, ...], options);
+   * ```
    *
    * @remarks
-   * All document insert operations done using a single transaction,
-   * by default when error is thrown during a document the entrire transaction will not be
-   * aborted. This behavious can be changed using the throwOnError option
+   * Insertion operation done using a single transaction,
+   * by default when error is thrown during a document insert the entire transaction will not be aborted.
+   * This behavior can be changed using the throwOnError option
    *
    * @param payload Array of documents
    * @param options Query options
-   * @returns this
+   * @returns
    */
   insertMany(payload: unknown[], options: IQueryInsertManyOptions = {}) {
     this.options = { type: '_insertMany', ...options, insertList: payload };
@@ -181,8 +197,8 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
   }
 
   private async _insertMany(): Promise<ResultType> {
-    if (this.options?.type !== '_insertOne') {
-      throw new Error('Invalid insertOne method options');
+    if (this.options?.type !== '_insertMany') {
+      throw new Error('Invalid insertMany method options');
     }
 
     const payload = this.options.insertList.slice();
@@ -204,13 +220,15 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
   }
 
   /**
-   * Executes the query and return the result
+   * Executes the query with accumulated options
    *
    * @example
+   * ```ts
    * const query = new Query(idb, "store-name");
    * const item = await query.findById("id").exec();
+   * ```
    *
-   * @returns Return the result of the query
+   * @returns
    */
   async exec() {
     if (!this.options?.type) {
