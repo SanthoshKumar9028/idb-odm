@@ -18,10 +18,31 @@ export interface InsertError {
   status: 'error';
   event: Event;
 }
+
 export interface QueryExecutorInsertManyResponse {
   result: Array<InsertSuccess | InsertError>;
 }
 
 export interface QueryExecutorInsertOneResponse {
   result: InsertSuccess | InsertError;
+}
+
+export interface QueryExecutorReplaceOneOptions
+  extends QueryExecutorCommonOptions {
+  objectStore?: IDBObjectStore;
+}
+
+export interface UpdateQuery {
+  $key: ISearchKey;
+}
+
+export interface QueryExecutorUpdateManyOptions
+  extends QueryExecutorCommonOptions {
+  throwOnError?: boolean;
+  updateLimit?: number;
+}
+
+export interface QueryExecutorUpdateOneOptions
+  extends QueryExecutorCommonOptions {
+  throwOnError?: boolean;
 }

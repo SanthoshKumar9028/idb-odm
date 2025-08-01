@@ -29,7 +29,7 @@ describe('BaseQueryExecutor', () => {
   describe('find', () => {
     it('should return array', async () => {
       const data = await queryExecutor.find(
-        { $query: '' },
+        { $key: '' },
         { idb: mockIdb, storeName: 'test', transaction }
       );
       expect(data).toEqual([{ one: 1 }]);
@@ -55,7 +55,7 @@ describe('BaseQueryExecutor', () => {
 
     it('should return value', async () => {
       const data = await queryExecutor.find(
-        { $query: '' },
+        { $key: '' },
         { idb: mockIdb, storeName: 'test', transaction }
       );
       expect(data).toEqual({ one: 1 });

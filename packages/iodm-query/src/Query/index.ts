@@ -15,7 +15,7 @@ import type {
  * @example
  * ```ts
  * const query = new Query(idb, "store-name");
- * const list = await query.find({ $query: "text" });
+ * const list = await query.find({ $key: "text" });
  * const item = await query.findById(id);
  * ```
  */
@@ -40,7 +40,7 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    * @example
    * ```ts
    * const query = new Query(idb, "store-name");
-   * const data = await query.find({ $query: "text" });
+   * const data = await query.find({ $key: "text" });
    * ``` 
    *
    * @param querySelectors Search query object
@@ -49,7 +49,7 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    * @returns
    */
   find(
-    querySelectors: IQuerySelectors = { $query: null },
+    querySelectors: IQuerySelectors = { $key: null },
     options: IQueryOptions = {}
   ) {
     this.options = { type: '_find', ...options, querySelectors };
@@ -68,7 +68,7 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
     }
 
     return QueryExecutorFactory.getInstance().find<ResultType>(
-      { $query: this.options.querySelectors.$query },
+      { $key: this.options.querySelectors.$key },
       {
         idb: this.idb,
         transaction,
@@ -97,7 +97,7 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
     this.options = {
       type: '_findById',
       ...options,
-      querySelectors: { $query: id },
+      querySelectors: { $key: id },
     };
     return this;
   }
@@ -107,7 +107,7 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
       throw new Error('Invalid findById method options');
     }
 
-    if (!this.options.querySelectors.$query) {
+    if (!this.options.querySelectors.$key) {
       throw new Error('search key is required');
     }
 
@@ -118,7 +118,7 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
     }
 
     return QueryExecutorFactory.getInstance().findById<ResultType>(
-      this.options.querySelectors.$query,
+      this.options.querySelectors.$key,
       {
         idb: this.idb,
         transaction: transaction,

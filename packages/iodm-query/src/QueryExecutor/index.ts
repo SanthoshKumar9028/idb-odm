@@ -5,11 +5,15 @@ import type {
   InsertSuccess,
   InsertError,
   QueryExecutorInsertManyResponse,
+  QueryExecutorReplaceOneOptions,
+  QueryExecutorUpdateManyOptions,
+  QueryExecutorUpdateOneOptions,
+  UpdateQuery,
 } from './type';
 
 export class BaseQueryExecutor {
   find<ResultType>(
-    query: { $query: ISearchKey },
+    query: { $key: ISearchKey },
     options: QueryExecutorCommonOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
@@ -17,7 +21,7 @@ export class BaseQueryExecutor {
 
       const objectStore = transaction.objectStore(storeName);
 
-      const getReq = objectStore.getAll(query.$query);
+      const getReq = objectStore.getAll(query.$key);
 
       getReq.onsuccess = (event) => {
         let result = [] as ResultType;
@@ -79,8 +83,9 @@ export class BaseQueryExecutor {
             res({ status: 'success', event });
           };
           addReq.onerror = (event) => {
-            if (throwOnError) { rej(event); }
-            else {
+            if (throwOnError) {
+              rej(event);
+            } else {
               event.preventDefault();
               res({ status: 'error', event });
             }
@@ -104,5 +109,115 @@ export class BaseQueryExecutor {
     );
 
     return { result: insertRes.result[0] } as ResultType;
+  }
+
+  async replaceOne<ResultType, DocumentType>(
+    query: { $key: IDBValidKey },
+    payload: DocumentType,
+    options: QueryExecutorReplaceOneOptions
+  ): Promise<ResultType> {
+    const { storeName, transaction } = options;
+
+    return new Promise((res, rej) => {
+      let objectStore = options.objectStore;
+
+      if (!objectStore) {
+        objectStore = transaction.objectStore(storeName);
+      }
+
+      const getReq = objectStore.put(payload, query.$key);
+
+      getReq.onsuccess = (event) => {
+        let result = undefined as ResultType;
+
+        if (event.target && 'result' in event.target) {
+          result = event.target.result as ResultType;
+        }
+        res(result);
+      };
+      getReq.onerror = (event) => {
+        rej(event);
+      };
+    });
+  }
+
+  isFunction(param: unknown): param is Function {
+    return typeof param === 'function';
+  }
+
+  async updateMany<ResultType, DocumentType>(
+    query: UpdateQuery,
+    payload: DocumentType | ((param: DocumentType) => DocumentType),
+    options: QueryExecutorUpdateManyOptions
+  ): Promise<ResultType> {
+    const { storeName, transaction, updateLimit, throwOnError } = options;
+
+    const updateRes = {
+      modifiedCount: 0,
+      matchedCount: 0,
+    };
+
+    return new Promise<ResultType>((res, rej) => {
+      const cursorReq = transaction
+        .objectStore(storeName)
+        .openCursor(query.$key);
+
+      cursorReq.onsuccess = (event) => {
+        if (!event.target || !('result' in event.target)) {
+          res(updateRes as ResultType);
+          return;
+        }
+
+        const cursor = event.target.result as IDBCursorWithValue;
+
+        ++updateRes.matchedCount;
+
+        try {
+          const newDoc = this.isFunction(payload)
+            ? payload(cursor.value)
+            : payload;
+          const updateReq = cursor.update(newDoc);
+
+          updateReq.onsuccess = () => {
+            ++updateRes.modifiedCount;
+
+            if (updateLimit !== updateRes.modifiedCount) {
+              cursor.continue();
+            } else {
+              res(updateRes as ResultType);
+            }
+          };
+          updateReq.onerror = (event) => {
+            if (throwOnError) rej(event);
+            else event.preventDefault();
+          };
+        } catch (error) {
+          if (throwOnError) {
+            transaction.abort();
+            rej(error);
+          }
+        }
+      };
+
+      cursorReq.onerror = rej;
+    }).catch((error) => {
+      if (throwOnError) {
+        throw error;
+      }
+
+      if (error instanceof Event) {
+        error.preventDefault();
+      }
+
+      return updateRes as ResultType;
+    });
+  }
+
+  async updateOne<ResultType, DocumentType>(
+    query: UpdateQuery,
+    payload: DocumentType,
+    options: QueryExecutorUpdateOneOptions
+  ): Promise<ResultType> {
+    return this.updateMany(query, payload, { ...options, updateLimit: 1 });
   }
 }
