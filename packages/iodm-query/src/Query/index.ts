@@ -3,10 +3,12 @@ import type { ISearchKey } from '../QueryExecutor/type';
 import type {
   IQuery,
   IQuerySelectors,
-  IQueryOptions,
   TQueryOptions,
   IQueryInsertOneOptions,
   IQueryInsertManyOptions,
+  TQueryFindByIdOptions,
+  TQueryFindOptions,
+  IQueryReplaceOneOptions,
 } from './type';
 
 /**
@@ -19,13 +21,15 @@ import type {
  * const item = await query.findById(id);
  * ```
  */
-export class Query<ResultType = unknown> implements IQuery<ResultType> {
+export class Query<ResultType = unknown, DocumentType = unknown>
+  implements IQuery<ResultType, DocumentType>
+{
   private idb: IDBDatabase;
   private storeName: string;
-  private options?: TQueryOptions;
+  private options?: TQueryOptions<DocumentType>;
 
   /**
-   * 
+   *
    * @param idb Instance of the IndexedDB database
    * @param storeName Query operations will be performed on store object that having this store name
    */
@@ -41,18 +45,18 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    * ```ts
    * const query = new Query(idb, "store-name");
    * const data = await query.find({ $key: "text" });
-   * ``` 
+   * ```
    *
    * @param querySelectors Search query object
    * @param options Query options
-   * 
+   *
    * @returns
    */
   find(
     querySelectors: IQuerySelectors = { $key: null },
-    options: IQueryOptions = {}
+    options: TQueryFindOptions = {}
   ) {
-    this.options = { type: '_find', ...options, querySelectors };
+    this.options = { type: '_find', querySelectors, execOptions: options };
     return this;
   }
 
@@ -61,15 +65,18 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
       throw new Error('Invalid find method options');
     }
 
-    let transaction = this.options?.transaction;
+    const { querySelectors, execOptions } = this.options;
+
+    let transaction = execOptions?.transaction;
 
     if (!transaction) {
       transaction = this.idb.transaction(this.storeName, 'readonly');
     }
 
     return QueryExecutorFactory.getInstance().find<ResultType>(
-      { $key: this.options.querySelectors.$key },
+      { $key: querySelectors.$key },
       {
+        ...execOptions,
         idb: this.idb,
         transaction,
         storeName: this.storeName,
@@ -92,12 +99,12 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    */
   findById(
     id: Exclude<ISearchKey, null | undefined>,
-    options: IQueryOptions = {}
+    options: TQueryFindByIdOptions = {}
   ) {
     this.options = {
       type: '_findById',
-      ...options,
       querySelectors: { $key: id },
+      execOptions: options,
     };
     return this;
   }
@@ -111,14 +118,16 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
       throw new Error('search key is required');
     }
 
-    let transaction = this.options.transaction;
+    const { querySelectors, execOptions } = this.options;
+
+    let transaction = execOptions.transaction;
 
     if (!transaction) {
       transaction = this.idb.transaction(this.storeName, 'readonly');
     }
 
     return QueryExecutorFactory.getInstance().findById<ResultType>(
-      this.options.querySelectors.$key,
+      querySelectors.$key,
       {
         idb: this.idb,
         transaction: transaction,
@@ -140,8 +149,12 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    * @param options Query options
    * @returns
    */
-  insertOne(payload: unknown, options: IQueryInsertOneOptions = {}) {
-    this.options = { type: '_insertOne', ...options, insertList: [payload] };
+  insertOne(payload: DocumentType, options: IQueryInsertOneOptions = {}) {
+    this.options = {
+      type: '_insertOne',
+      insertList: [payload],
+      execOptions: options,
+    };
     return this;
   }
 
@@ -160,7 +173,7 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
 
     this.options.insertList = [];
 
-    let transaction = this.options.transaction;
+    let transaction = this.options.execOptions.transaction;
 
     if (!transaction) {
       transaction = this.idb.transaction(this.storeName, 'readwrite');
@@ -191,8 +204,12 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
    * @param options Query options
    * @returns
    */
-  insertMany(payload: unknown[], options: IQueryInsertManyOptions = {}) {
-    this.options = { type: '_insertMany', ...options, insertList: payload };
+  insertMany(payload: DocumentType[], options: IQueryInsertManyOptions = {}) {
+    this.options = {
+      type: '_insertMany',
+      insertList: payload,
+      execOptions: options,
+    };
     return this;
   }
 
@@ -205,7 +222,7 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
 
     this.options.insertList = [];
 
-    let transaction = this.options.transaction;
+    let transaction = this.options.execOptions.transaction;
 
     if (!transaction) {
       transaction = this.idb.transaction(this.storeName, 'readwrite');
@@ -213,9 +230,60 @@ export class Query<ResultType = unknown> implements IQuery<ResultType> {
 
     return QueryExecutorFactory.getInstance().insertMany<ResultType>(payload, {
       idb: this.idb,
-      transaction: transaction,
+      transaction,
       storeName: this.storeName,
-      throwOnError: this.options.throwOnError,
+      throwOnError: this.options.execOptions.throwOnError,
+    });
+  }
+
+  /**
+   * To replace existing document with new document, if key is not present new document will be inserted
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * await query.replaceOne({ $key: key }, newDoc, options);
+   * ```
+   *
+   * @param payload Document object to override
+   * @param options Query options
+   * @returns
+   */
+  replaceOne(
+    payload: DocumentType & { _id: string | number },
+    options: IQueryReplaceOneOptions = {}
+  ) {
+    this.options = {
+      type: '_replaceOne',
+      payload: payload,
+      execOptions: {
+        ...options,
+      },
+    };
+    return this;
+  }
+
+  private async _replaceOne() {
+    if (this.options?.type !== '_replaceOne') {
+      throw new Error('Invalid replaceOne method options');
+    }
+
+    const { payload, execOptions } = this.options;
+
+    let transaction = execOptions.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readwrite');
+    }
+
+    return QueryExecutorFactory.getInstance().replaceOne<
+      ResultType,
+      DocumentType
+    >(payload, {
+      ...execOptions,
+      idb: this.idb,
+      storeName: this.storeName,
+      transaction,
     });
   }
 

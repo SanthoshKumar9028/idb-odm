@@ -1,38 +1,59 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { BaseQueryExecutor } from '.';
 import {
   QueryExecutorInsertManyResponse,
   QueryExecutorInsertOneResponse,
+  QueryExecutorReplaceOneOptions,
 } from './type';
 
 describe('BaseQueryExecutor', () => {
   const queryExecutor = new BaseQueryExecutor();
 
-  const transaction: any = {
-    objectStore() {
-      return {
-        getAll() {
-          const event = { onsuccess(...params: any[]) {} };
-          setTimeout(
-            () => event.onsuccess({ target: { result: [{ one: 1 }] } }),
-            0
-          );
-          return event;
-        },
-      };
-    },
-  };
-  const mockIdb: any = {
-    transaction,
-  };
-
   describe('find', () => {
+    const mockGetAll = vi.fn();
+
+    const transaction: any = {
+      objectStore() {
+        return {
+          getAll: mockGetAll,
+        };
+      },
+    };
+
+    const mockIdb: any = {
+      transaction,
+    };
+
     it('should return array', async () => {
+      mockGetAll.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () => event.onsuccess({ target: { result: [{ one: 1 }] } }),
+          0
+        );
+        return event;
+      });
+
       const data = await queryExecutor.find(
         { $key: '' },
         { idb: mockIdb, storeName: 'test', transaction }
       );
       expect(data).toEqual([{ one: 1 }]);
+    });
+
+    it('should handle error', async () => {
+      mockGetAll.mockImplementationOnce(() => {
+        const event = { onerror(...params: any[]) {} };
+        setTimeout(() => event.onerror(new Event('error')), 0);
+        return event;
+      });
+
+      const data = queryExecutor.find(
+        { $key: '' },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+
+      await expect(data).rejects.toThrowError(Event);
     });
   });
 
@@ -40,7 +61,7 @@ describe('BaseQueryExecutor', () => {
     const transaction: any = {
       objectStore() {
         return {
-          getAll() {
+          get() {
             const event = { onsuccess(...params: any[]) {} };
             setTimeout(
               () => event.onsuccess({ target: { result: { one: 1 } } }),
@@ -54,10 +75,11 @@ describe('BaseQueryExecutor', () => {
     const mockIdb: any = { transaction };
 
     it('should return value', async () => {
-      const data = await queryExecutor.find(
-        { $key: '' },
-        { idb: mockIdb, storeName: 'test', transaction }
-      );
+      const data = await queryExecutor.findById('123', {
+        idb: mockIdb,
+        storeName: 'test',
+        transaction,
+      });
       expect(data).toEqual({ one: 1 });
     });
   });
@@ -110,7 +132,7 @@ describe('BaseQueryExecutor', () => {
           }
         );
 
-      expect(() => insertPromise).rejects.toThrow();
+      await expect(insertPromise).rejects.toThrow();
     });
   });
 
@@ -163,7 +185,163 @@ describe('BaseQueryExecutor', () => {
           }
         );
 
-      expect(() => insertPromise2).rejects.toThrow();
+      await expect(insertPromise2).rejects.toThrow();
+    });
+  });
+
+  describe('replaceOne', () => {
+    const mockPut = vi
+      .fn()
+      .mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(() => event.onsuccess({ target: { result: '123' } }), 0);
+        return event;
+      })
+      .mockImplementation(() => {
+        const event = { onerror(...params: any[]) {} };
+        setTimeout(() => event.onerror(new Event('Error')), 0);
+        return event;
+      });
+
+    const transaction: any = {
+      objectStore() {
+        return {
+          put: mockPut,
+        };
+      },
+    };
+    const mockIdb: any = { transaction };
+
+    it('should call put method', async () => {
+      const replaceRes1 = await queryExecutor.replaceOne<
+        string | undefined,
+        { test: string }
+      >(
+        {
+          _id: '123',
+          test: 'value',
+        },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+
+      expect(replaceRes1).toBe('123');
+
+      const replaceRes2 = queryExecutor.replaceOne<
+        string | undefined,
+        { test: string }
+      >(
+        {
+          _id: '123',
+          test: 'value',
+        },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+
+      await expect(replaceRes2).rejects.toThrowError(Event);
+    });
+  });
+
+  describe('updateMany', () => {
+    const mockUpdate = vi.fn().mockImplementation(() => {
+      const event = { onsuccess(...params: any[]) {} };
+      setTimeout(() => event.onsuccess({}), 0);
+      return event;
+    });
+
+    afterEach(() => mockUpdate.mockClear());
+
+    const mockOpenCursor = vi.fn();
+
+    const transaction: any = {
+      objectStore() {
+        return {
+          openCursor: mockOpenCursor,
+        };
+      },
+    };
+    const mockIdb: any = { transaction };
+
+    it('should return response if initial cursor is not present', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(() => event.onsuccess({ target: { result: undefined } }), 0);
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<unknown>(
+        { $key: '123' },
+        { test: '123' },
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledTimes(0);
+      expect(updateRes).toEqual({ modifiedCount: 0, matchedCount: 0 });
+    });
+
+    it('should update with payload', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () => event.onsuccess({ target: { result: { update: mockUpdate } } }),
+          0
+        );
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<unknown>(
+        { $key: '123' },
+        { test: '123' },
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledWith({ test: '123' });
+      expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
+    });
+
+    it('should update with function payload', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () =>
+            event.onsuccess({
+              target: {
+                result: { value: { test: '123' }, update: mockUpdate },
+              },
+            }),
+          0
+        );
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<unknown, unknown>(
+        { $key: '123' },
+        (doc) => ({ ...doc, desc: 'test' }),
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledWith({ test: '123', desc: 'test' });
+      expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
+    });
+
+    it('should handle error', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onerror(...params: any[]) {} };
+        setTimeout(() => event.onerror(new Event('Error')), 0);
+        return event;
+      });
+
+      const updateRes1 = queryExecutor.updateMany<unknown>(
+        { $key: '123' },
+        { test: '123' },
+        {
+          idb: mockIdb,
+          storeName: 'test',
+          transaction,
+          updateLimit: 1,
+          throwOnError: true,
+        }
+      );
+      await expect(updateRes1).rejects.toThrowError(Event);
     });
   });
 });

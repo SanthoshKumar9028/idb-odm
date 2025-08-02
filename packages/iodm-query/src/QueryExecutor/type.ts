@@ -27,6 +27,8 @@ export interface QueryExecutorInsertOneResponse {
   result: InsertSuccess | InsertError;
 }
 
+export interface QueryExecutorReplaceOneQuery { $key: IDBValidKey }
+
 export interface QueryExecutorReplaceOneOptions
   extends QueryExecutorCommonOptions {
   objectStore?: IDBObjectStore;

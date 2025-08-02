@@ -111,9 +111,8 @@ export class BaseQueryExecutor {
     return { result: insertRes.result[0] } as ResultType;
   }
 
-  async replaceOne<ResultType, DocumentType>(
-    query: { $key: IDBValidKey },
-    payload: DocumentType,
+  async replaceOne<ResultType, DocumentType = unknown>(
+    payload: DocumentType & { _id: string | number },
     options: QueryExecutorReplaceOneOptions
   ): Promise<ResultType> {
     const { storeName, transaction } = options;
@@ -125,7 +124,7 @@ export class BaseQueryExecutor {
         objectStore = transaction.objectStore(storeName);
       }
 
-      const getReq = objectStore.put(payload, query.$key);
+      const getReq = objectStore.put(payload);
 
       getReq.onsuccess = (event) => {
         let result = undefined as ResultType;
@@ -141,11 +140,11 @@ export class BaseQueryExecutor {
     });
   }
 
-  isFunction(param: unknown): param is Function {
+  private isFunction(param: unknown): param is Function {
     return typeof param === 'function';
   }
 
-  async updateMany<ResultType, DocumentType>(
+  async updateMany<ResultType, DocumentType = unknown>(
     query: UpdateQuery,
     payload: DocumentType | ((param: DocumentType) => DocumentType),
     options: QueryExecutorUpdateManyOptions
@@ -157,13 +156,17 @@ export class BaseQueryExecutor {
       matchedCount: 0,
     };
 
-    return new Promise<ResultType>((res, rej) => {
+    return new Promise((res, rej) => {
       const cursorReq = transaction
         .objectStore(storeName)
         .openCursor(query.$key);
 
       cursorReq.onsuccess = (event) => {
-        if (!event.target || !('result' in event.target)) {
+        if (
+          !event.target ||
+          !('result' in event.target) ||
+          !event.target.result
+        ) {
           res(updateRes as ResultType);
           return;
         }
@@ -176,6 +179,7 @@ export class BaseQueryExecutor {
           const newDoc = this.isFunction(payload)
             ? payload(cursor.value)
             : payload;
+
           const updateReq = cursor.update(newDoc);
 
           updateReq.onsuccess = () => {
@@ -187,29 +191,33 @@ export class BaseQueryExecutor {
               res(updateRes as ResultType);
             }
           };
+
           updateReq.onerror = (event) => {
-            if (throwOnError) rej(event);
-            else event.preventDefault();
+            if (throwOnError) {
+              rej(event);
+            } else {
+              event.preventDefault();
+            }
           };
         } catch (error) {
           if (throwOnError) {
             transaction.abort();
             rej(error);
+          } else {
+            res(updateRes as ResultType);
           }
         }
       };
 
-      cursorReq.onerror = rej;
-    }).catch((error) => {
-      if (throwOnError) {
-        throw error;
-      }
+      cursorReq.onerror = (event) => {
+        if (throwOnError) {
+          return rej(event);
+        }
 
-      if (error instanceof Event) {
-        error.preventDefault();
-      }
+        event.preventDefault();
 
-      return updateRes as ResultType;
+        res(updateRes as ResultType);
+      };
     });
   }
 

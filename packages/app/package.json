@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "iodm-query": "0.0.2",
+    "iodm-query": "*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
