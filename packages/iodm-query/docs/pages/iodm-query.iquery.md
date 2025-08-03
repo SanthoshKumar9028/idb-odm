@@ -7,9 +7,9 @@
 **Signature:**
 
 ```typescript
-export interface IQuery<ResultType> extends IBaseQuery<ResultType> 
+export interface IQuery<ResultType, DocumentType> extends IBaseQuery<ResultType, DocumentType> 
 ```
-**Extends:** IBaseQuery&lt;ResultType&gt;
+**Extends:** IBaseQuery&lt;ResultType, DocumentType&gt;
 
 ## Methods
 

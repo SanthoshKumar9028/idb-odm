@@ -9,7 +9,7 @@ Finds list of item from the IndexedDB
 **Signature:**
 
 ```typescript
-find(querySelectors?: IQuerySelectors, options?: IQueryOptions): this;
+find(querySelectors?: IQuerySelectors, options?: TQueryFindOptions): this;
 ```
 
 ## Parameters
@@ -53,7 +53,7 @@ options
 
 </td><td>
 
-IQueryOptions
+TQueryFindOptions
 
 
 </td><td>
@@ -74,6 +74,6 @@ this
 
 ```ts
 const query = new Query(idb, "store-name");
-const data = await query.find({ $query: "text" });
+const data = await query.find({ $key: "text" });
 ```
 

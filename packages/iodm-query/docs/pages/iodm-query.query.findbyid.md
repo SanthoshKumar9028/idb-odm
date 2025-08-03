@@ -9,7 +9,7 @@ Finds single item from the IndexedDB
 **Signature:**
 
 ```typescript
-findById(id: Exclude<ISearchKey, null | undefined>, options?: IQueryOptions): this;
+findById(id: Exclude<ISearchKey, null | undefined>, options?: TQueryFindByIdOptions): this;
 ```
 
 ## Parameters
@@ -53,7 +53,7 @@ options
 
 </td><td>
 
-IQueryOptions
+TQueryFindByIdOptions
 
 
 </td><td>

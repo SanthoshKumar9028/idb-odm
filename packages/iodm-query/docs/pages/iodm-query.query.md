@@ -9,16 +9,16 @@ Query builder for IndexedDB
 **Signature:**
 
 ```typescript
-export declare class Query<ResultType = unknown> implements IQuery<ResultType> 
+export declare class Query<ResultType = unknown, DocumentType = unknown> implements IQuery<ResultType, DocumentType> 
 ```
-**Implements:** [IQuery](./iodm-query.iquery.md)<!-- -->&lt;ResultType&gt;
+**Implements:** [IQuery](./iodm-query.iquery.md)<!-- -->&lt;ResultType, DocumentType&gt;
 
 ## Example
 
 
 ```ts
 const query = new Query(idb, "store-name");
-const list = await query.find({ $query: "text" });
+const list = await query.find({ $key: "text" });
 const item = await query.findById(id);
 ```
 
@@ -146,6 +146,20 @@ Inserts a single Document into IndexedDB object store
 </td></tr>
 <tr><td>
 
+[replaceOne(payload, options)](./iodm-query.query.replaceone.md)
+
+
+</td><td>
+
+
+</td><td>
+
+To replace existing document with new document, if key is not present new document will be inserted
+
+
+</td></tr>
+<tr><td>
+
 [then(onFulfilled, onRejected)](./iodm-query.query.then.md)
 
 
@@ -153,6 +167,34 @@ Inserts a single Document into IndexedDB object store
 
 
 </td><td>
+
+
+</td></tr>
+<tr><td>
+
+[updateMany(query, payload, options)](./iodm-query.query.updatemany.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Based on the query, matched documents will be updated
+
+
+</td></tr>
+<tr><td>
+
+[updateOne(query, payload, options)](./iodm-query.query.updateone.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Based on the query, first matched document will be updated
 
 
 </td></tr>
