@@ -2,6 +2,9 @@ import type {
   ISearchKey,
   QueryExecutorInsertOptions,
   QueryExecutorReplaceOneOptions,
+  QueryExecutorUpdateManyOptions,
+  QueryExecutorUpdateOneOptions,
+  UpdateQuery,
 } from '../QueryExecutor/type';
 import type { Prettify } from '../utils/type';
 
@@ -32,6 +35,16 @@ export type IQueryReplaceOneOptions = Prettify<
     Omit<QueryExecutorReplaceOneOptions, 'idb' | 'storeName' | 'transaction'>
 >;
 
+export type IQueryUpdateManyOptions = Prettify<
+  IQueryOptions &
+    Omit<QueryExecutorUpdateManyOptions, 'idb' | 'storeName' | 'transaction'>
+>;
+
+export type IQueryUpdateOneOptions = Prettify<
+  IQueryOptions &
+    Omit<QueryExecutorUpdateOneOptions, 'idb' | 'storeName' | 'transaction'>
+>;
+
 export type TQueryOptions<DocumentType = unknown> =
   | {
       type: '_find';
@@ -55,9 +68,20 @@ export type TQueryOptions<DocumentType = unknown> =
     }
   | {
       type: '_replaceOne';
-      // query: QueryExecutorReplaceOneQuery;
       payload: DocumentType & { _id: string | number };
       execOptions: IQueryReplaceOneOptions;
+    }
+  | {
+      type: '_updateMany';
+      query: UpdateQuery;
+      payload: (param: DocumentType) => DocumentType;
+      execOptions: IQueryUpdateManyOptions;
+    }
+  | {
+      type: '_updateOne';
+      query: UpdateQuery;
+      payload: DocumentType | ((param: DocumentType) => DocumentType);
+      execOptions: IQueryUpdateOneOptions;
     };
 
 export interface IBaseQuery<ResultType, DocumentType = unknown> {
@@ -80,6 +104,16 @@ export interface IBaseQuery<ResultType, DocumentType = unknown> {
   replaceOne(
     payload: DocumentType,
     options: QueryExecutorReplaceOneOptions
+  ): IBaseQuery<ResultType>;
+  updateMany(
+    query: UpdateQuery,
+    payload: (param: DocumentType) => DocumentType,
+    options: QueryExecutorUpdateManyOptions
+  ): IBaseQuery<ResultType>;
+  updateOne(
+    query: UpdateQuery,
+    payload: DocumentType | ((param: DocumentType) => DocumentType),
+    options: QueryExecutorUpdateOneOptions
   ): IBaseQuery<ResultType>;
 }
 

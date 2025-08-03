@@ -10,7 +10,6 @@ interface IPost {
 }
 
 function App() {
-  const [count, setCount] = useState(0);
   const [idb, setIdb] = useState<IDBDatabase | null>(null);
 
   useEffect(() => {

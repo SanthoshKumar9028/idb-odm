@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, MockedFunction } from 'vitest';
 import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
 import { Query } from './index';
+import { QueryExecutorUpdateManyResponse } from '../QueryExecutor/type';
 
 vi.mock('../QueryExecutor/QueryExecutorFactory');
 
@@ -114,6 +115,49 @@ describe('Query', () => {
       });
 
       expect(res).toEqual('123');
+    });
+  });
+
+  describe('updateMany', () => {
+    it('should call queryExecutor updateMany method', async () => {
+      (
+        QueryExecutorFactory.getInstance as MockedFunction<any>
+      ).mockImplementation(() => ({
+        updateMany: () => ({}),
+      }));
+
+      const res = await new Query<QueryExecutorUpdateManyResponse, ITestUser>(
+        mockIdb,
+        'test'
+      ).updateMany({ $key: '123' }, () => ({
+        _id: '123',
+        name: 'test',
+      }));
+
+      expect(res).toEqual({});
+    });
+  });
+
+  describe('updateOne', () => {
+    it('should call queryExecutor updateOne method', async () => {
+      (
+        QueryExecutorFactory.getInstance as MockedFunction<any>
+      ).mockImplementation(() => ({
+        updateOne: () => ({}),
+      }));
+
+      const res = await new Query<QueryExecutorUpdateManyResponse, ITestUser>(
+        mockIdb,
+        'test'
+      ).updateOne(
+        { $key: '123' },
+        {
+          _id: '123',
+          name: 'test',
+        }
+      );
+
+      expect(res).toEqual({});
     });
   });
 });

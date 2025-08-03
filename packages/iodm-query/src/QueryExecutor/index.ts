@@ -9,6 +9,7 @@ import type {
   QueryExecutorUpdateManyOptions,
   QueryExecutorUpdateOneOptions,
   UpdateQuery,
+  QueryExecutorUpdateManyResponse,
 } from './type';
 
 export class BaseQueryExecutor {
@@ -146,12 +147,12 @@ export class BaseQueryExecutor {
 
   async updateMany<ResultType, DocumentType = unknown>(
     query: UpdateQuery,
-    payload: DocumentType | ((param: DocumentType) => DocumentType),
+    payload: (param: DocumentType) => DocumentType,
     options: QueryExecutorUpdateManyOptions
   ): Promise<ResultType> {
     const { storeName, transaction, updateLimit, throwOnError } = options;
 
-    const updateRes = {
+    const updateRes: QueryExecutorUpdateManyResponse = {
       modifiedCount: 0,
       matchedCount: 0,
     };
@@ -197,6 +198,7 @@ export class BaseQueryExecutor {
               rej(event);
             } else {
               event.preventDefault();
+              cursor.continue();
             }
           };
         } catch (error) {
@@ -204,7 +206,7 @@ export class BaseQueryExecutor {
             transaction.abort();
             rej(error);
           } else {
-            res(updateRes as ResultType);
+            cursor.continue();
           }
         }
       };
@@ -223,9 +225,16 @@ export class BaseQueryExecutor {
 
   async updateOne<ResultType, DocumentType>(
     query: UpdateQuery,
-    payload: DocumentType,
+    payload: DocumentType | ((param: DocumentType) => DocumentType),
     options: QueryExecutorUpdateOneOptions
   ): Promise<ResultType> {
-    return this.updateMany(query, payload, { ...options, updateLimit: 1 });
+    return this.updateMany(
+      query,
+      this.isFunction(payload) ? payload : () => payload,
+      {
+        ...options,
+        updateLimit: 1,
+      }
+    );
   }
 }

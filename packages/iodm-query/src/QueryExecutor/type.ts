@@ -27,7 +27,9 @@ export interface QueryExecutorInsertOneResponse {
   result: InsertSuccess | InsertError;
 }
 
-export interface QueryExecutorReplaceOneQuery { $key: IDBValidKey }
+export interface QueryExecutorReplaceOneQuery {
+  $key: IDBValidKey;
+}
 
 export interface QueryExecutorReplaceOneOptions
   extends QueryExecutorCommonOptions {
@@ -35,13 +37,18 @@ export interface QueryExecutorReplaceOneOptions
 }
 
 export interface UpdateQuery {
-  $key: ISearchKey;
+  $key?: ISearchKey;
 }
 
 export interface QueryExecutorUpdateManyOptions
   extends QueryExecutorCommonOptions {
   throwOnError?: boolean;
   updateLimit?: number;
+}
+
+export interface QueryExecutorUpdateManyResponse {
+  modifiedCount: number;
+  matchedCount: number;
 }
 
 export interface QueryExecutorUpdateOneOptions

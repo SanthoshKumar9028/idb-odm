@@ -270,7 +270,7 @@ describe('BaseQueryExecutor', () => {
 
       const updateRes = await queryExecutor.updateMany<unknown>(
         { $key: '123' },
-        { test: '123' },
+        () => ({ test: '123' }),
         { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
       );
 
@@ -290,7 +290,7 @@ describe('BaseQueryExecutor', () => {
 
       const updateRes = await queryExecutor.updateMany<unknown>(
         { $key: '123' },
-        { test: '123' },
+        () => ({ test: '123' }),
         { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
       );
 
@@ -313,7 +313,7 @@ describe('BaseQueryExecutor', () => {
         return event;
       });
 
-      const updateRes = await queryExecutor.updateMany<unknown, unknown>(
+      const updateRes = await queryExecutor.updateMany<any, any>(
         { $key: '123' },
         (doc) => ({ ...doc, desc: 'test' }),
         { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
@@ -332,7 +332,7 @@ describe('BaseQueryExecutor', () => {
 
       const updateRes1 = queryExecutor.updateMany<unknown>(
         { $key: '123' },
-        { test: '123' },
+        () => ({ test: '123' }),
         {
           idb: mockIdb,
           storeName: 'test',

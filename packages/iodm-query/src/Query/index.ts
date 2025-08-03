@@ -1,5 +1,5 @@
 import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
-import type { ISearchKey } from '../QueryExecutor/type';
+import type { ISearchKey, UpdateQuery } from '../QueryExecutor/type';
 import type {
   IQuery,
   IQuerySelectors,
@@ -9,6 +9,7 @@ import type {
   TQueryFindByIdOptions,
   TQueryFindOptions,
   IQueryReplaceOneOptions,
+  IQueryUpdateManyOptions,
 } from './type';
 
 /**
@@ -280,6 +281,110 @@ export class Query<ResultType = unknown, DocumentType = unknown>
       ResultType,
       DocumentType
     >(payload, {
+      ...execOptions,
+      idb: this.idb,
+      storeName: this.storeName,
+      transaction,
+    });
+  }
+
+  /**
+   * Based on the query, matched documents will be updated
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * await query.updateMany({ $key: keyRange }, newDoc, options);
+   * ```
+   *
+   * @param query Update query to find match
+   * @param payload Callback to update the found document
+   * @param options Query options
+   * @returns
+   */
+  updateMany(
+    query: UpdateQuery,
+    payload: (param: DocumentType) => DocumentType,
+    options: IQueryUpdateManyOptions = {}
+  ) {
+    this.options = {
+      type: '_updateMany',
+      query,
+      payload,
+      execOptions: options,
+    };
+    return this;
+  }
+
+  private async _updateMany() {
+    if (this.options?.type !== '_updateMany') {
+      throw new Error('Invalid updateMany method options');
+    }
+
+    const { query, payload, execOptions } = this.options;
+
+    let transaction = execOptions.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readwrite');
+    }
+
+    return QueryExecutorFactory.getInstance().updateMany<
+      ResultType,
+      DocumentType
+    >(query, payload, {
+      ...execOptions,
+      idb: this.idb,
+      storeName: this.storeName,
+      transaction,
+    });
+  }
+
+  /**
+   * Based on the query, first matched document will be updated
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * await query.updateOne({ $key: key }, newDoc, options);
+   * ```
+   *
+   * @param query Update query to find match
+   * @param payload New document or Callback to update the found document
+   * @param options Query options
+   * @returns
+   */
+  updateOne(
+    query: UpdateQuery,
+    payload: DocumentType | ((param: DocumentType) => DocumentType),
+    options: IQueryUpdateManyOptions = {}
+  ) {
+    this.options = {
+      type: '_updateOne',
+      query,
+      payload,
+      execOptions: options,
+    };
+    return this;
+  }
+
+  private async _updateOne() {
+    if (this.options?.type !== '_updateOne') {
+      throw new Error('Invalid updateOne method options');
+    }
+
+    const { query, payload, execOptions } = this.options;
+
+    let transaction = execOptions.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readwrite');
+    }
+
+    return QueryExecutorFactory.getInstance().updateOne<
+      ResultType,
+      DocumentType
+    >(query, payload, {
       ...execOptions,
       idb: this.idb,
       storeName: this.storeName,
