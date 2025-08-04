@@ -1,4 +1,6 @@
-export type ISearchKey = IDBValidKey | IDBKeyRange | undefined | null;
+export type SearchKeyRequired = IDBValidKey | IDBKeyRange;
+
+export type SearchKey = SearchKeyRequired | undefined | null;
 
 export interface QueryExecutorCommonOptions {
   idb: IDBDatabase;
@@ -6,9 +8,13 @@ export interface QueryExecutorCommonOptions {
   transaction: IDBTransaction;
 }
 
-export interface QueryExecutorInsertOptions extends QueryExecutorCommonOptions {
+export interface QueryExecutorCommonOptionsThrownOnError
+  extends QueryExecutorCommonOptions {
   throwOnError?: boolean;
 }
+
+export interface QueryExecutorInsertOptions
+  extends QueryExecutorCommonOptionsThrownOnError {}
 
 export interface InsertSuccess {
   status: 'success';
@@ -36,13 +42,12 @@ export interface QueryExecutorReplaceOneOptions
   objectStore?: IDBObjectStore;
 }
 
-export interface UpdateQuery {
-  $key?: ISearchKey;
+export interface QueryExecutorUpdateQuery {
+  $key?: SearchKey;
 }
 
 export interface QueryExecutorUpdateManyOptions
-  extends QueryExecutorCommonOptions {
-  throwOnError?: boolean;
+  extends QueryExecutorCommonOptionsThrownOnError {
   updateLimit?: number;
 }
 
@@ -52,6 +57,27 @@ export interface QueryExecutorUpdateManyResponse {
 }
 
 export interface QueryExecutorUpdateOneOptions
-  extends QueryExecutorCommonOptions {
-  throwOnError?: boolean;
+  extends QueryExecutorCommonOptionsThrownOnError {}
+
+export interface QueryExecutorDeleteQuery extends QueryExecutorUpdateQuery {}
+
+export interface QueryExecutorDeleteManyOptions
+  extends QueryExecutorCommonOptionsThrownOnError {
+  deleteLimit?: number;
+}
+
+export interface QueryExecutorDeleteOneOptions
+  extends QueryExecutorCommonOptionsThrownOnError {}
+
+export interface QueryExecutorDeleteManyResponse {
+  deletedCount: number;
+  matchedCount: number;
+}
+
+export interface QueryExecutorFindByIdAndDeleteOptions
+  extends QueryExecutorCommonOptionsThrownOnError {}
+
+export interface QueryExecutorFindByIdAndUpdateOptions
+  extends QueryExecutorCommonOptionsThrownOnError {
+  new?: boolean;
 }

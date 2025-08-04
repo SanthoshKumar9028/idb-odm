@@ -1,15 +1,15 @@
 import type {
-  ISearchKey,
+  SearchKey,
   QueryExecutorInsertOptions,
   QueryExecutorReplaceOneOptions,
   QueryExecutorUpdateManyOptions,
   QueryExecutorUpdateOneOptions,
-  UpdateQuery,
+  QueryExecutorUpdateQuery,
 } from '../QueryExecutor/type';
 import type { Prettify } from '../utils/type';
 
 export interface IQuerySelectors {
-  $key: ISearchKey;
+  $key: SearchKey;
 }
 
 export interface IQueryOptions {
@@ -53,7 +53,7 @@ export type TQueryOptions<DocumentType = unknown> =
     }
   | {
       type: '_findById';
-      querySelectors: { $key: Exclude<ISearchKey, null | undefined> };
+      querySelectors: { $key: IDBValidKey };
       execOptions: TQueryFindByIdOptions;
     }
   | {
@@ -73,13 +73,13 @@ export type TQueryOptions<DocumentType = unknown> =
     }
   | {
       type: '_updateMany';
-      query: UpdateQuery;
+      query: QueryExecutorUpdateQuery;
       payload: (param: DocumentType) => DocumentType;
       execOptions: IQueryUpdateManyOptions;
     }
   | {
       type: '_updateOne';
-      query: UpdateQuery;
+      query: QueryExecutorUpdateQuery;
       payload: DocumentType | ((param: DocumentType) => DocumentType);
       execOptions: IQueryUpdateOneOptions;
     };
@@ -90,7 +90,7 @@ export interface IBaseQuery<ResultType, DocumentType = unknown> {
     options?: TQueryFindOptions
   ): IBaseQuery<ResultType>;
   findById(
-    id: ISearchKey,
+    id: SearchKey,
     options?: TQueryFindByIdOptions
   ): IBaseQuery<ResultType>;
   insertOne(
@@ -106,12 +106,12 @@ export interface IBaseQuery<ResultType, DocumentType = unknown> {
     options: QueryExecutorReplaceOneOptions
   ): IBaseQuery<ResultType>;
   updateMany(
-    query: UpdateQuery,
+    query: QueryExecutorUpdateQuery,
     payload: (param: DocumentType) => DocumentType,
     options: QueryExecutorUpdateManyOptions
   ): IBaseQuery<ResultType>;
   updateOne(
-    query: UpdateQuery,
+    query: QueryExecutorUpdateQuery,
     payload: DocumentType | ((param: DocumentType) => DocumentType),
     options: QueryExecutorUpdateOneOptions
   ): IBaseQuery<ResultType>;

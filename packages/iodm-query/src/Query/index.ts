@@ -1,5 +1,5 @@
 import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
-import type { ISearchKey, UpdateQuery } from '../QueryExecutor/type';
+import type { QueryExecutorUpdateQuery } from '../QueryExecutor/type';
 import type {
   IQuery,
   IQuerySelectors,
@@ -98,10 +98,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @param options Query options
    * @returns
    */
-  findById(
-    id: Exclude<ISearchKey, null | undefined>,
-    options: TQueryFindByIdOptions = {}
-  ) {
+  findById(id: IDBValidKey, options: TQueryFindByIdOptions = {}) {
     this.options = {
       type: '_findById',
       querySelectors: { $key: id },
@@ -303,7 +300,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @returns
    */
   updateMany(
-    query: UpdateQuery,
+    query: QueryExecutorUpdateQuery,
     payload: (param: DocumentType) => DocumentType,
     options: IQueryUpdateManyOptions = {}
   ) {
@@ -355,7 +352,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @returns
    */
   updateOne(
-    query: UpdateQuery,
+    query: QueryExecutorUpdateQuery,
     payload: DocumentType | ((param: DocumentType) => DocumentType),
     options: IQueryUpdateManyOptions = {}
   ) {

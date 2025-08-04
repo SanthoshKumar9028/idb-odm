@@ -1,20 +1,28 @@
+import { isFunction } from '../utils/type-guards';
 import type {
   QueryExecutorCommonOptions,
   QueryExecutorInsertOptions,
-  ISearchKey,
+  SearchKey,
   InsertSuccess,
   InsertError,
   QueryExecutorInsertManyResponse,
   QueryExecutorReplaceOneOptions,
   QueryExecutorUpdateManyOptions,
   QueryExecutorUpdateOneOptions,
-  UpdateQuery,
+  QueryExecutorUpdateQuery,
   QueryExecutorUpdateManyResponse,
+  QueryExecutorDeleteQuery,
+  QueryExecutorDeleteManyOptions,
+  QueryExecutorDeleteManyResponse,
+  QueryExecutorDeleteOneOptions,
+  QueryExecutorFindByIdAndDeleteOptions,
+  QueryExecutorFindByIdAndUpdateOptions,
+  SearchKeyRequired,
 } from './type';
 
 export class BaseQueryExecutor {
-  find<ResultType>(
-    query: { $key: ISearchKey },
+  async find<ResultType>(
+    query: { $key: SearchKey },
     options: QueryExecutorCommonOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
@@ -38,8 +46,8 @@ export class BaseQueryExecutor {
     });
   }
 
-  findById<ResultType>(
-    id: Exclude<ISearchKey, null | undefined>,
+  async findById<ResultType>(
+    id: IDBValidKey,
     options: QueryExecutorCommonOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
@@ -141,12 +149,8 @@ export class BaseQueryExecutor {
     });
   }
 
-  private isFunction(param: unknown): param is Function {
-    return typeof param === 'function';
-  }
-
   async updateMany<ResultType, DocumentType = unknown>(
-    query: UpdateQuery,
+    query: QueryExecutorUpdateQuery,
     payload: (param: DocumentType) => DocumentType,
     options: QueryExecutorUpdateManyOptions
   ): Promise<ResultType> {
@@ -177,9 +181,7 @@ export class BaseQueryExecutor {
         ++updateRes.matchedCount;
 
         try {
-          const newDoc = this.isFunction(payload)
-            ? payload(cursor.value)
-            : payload;
+          const newDoc = payload(cursor.value);
 
           const updateReq = cursor.update(newDoc);
 
@@ -224,17 +226,227 @@ export class BaseQueryExecutor {
   }
 
   async updateOne<ResultType, DocumentType>(
-    query: UpdateQuery,
+    query: QueryExecutorUpdateQuery,
     payload: DocumentType | ((param: DocumentType) => DocumentType),
     options: QueryExecutorUpdateOneOptions
   ): Promise<ResultType> {
     return this.updateMany(
       query,
-      this.isFunction(payload) ? payload : () => payload,
+      isFunction(payload) ? payload : () => payload,
       {
         ...options,
         updateLimit: 1,
       }
     );
+  }
+
+  async deleteMany<ResultType>(
+    query: QueryExecutorDeleteQuery,
+    options: QueryExecutorDeleteManyOptions
+  ) {
+    const { storeName, transaction, deleteLimit, throwOnError } = options;
+
+    const deleteRes: QueryExecutorDeleteManyResponse = {
+      deletedCount: 0,
+      matchedCount: 0,
+    };
+
+    return new Promise((res, rej) => {
+      const cursorReq = transaction
+        .objectStore(storeName)
+        .openCursor(query.$key);
+
+      cursorReq.onsuccess = (event) => {
+        if (
+          !event.target ||
+          !('result' in event.target) ||
+          !event.target.result
+        ) {
+          res(deleteRes as ResultType);
+          return;
+        }
+
+        const cursor = event.target.result as IDBCursorWithValue;
+
+        ++deleteRes.matchedCount;
+
+        try {
+          const deleteReq = cursor.delete();
+
+          deleteReq.onsuccess = () => {
+            ++deleteRes.deletedCount;
+
+            if (deleteLimit !== deleteRes.deletedCount) {
+              cursor.continue();
+            } else {
+              res(deleteRes as ResultType);
+            }
+          };
+
+          deleteReq.onerror = (event) => {
+            if (throwOnError) {
+              return rej(event);
+            }
+
+            event.preventDefault();
+            cursor.continue();
+          };
+        } catch (error) {
+          if (throwOnError) {
+            transaction.abort();
+            return rej(error);
+          }
+
+          cursor.continue();
+        }
+      };
+
+      cursorReq.onerror = (event) => {
+        if (throwOnError) {
+          return rej(event);
+        }
+
+        event.preventDefault();
+
+        res(deleteRes as ResultType);
+      };
+    });
+  }
+
+  async deleteOne<ResultType>(
+    query: QueryExecutorDeleteQuery,
+    options: QueryExecutorDeleteOneOptions
+  ) {
+    return this.deleteMany<ResultType>(query, { ...options, deleteLimit: 1 });
+  }
+
+  async findByIdAndDelete<ResultType>(
+    id: SearchKeyRequired,
+    options: QueryExecutorFindByIdAndDeleteOptions
+  ): Promise<ResultType> {
+    const { storeName, transaction, throwOnError = true } = options;
+    const objectStore = transaction.objectStore(storeName);
+
+    return new Promise((res, rej) => {
+      const getReq = objectStore.get(id);
+
+      getReq.onsuccess = (event) => {
+        let doc = undefined;
+
+        if (event.target && 'result' in event.target) {
+          doc = event.target.result;
+        }
+
+        if (!doc) {
+          res(doc as ResultType);
+          return;
+        }
+
+        try {
+          const putReq = objectStore.delete(id);
+
+          putReq.onsuccess = () => {
+            res(doc as ResultType);
+          };
+
+          putReq.onerror = (event) => {
+            if (throwOnError) {
+              return rej(event);
+            }
+
+            event.preventDefault();
+
+            res(undefined as ResultType);
+          };
+        } catch (error) {
+          if (throwOnError) {
+            transaction.abort();
+            return rej(event);
+          }
+
+          res(undefined as ResultType);
+        }
+      };
+      getReq.onerror = (event) => {
+        if (throwOnError) {
+          return rej(event);
+        }
+
+        event.preventDefault();
+
+        res(undefined as ResultType);
+      };
+    });
+  }
+
+  async findByIdAndUpdate<ResultType, DocumentType = unknown>(
+    id: SearchKeyRequired,
+    payload: (param: DocumentType) => DocumentType,
+    options: QueryExecutorFindByIdAndUpdateOptions
+  ): Promise<ResultType> {
+    const {
+      storeName,
+      transaction,
+      throwOnError = true,
+      new: returnNewDoc = true,
+    } = options;
+    const objectStore = transaction.objectStore(storeName);
+
+    return new Promise((res, rej) => {
+      const getReq = objectStore.get(id);
+
+      getReq.onsuccess = (event) => {
+        let doc = undefined;
+
+        if (event.target && 'result' in event.target) {
+          doc = event.target.result;
+        }
+
+        if (!doc) {
+          res(doc as ResultType);
+          return;
+        }
+
+        try {
+          const newDoc = payload(doc as DocumentType);
+
+          const putReq = objectStore.put(newDoc);
+
+          putReq.onsuccess = () => {
+            if (returnNewDoc) {
+              res(newDoc as unknown as ResultType);
+            } else {
+              res(doc as ResultType);
+            }
+          };
+
+          putReq.onerror = (event) => {
+            if (throwOnError) {
+              return rej(event);
+            }
+
+            event.preventDefault();
+
+            res(undefined as ResultType);
+          };
+        } catch (error) {
+          if (throwOnError) {
+            transaction.abort();
+            return rej(event);
+          }
+
+          res(undefined as ResultType);
+        }
+      };
+      getReq.onerror = (event) => {
+        if (throwOnError) {
+          return rej(event);
+        }
+
+        event.preventDefault();
+
+        res(undefined as ResultType);
+      };
+    });
   }
 }
