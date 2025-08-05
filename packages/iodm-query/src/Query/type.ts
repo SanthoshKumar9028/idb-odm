@@ -1,10 +1,16 @@
 import type {
   SearchKey,
+  QueryExecutorCommonOptions,
   QueryExecutorInsertOptions,
   QueryExecutorReplaceOneOptions,
   QueryExecutorUpdateManyOptions,
   QueryExecutorUpdateOneOptions,
   QueryExecutorUpdateQuery,
+  QueryExecutorDeleteManyOptions,
+  QueryExecutorDeleteQuery,
+  QueryExecutorDeleteOneOptions,
+  QueryExecutorFindByIdAndDeleteOptions,
+  QueryExecutorFindByIdAndUpdateOptions,
 } from '../QueryExecutor/type';
 import type { Prettify } from '../utils/type';
 
@@ -20,32 +26,40 @@ export type TQueryFindOptions = IQueryOptions;
 
 export type TQueryFindByIdOptions = IQueryOptions;
 
-export type IQueryInsertOneOptions = Prettify<
-  IQueryOptions &
-    Omit<QueryExecutorInsertOptions, 'idb' | 'storeName' | 'transaction'>
+type QueryExecutorCommonKeys = keyof QueryExecutorCommonOptions;
+
+type QueryFunctionOptions<Options> = Prettify<
+  IQueryOptions & Omit<Options, QueryExecutorCommonKeys>
 >;
 
-export type IQueryInsertManyOptions = Prettify<
-  IQueryOptions &
-    Omit<QueryExecutorInsertOptions, 'idb' | 'storeName' | 'transaction'>
->;
+export type QueryInsertOneOptions =
+  QueryFunctionOptions<QueryExecutorInsertOptions>;
 
-export type IQueryReplaceOneOptions = Prettify<
-  IQueryOptions &
-    Omit<QueryExecutorReplaceOneOptions, 'idb' | 'storeName' | 'transaction'>
->;
+export type QueryInsertManyOptions =
+  QueryFunctionOptions<QueryExecutorInsertOptions>;
 
-export type IQueryUpdateManyOptions = Prettify<
-  IQueryOptions &
-    Omit<QueryExecutorUpdateManyOptions, 'idb' | 'storeName' | 'transaction'>
->;
+export type QueryReplaceOneOptions =
+  QueryFunctionOptions<QueryExecutorReplaceOneOptions>;
 
-export type IQueryUpdateOneOptions = Prettify<
-  IQueryOptions &
-    Omit<QueryExecutorUpdateOneOptions, 'idb' | 'storeName' | 'transaction'>
->;
+export type QueryUpdateManyOptions =
+  QueryFunctionOptions<QueryExecutorUpdateManyOptions>;
 
-export type TQueryOptions<DocumentType = unknown> =
+export type QueryUpdateOneOptions =
+  QueryFunctionOptions<QueryExecutorUpdateOneOptions>;
+
+export type QueryDeleteManyOptions =
+  QueryFunctionOptions<QueryExecutorDeleteManyOptions>;
+
+export type QueryDeleteOneOptions =
+  QueryFunctionOptions<QueryExecutorDeleteOneOptions>;
+
+export type QueryFindByIdAndDeleteOptions =
+  QueryFunctionOptions<QueryExecutorFindByIdAndDeleteOptions>;
+
+export type QueryFindByIdAndUpdateOptions =
+  QueryFunctionOptions<QueryExecutorFindByIdAndUpdateOptions>;
+
+export type QueryOptions<DocumentType = unknown> =
   | {
       type: '_find';
       querySelectors: Partial<IQuerySelectors>;
@@ -59,29 +73,50 @@ export type TQueryOptions<DocumentType = unknown> =
   | {
       type: '_insertOne';
       insertList: DocumentType[];
-      execOptions: IQueryInsertOneOptions;
+      execOptions: QueryInsertOneOptions;
     }
   | {
       type: '_insertMany';
       insertList: DocumentType[];
-      execOptions: IQueryInsertManyOptions;
+      execOptions: QueryInsertManyOptions;
     }
   | {
       type: '_replaceOne';
-      payload: DocumentType & { _id: string | number };
-      execOptions: IQueryReplaceOneOptions;
+      payload: DocumentType;
+      execOptions: QueryReplaceOneOptions;
     }
   | {
       type: '_updateMany';
       query: QueryExecutorUpdateQuery;
       payload: (param: DocumentType) => DocumentType;
-      execOptions: IQueryUpdateManyOptions;
+      execOptions: QueryUpdateManyOptions;
     }
   | {
       type: '_updateOne';
       query: QueryExecutorUpdateQuery;
       payload: DocumentType | ((param: DocumentType) => DocumentType);
-      execOptions: IQueryUpdateOneOptions;
+      execOptions: QueryUpdateOneOptions;
+    }
+  | {
+      type: '_deleteMany';
+      query: QueryExecutorDeleteQuery;
+      execOptions: QueryDeleteManyOptions;
+    }
+  | {
+      type: '_deleteOne';
+      query: QueryExecutorDeleteQuery;
+      execOptions: QueryDeleteOneOptions;
+    }
+  | {
+      type: '_findByIdAndDelete';
+      id: IDBValidKey;
+      execOptions: QueryFindByIdAndDeleteOptions;
+    }
+  | {
+      type: '_findByIdAndUpdate';
+      id: IDBValidKey;
+      payload: (param: DocumentType) => DocumentType;
+      execOptions: QueryFindByIdAndUpdateOptions;
     };
 
 export interface IBaseQuery<ResultType, DocumentType = unknown> {
@@ -95,11 +130,11 @@ export interface IBaseQuery<ResultType, DocumentType = unknown> {
   ): IBaseQuery<ResultType>;
   insertOne(
     payload: unknown,
-    options?: IQueryInsertOneOptions
+    options?: QueryInsertOneOptions
   ): IBaseQuery<ResultType>;
   insertMany(
     payload: unknown[],
-    options?: IQueryInsertManyOptions
+    options?: QueryInsertManyOptions
   ): IBaseQuery<ResultType>;
   replaceOne(
     payload: DocumentType,
@@ -114,6 +149,23 @@ export interface IBaseQuery<ResultType, DocumentType = unknown> {
     query: QueryExecutorUpdateQuery,
     payload: DocumentType | ((param: DocumentType) => DocumentType),
     options: QueryExecutorUpdateOneOptions
+  ): IBaseQuery<ResultType>;
+  deleteMany(
+    query: QueryExecutorDeleteQuery,
+    options: QueryDeleteManyOptions
+  ): IBaseQuery<ResultType>;
+  deleteOne(
+    query: QueryExecutorDeleteQuery,
+    options: QueryDeleteOneOptions
+  ): IBaseQuery<ResultType>;
+  findByIdAndDelete(
+    id: IDBValidKey,
+    options: QueryFindByIdAndDeleteOptions
+  ): IBaseQuery<ResultType>;
+  findByIdAndUpdate(
+    id: IDBValidKey,
+    payload: (param: DocumentType) => DocumentType,
+    options: QueryFindByIdAndUpdateOptions
   ): IBaseQuery<ResultType>;
 }
 

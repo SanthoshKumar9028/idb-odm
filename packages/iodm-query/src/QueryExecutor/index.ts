@@ -17,7 +17,6 @@ import type {
   QueryExecutorDeleteOneOptions,
   QueryExecutorFindByIdAndDeleteOptions,
   QueryExecutorFindByIdAndUpdateOptions,
-  SearchKeyRequired,
 } from './type';
 
 export class BaseQueryExecutor {
@@ -121,7 +120,7 @@ export class BaseQueryExecutor {
   }
 
   async replaceOne<ResultType, DocumentType = unknown>(
-    payload: DocumentType & { _id: string | number },
+    payload: DocumentType,
     options: QueryExecutorReplaceOneOptions
   ): Promise<ResultType> {
     const { storeName, transaction } = options;
@@ -251,7 +250,7 @@ export class BaseQueryExecutor {
       matchedCount: 0,
     };
 
-    return new Promise((res, rej) => {
+    return new Promise<ResultType>((res, rej) => {
       const cursorReq = transaction
         .objectStore(storeName)
         .openCursor(query.$key);
@@ -321,7 +320,7 @@ export class BaseQueryExecutor {
   }
 
   async findByIdAndDelete<ResultType>(
-    id: SearchKeyRequired,
+    id: IDBValidKey,
     options: QueryExecutorFindByIdAndDeleteOptions
   ): Promise<ResultType> {
     const { storeName, transaction, throwOnError = true } = options;
@@ -380,7 +379,7 @@ export class BaseQueryExecutor {
   }
 
   async findByIdAndUpdate<ResultType, DocumentType = unknown>(
-    id: SearchKeyRequired,
+    id: IDBValidKey,
     payload: (param: DocumentType) => DocumentType,
     options: QueryExecutorFindByIdAndUpdateOptions
   ): Promise<ResultType> {
@@ -408,7 +407,11 @@ export class BaseQueryExecutor {
         }
 
         try {
-          const newDoc = payload(doc as DocumentType);
+          const updatedDoc = payload(doc as DocumentType);
+
+          const newDoc = objectStore.keyPath
+            ? { ...updatedDoc, [objectStore.keyPath.toString()]: id }
+            : updatedDoc;
 
           const putReq = objectStore.put(newDoc);
 

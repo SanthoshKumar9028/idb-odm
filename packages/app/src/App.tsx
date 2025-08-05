@@ -26,6 +26,8 @@ function App() {
 
       store.add({ _id: '1', title: 'awsome title', content: 'awsome content' });
       store.add({ _id: '2', title: 'awsome title', content: 'awsome content' });
+      store.add({ _id: '3', title: 'awsome title', content: 'awsome content' });
+      store.add({ _id: '4', title: 'awsome title', content: 'awsome content' });
     };
 
     openReq.onsuccess = (ev) => {

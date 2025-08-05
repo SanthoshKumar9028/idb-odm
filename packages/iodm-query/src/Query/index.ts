@@ -1,15 +1,22 @@
 import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
-import type { QueryExecutorUpdateQuery } from '../QueryExecutor/type';
+import type {
+  QueryExecutorDeleteQuery,
+  QueryExecutorUpdateQuery,
+} from '../QueryExecutor/type';
 import type {
   IQuery,
   IQuerySelectors,
-  TQueryOptions,
-  IQueryInsertOneOptions,
-  IQueryInsertManyOptions,
+  QueryOptions,
+  QueryInsertOneOptions,
+  QueryInsertManyOptions,
   TQueryFindByIdOptions,
   TQueryFindOptions,
-  IQueryReplaceOneOptions,
-  IQueryUpdateManyOptions,
+  QueryReplaceOneOptions,
+  QueryUpdateManyOptions,
+  QueryDeleteManyOptions,
+  QueryDeleteOneOptions,
+  QueryFindByIdAndDeleteOptions,
+  QueryFindByIdAndUpdateOptions,
 } from './type';
 
 /**
@@ -27,7 +34,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
 {
   private idb: IDBDatabase;
   private storeName: string;
-  private options?: TQueryOptions<DocumentType>;
+  private options?: QueryOptions<DocumentType>;
 
   /**
    *
@@ -147,7 +154,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @param options Query options
    * @returns
    */
-  insertOne(payload: DocumentType, options: IQueryInsertOneOptions = {}) {
+  insertOne(payload: DocumentType, options: QueryInsertOneOptions = {}) {
     this.options = {
       type: '_insertOne',
       insertList: [payload],
@@ -202,7 +209,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @param options Query options
    * @returns
    */
-  insertMany(payload: DocumentType[], options: IQueryInsertManyOptions = {}) {
+  insertMany(payload: DocumentType[], options: QueryInsertManyOptions = {}) {
     this.options = {
       type: '_insertMany',
       insertList: payload,
@@ -247,10 +254,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @param options Query options
    * @returns
    */
-  replaceOne(
-    payload: DocumentType & { _id: string | number },
-    options: IQueryReplaceOneOptions = {}
-  ) {
+  replaceOne(payload: DocumentType, options: QueryReplaceOneOptions = {}) {
     this.options = {
       type: '_replaceOne',
       payload: payload,
@@ -302,7 +306,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
   updateMany(
     query: QueryExecutorUpdateQuery,
     payload: (param: DocumentType) => DocumentType,
-    options: IQueryUpdateManyOptions = {}
+    options: QueryUpdateManyOptions = {}
   ) {
     this.options = {
       type: '_updateMany',
@@ -354,7 +358,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
   updateOne(
     query: QueryExecutorUpdateQuery,
     payload: DocumentType | ((param: DocumentType) => DocumentType),
-    options: IQueryUpdateManyOptions = {}
+    options: QueryUpdateManyOptions = {}
   ) {
     this.options = {
       type: '_updateOne',
@@ -382,6 +386,208 @@ export class Query<ResultType = unknown, DocumentType = unknown>
       ResultType,
       DocumentType
     >(query, payload, {
+      ...execOptions,
+      idb: this.idb,
+      storeName: this.storeName,
+      transaction,
+    });
+  }
+
+  /**
+   * Deletes all matched documents
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * await query.deleteMany({ $key: key }, options);
+   * ```
+   *
+   * @param query Delete query to match documents
+   * @param options Query options
+   * @returns
+   */
+  deleteMany(
+    query: QueryExecutorDeleteQuery,
+    options: QueryDeleteManyOptions = {}
+  ) {
+    this.options = {
+      type: '_deleteMany',
+      query,
+      execOptions: options,
+    };
+    return this;
+  }
+
+  private async _deleteMany() {
+    if (this.options?.type !== '_deleteMany') {
+      throw new Error('Invalid deleteMany method options');
+    }
+
+    const { query, execOptions } = this.options;
+
+    let transaction = execOptions.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readwrite');
+    }
+
+    return QueryExecutorFactory.getInstance().deleteMany<ResultType>(query, {
+      ...execOptions,
+      idb: this.idb,
+      storeName: this.storeName,
+      transaction,
+    });
+  }
+
+  /**
+   * Based on the query, first matched document will be deleted
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * await query.deleteOne({ $key: key }, options);
+   * ```
+   *
+   * @remarks
+   * This is similar to calling the `deleteMany` with `deleteLimit = 1` option
+   *
+   * @param query Delete query to match documents
+   * @param options Query options
+   * @returns
+   */
+  deleteOne(
+    query: QueryExecutorDeleteQuery,
+    options: QueryDeleteOneOptions = {}
+  ) {
+    this.options = {
+      type: '_deleteOne',
+      query,
+      execOptions: options,
+    };
+    return this;
+  }
+
+  private async _deleteOne() {
+    if (this.options?.type !== '_deleteOne') {
+      throw new Error('Invalid deleteOne method options');
+    }
+
+    const { query, execOptions } = this.options;
+
+    let transaction = execOptions.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readwrite');
+    }
+
+    return QueryExecutorFactory.getInstance().deleteOne<ResultType>(query, {
+      ...execOptions,
+      idb: this.idb,
+      storeName: this.storeName,
+      transaction,
+    });
+  }
+
+  /**
+   * Removes the document with the id and returnes the deleted document. 
+   * if the document is not present `undefined` will be returned
+   * 
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * const deletedDoc = await query.findByIdAndDelete(id, options);
+   * ```
+   * 
+   * @param id Valid search key to find a document
+   * @param options Query options
+   * @returns
+   */
+  findByIdAndDelete(
+    id: IDBValidKey,
+    options: QueryFindByIdAndDeleteOptions = {}
+  ) {
+    this.options = {
+      type: '_findByIdAndDelete',
+      id,
+      execOptions: options,
+    };
+    return this;
+  }
+
+  private async _findByIdAndDelete() {
+    if (this.options?.type !== '_findByIdAndDelete') {
+      throw new Error('Invalid findByIdAndDelete method options');
+    }
+
+    const { id, execOptions } = this.options;
+
+    let transaction = execOptions.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readwrite');
+    }
+
+    return QueryExecutorFactory.getInstance().findByIdAndDelete<ResultType>(
+      id,
+      {
+        ...execOptions,
+        idb: this.idb,
+        storeName: this.storeName,
+        transaction,
+      }
+    );
+  }
+
+  /**
+   * Updates the document with the id and returns the updated document. 
+   * if the document is not present `undefined` will be returned
+   * 
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * const updatedDoc = await query.findByIdAndUpdate(
+   *  id, 
+   *  (oldDoc) => newDoc,
+   *  options
+   * );
+   * ```
+   * 
+   * @param id Valid search key to find a document
+   * @param payload Callback to update the found document
+   * @param options Query options
+   * @returns
+   */
+  findByIdAndUpdate(
+    id: IDBValidKey,
+    payload: (param: DocumentType) => DocumentType,
+    options: QueryFindByIdAndUpdateOptions = {}
+  ) {
+    this.options = {
+      type: '_findByIdAndUpdate',
+      id,
+      payload,
+      execOptions: options,
+    };
+    return this;
+  }
+
+  private async _findByIdAndUpdate() {
+    if (this.options?.type !== '_findByIdAndUpdate') {
+      throw new Error('Invalid findByIdAndUpdate method options');
+    }
+
+    const { id, payload, execOptions } = this.options;
+
+    let transaction = execOptions.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readwrite');
+    }
+
+    return QueryExecutorFactory.getInstance().findByIdAndUpdate<
+      ResultType,
+      DocumentType
+    >(id, payload, {
       ...execOptions,
       idb: this.idb,
       storeName: this.storeName,
