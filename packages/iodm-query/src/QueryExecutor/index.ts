@@ -226,7 +226,7 @@ export class BaseQueryExecutor {
     });
   }
 
-  async updateOne<ResultType, DocumentType>(
+  async updateOne<ResultType, DocumentType = unknown>(
     query: QueryExecutorUpdateQuery,
     payload: DocumentType | ((param: DocumentType) => DocumentType),
     options: QueryExecutorUpdateOneOptions
