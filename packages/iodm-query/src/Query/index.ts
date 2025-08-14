@@ -1,5 +1,6 @@
 import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
 import type {
+  CountDocumentsSearchKey,
   QueryExecutorDeleteQuery,
   QueryExecutorUpdateQuery,
 } from '../QueryExecutor/type';
@@ -17,6 +18,7 @@ import type {
   QueryDeleteOneOptions,
   QueryFindByIdAndDeleteOptions,
   QueryFindByIdAndUpdateOptions,
+  QueryCountDocumentsOptions,
 } from './type';
 
 /**
@@ -489,15 +491,15 @@ export class Query<ResultType = unknown, DocumentType = unknown>
   }
 
   /**
-   * Removes the document with the id and returnes the deleted document. 
+   * Removes the document with the id and returnes the deleted document.
    * if the document is not present `undefined` will be returned
-   * 
+   *
    * @example
    * ```ts
    * const query = new Query(idb, "store-name");
    * const deletedDoc = await query.findByIdAndDelete(id, options);
    * ```
-   * 
+   *
    * @param id Valid search key to find a document
    * @param options Query options
    * @returns
@@ -539,19 +541,19 @@ export class Query<ResultType = unknown, DocumentType = unknown>
   }
 
   /**
-   * Updates the document with the id and returns the updated document. 
+   * Updates the document with the id and returns the updated document.
    * if the document is not present `undefined` will be returned
-   * 
+   *
    * @example
    * ```ts
    * const query = new Query(idb, "store-name");
    * const updatedDoc = await query.findByIdAndUpdate(
-   *  id, 
+   *  id,
    *  (oldDoc) => newDoc,
    *  options
    * );
    * ```
-   * 
+   *
    * @param id Valid search key to find a document
    * @param payload Callback to update the found document
    * @param options Query options
@@ -593,6 +595,42 @@ export class Query<ResultType = unknown, DocumentType = unknown>
       storeName: this.storeName,
       transaction,
     });
+  }
+
+  countDocuments(
+    query?: CountDocumentsSearchKey,
+    options: QueryCountDocumentsOptions = {}
+  ) {
+    this.options = {
+      type: '_countDocuments',
+      query,
+      execOptions: options,
+    };
+    return this;
+  }
+
+  private async _countDocuments() {
+    if (this.options?.type !== '_countDocuments') {
+      throw new Error('Invalid countDocuments method options');
+    }
+
+    const { query, execOptions } = this.options;
+
+    let transaction = execOptions.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readonly');
+    }
+
+    return QueryExecutorFactory.getInstance().countDocuments<ResultType>(
+      query,
+      {
+        ...execOptions,
+        idb: this.idb,
+        storeName: this.storeName,
+        transaction,
+      }
+    );
   }
 
   /**

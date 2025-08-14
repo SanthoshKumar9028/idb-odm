@@ -11,6 +11,8 @@ import type {
   QueryExecutorDeleteOneOptions,
   QueryExecutorFindByIdAndDeleteOptions,
   QueryExecutorFindByIdAndUpdateOptions,
+  QueryExecutorCountDocumentsOptions,
+  CountDocumentsSearchKey,
 } from '../QueryExecutor/type';
 import type { Prettify } from '../utils/type';
 
@@ -58,6 +60,9 @@ export type QueryFindByIdAndDeleteOptions =
 
 export type QueryFindByIdAndUpdateOptions =
   QueryFunctionOptions<QueryExecutorFindByIdAndUpdateOptions>;
+
+export type QueryCountDocumentsOptions =
+  QueryFunctionOptions<QueryExecutorCountDocumentsOptions>;
 
 export type QueryOptions<DocumentType = unknown> =
   | {
@@ -117,6 +122,11 @@ export type QueryOptions<DocumentType = unknown> =
       id: IDBValidKey;
       payload: (param: DocumentType) => DocumentType;
       execOptions: QueryFindByIdAndUpdateOptions;
+    }
+  | {
+      type: '_countDocuments';
+      query: CountDocumentsSearchKey;
+      execOptions: QueryCountDocumentsOptions;
     };
 
 export interface IBaseQuery<ResultType, DocumentType = unknown> {
@@ -166,6 +176,10 @@ export interface IBaseQuery<ResultType, DocumentType = unknown> {
     id: IDBValidKey,
     payload: (param: DocumentType) => DocumentType,
     options: QueryFindByIdAndUpdateOptions
+  ): IBaseQuery<ResultType>;
+  countDocuments(
+    query: CountDocumentsSearchKey,
+    options: QueryCountDocumentsOptions
   ): IBaseQuery<ResultType>;
 }
 

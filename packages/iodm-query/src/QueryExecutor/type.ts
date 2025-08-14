@@ -2,6 +2,8 @@ export type SearchKeyRequired = IDBValidKey | IDBKeyRange;
 
 export type SearchKey = SearchKeyRequired | undefined | null;
 
+export type CountDocumentsSearchKey = Exclude<SearchKey, null>;
+
 export interface QueryExecutorCommonOptions {
   idb: IDBDatabase;
   storeName: string;
@@ -81,3 +83,6 @@ export interface QueryExecutorFindByIdAndUpdateOptions
   extends QueryExecutorCommonOptionsThrownOnError {
   new?: boolean;
 }
+
+export interface QueryExecutorCountDocumentsOptions
+  extends QueryExecutorCommonOptionsThrownOnError {}

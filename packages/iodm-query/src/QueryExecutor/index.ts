@@ -17,6 +17,8 @@ import type {
   QueryExecutorDeleteOneOptions,
   QueryExecutorFindByIdAndDeleteOptions,
   QueryExecutorFindByIdAndUpdateOptions,
+  QueryExecutorCountDocumentsOptions,
+  CountDocumentsSearchKey,
 } from './type';
 
 export class BaseQueryExecutor {
@@ -449,6 +451,30 @@ export class BaseQueryExecutor {
         event.preventDefault();
 
         res(undefined as ResultType);
+      };
+    });
+  }
+
+  async countDocuments<ResultType>(
+    query: CountDocumentsSearchKey,
+    options: QueryExecutorCountDocumentsOptions
+  ) {
+    const { storeName, transaction, throwOnError } = options;
+    const objectStore = transaction.objectStore(storeName);
+
+    return new Promise<ResultType>((res, rej) => {
+      const countReq = objectStore.count(query);
+
+      countReq.onsuccess = function () {
+        res(this.result as ResultType);
+      };
+      countReq.onerror = function (event) {
+        if (throwOnError) {
+          rej(event);
+        } else {
+          event.preventDefault();
+          res(undefined as ResultType);
+        }
       };
     });
   }
