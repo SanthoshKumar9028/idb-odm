@@ -597,6 +597,22 @@ export class Query<ResultType = unknown, DocumentType = unknown>
     });
   }
 
+  /**
+   * Returns the documents count that matches the search query
+   * 
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * const count = await query.countDocuments(
+   *  query,
+   *  options
+   * );
+   * ```
+   * 
+   * @param query Search query
+   * @param options Query options
+   * @returns 
+   */
   countDocuments(
     query?: CountDocumentsSearchKey,
     options: QueryCountDocumentsOptions = {}

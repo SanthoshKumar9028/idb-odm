@@ -17,7 +17,7 @@ import type {
 import type { Prettify } from '../utils/type';
 
 export interface IQuerySelectors {
-  $key: SearchKey;
+  $key?: SearchKey;
 }
 
 export interface IQueryOptions {
