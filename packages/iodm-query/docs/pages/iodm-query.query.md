@@ -76,6 +76,48 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[countDocuments(query, options)](./iodm-query.query.countdocuments.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Returns the documents count that matches the search query
+
+
+</td></tr>
+<tr><td>
+
+[deleteMany(query, options)](./iodm-query.query.deletemany.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Deletes all matched documents
+
+
+</td></tr>
+<tr><td>
+
+[deleteOne(query, options)](./iodm-query.query.deleteone.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Based on the query, first matched document will be deleted
+
+
+</td></tr>
+<tr><td>
+
 [exec()](./iodm-query.query.exec.md)
 
 
@@ -113,6 +155,34 @@ Finds list of item from the IndexedDB
 </td><td>
 
 Finds single item from the IndexedDB
+
+
+</td></tr>
+<tr><td>
+
+[findByIdAndDelete(id, options)](./iodm-query.query.findbyidanddelete.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Removes the document with the id and returnes the deleted document. if the document is not present `undefined` will be returned
+
+
+</td></tr>
+<tr><td>
+
+[findByIdAndUpdate(id, payload, options)](./iodm-query.query.findbyidandupdate.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Updates the document with the id and returns the updated document. if the document is not present `undefined` will be returned
 
 
 </td></tr>

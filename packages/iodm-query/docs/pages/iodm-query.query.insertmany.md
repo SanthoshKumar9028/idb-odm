@@ -9,7 +9,7 @@ Inserts multiple documents into IndexedDB object store
 **Signature:**
 
 ```typescript
-insertMany(payload: DocumentType[], options?: IQueryInsertManyOptions): this;
+insertMany(payload: DocumentType[], options?: QueryInsertManyOptions): this;
 ```
 
 ## Parameters
@@ -53,7 +53,7 @@ options
 
 </td><td>
 
-IQueryInsertManyOptions
+QueryInsertManyOptions
 
 
 </td><td>

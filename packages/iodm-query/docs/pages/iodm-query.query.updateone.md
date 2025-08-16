@@ -9,7 +9,7 @@ Based on the query, first matched document will be updated
 **Signature:**
 
 ```typescript
-updateOne(query: UpdateQuery, payload: DocumentType | ((param: DocumentType) => DocumentType), options?: IQueryUpdateManyOptions): this;
+updateOne(query: QueryExecutorUpdateQuery, payload: DocumentType | ((param: DocumentType) => DocumentType), options?: QueryUpdateManyOptions): this;
 ```
 
 ## Parameters
@@ -37,7 +37,7 @@ query
 
 </td><td>
 
-UpdateQuery
+QueryExecutorUpdateQuery
 
 
 </td><td>
@@ -69,7 +69,7 @@ options
 
 </td><td>
 
-IQueryUpdateManyOptions
+QueryUpdateManyOptions
 
 
 </td><td>
