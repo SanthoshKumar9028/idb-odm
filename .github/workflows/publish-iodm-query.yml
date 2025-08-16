@@ -1,8 +1,9 @@
 name: Publish iodm-query package to npm
 
 on:
-  tags:
-    - 'v*'
+  push:
+    tags:
+      - 'v*'
 
 
 jobs:
