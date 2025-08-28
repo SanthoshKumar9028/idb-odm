@@ -1,8 +1,8 @@
 import { isFunction } from '../utils/type-guards';
+import { evalFilter } from './evals';
 import type {
   QueryExecutorCommonOptions,
   QueryExecutorInsertOptions,
-  SearchKey,
   InsertSuccess,
   InsertError,
   QueryExecutorInsertManyResponse,
@@ -19,29 +19,94 @@ import type {
   QueryExecutorFindByIdAndUpdateOptions,
   QueryExecutorCountDocumentsOptions,
   CountDocumentsSearchKey,
+  QueryRootFilter,
+  QueryExecutorOpenCursorOptions,
 } from './type';
 
 export class BaseQueryExecutor {
+  async openCursor<ResultType>(
+    query: QueryRootFilter,
+    options: QueryExecutorOpenCursorOptions
+  ): Promise<ResultType> {
+    const { storeName, transaction, throwOnError = true } = options;
+
+    return {
+      async *[Symbol.asyncIterator]() {
+        const cursorReq = transaction
+          .objectStore(storeName)
+          .openCursor(query.$key);
+
+        const initReq = () =>
+          new Promise<IDBCursorWithValue | null>((res, rej) => {
+            cursorReq.onsuccess = function () {
+              res(this.result);
+            };
+
+            cursorReq.onerror = function (event) {
+              if (throwOnError) {
+                return rej(event);
+              }
+
+              event.preventDefault();
+              res(null);
+            };
+          });
+
+        let fetchReq = initReq();
+
+        try {
+          while (true) {
+            const cursor = await fetchReq;
+
+            if (cursor && cursor.value) {
+              fetchReq = initReq();
+              cursor.continue();
+
+              if (evalFilter(query, cursor.value)) {
+                yield cursor.value;
+              }
+            } else {
+              break;
+            }
+          }
+        } catch (error) {
+          if (throwOnError) {
+            throw error;
+          }
+
+          return { done: true };
+        }
+      },
+    } as ResultType;
+  }
+
   async find<ResultType>(
-    query: { $key: SearchKey },
+    query: QueryRootFilter,
     options: QueryExecutorCommonOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
       const { storeName, transaction } = options;
 
-      const objectStore = transaction.objectStore(storeName);
+      const result: unknown[] = [];
+      const cursorReq = transaction
+        .objectStore(storeName)
+        .openCursor(query.$key);
 
-      const getReq = objectStore.getAll(query.$key);
+      cursorReq.onsuccess = function () {
+        const cursor = this.result;
 
-      getReq.onsuccess = (event) => {
-        let result = [] as ResultType;
-
-        if (event.target && 'result' in event.target) {
-          result = event.target.result as ResultType;
+        if (!cursor || !cursor.value) {
+          res(result as ResultType);
+          return;
         }
-        res(result);
+
+        if (evalFilter(query, cursor.value)) {
+          result.push(cursor.value);
+        }
+
+        cursor.continue();
       };
-      getReq.onerror = (event) => {
+      cursorReq.onerror = (event) => {
         rej(event);
       };
     });

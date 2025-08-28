@@ -1,12 +1,12 @@
 import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
 import type {
+  QueryRootFilter,
   CountDocumentsSearchKey,
   QueryExecutorDeleteQuery,
   QueryExecutorUpdateQuery,
 } from '../QueryExecutor/type';
 import type {
   IQuery,
-  IQuerySelectors,
   QueryOptions,
   QueryInsertOneOptions,
   QueryInsertManyOptions,
@@ -19,6 +19,7 @@ import type {
   QueryFindByIdAndDeleteOptions,
   QueryFindByIdAndUpdateOptions,
   QueryCountDocumentsOptions,
+  QueryOpenCursorOptions,
 } from './type';
 
 /**
@@ -49,6 +50,52 @@ export class Query<ResultType = unknown, DocumentType = unknown>
   }
 
   /**
+   * Opens a iterable cursor, with the cursor object it's possible to iterate one document after another
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * const itr = await query.openCursor({ $key: "text", value: { $gte: 4 } });
+   *
+   * for await (const doc of itr) {
+   *   console.log(doc);
+   * }
+   * ```
+   *
+   * @param query Search query object
+   * @param options Query options
+   * @returns
+   */
+  openCursor(
+    query: QueryRootFilter = { $key: null },
+    options: QueryOpenCursorOptions = {}
+  ) {
+    this.options = { type: '_openCursor', query, execOptions: options };
+    return this;
+  }
+
+  private _openCursor() {
+    if (this.options?.type !== '_openCursor') {
+      throw new Error('Invalid openCursor method options');
+    }
+
+    const { query, execOptions } = this.options;
+
+    let transaction = execOptions?.transaction;
+
+    if (!transaction) {
+      transaction = this.idb.transaction(this.storeName, 'readonly');
+    }
+
+    return QueryExecutorFactory.getInstance().openCursor<ResultType>(query, {
+      ...execOptions,
+      idb: this.idb,
+      transaction,
+      storeName: this.storeName,
+    });
+  }
+
+  /**
    * Finds list of item from the IndexedDB
    *
    * @example
@@ -57,16 +104,16 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * const data = await query.find({ $key: "text" });
    * ```
    *
-   * @param querySelectors Search query object
+   * @param query Search query object
    * @param options Query options
    *
    * @returns
    */
   find(
-    querySelectors: IQuerySelectors = { $key: null },
+    query: QueryRootFilter = { $key: null },
     options: TQueryFindOptions = {}
   ) {
-    this.options = { type: '_find', querySelectors, execOptions: options };
+    this.options = { type: '_find', query, execOptions: options };
     return this;
   }
 
@@ -75,7 +122,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
       throw new Error('Invalid find method options');
     }
 
-    const { querySelectors, execOptions } = this.options;
+    const { query, execOptions } = this.options;
 
     let transaction = execOptions?.transaction;
 
@@ -83,15 +130,12 @@ export class Query<ResultType = unknown, DocumentType = unknown>
       transaction = this.idb.transaction(this.storeName, 'readonly');
     }
 
-    return QueryExecutorFactory.getInstance().find<ResultType>(
-      { $key: querySelectors.$key },
-      {
-        ...execOptions,
-        idb: this.idb,
-        transaction,
-        storeName: this.storeName,
-      }
-    );
+    return QueryExecutorFactory.getInstance().find<ResultType>(query, {
+      ...execOptions,
+      idb: this.idb,
+      transaction,
+      storeName: this.storeName,
+    });
   }
 
   /**
@@ -110,7 +154,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
   findById(id: IDBValidKey, options: TQueryFindByIdOptions = {}) {
     this.options = {
       type: '_findById',
-      querySelectors: { $key: id },
+      query: { $key: id },
       execOptions: options,
     };
     return this;
@@ -121,11 +165,11 @@ export class Query<ResultType = unknown, DocumentType = unknown>
       throw new Error('Invalid findById method options');
     }
 
-    if (!this.options.querySelectors.$key) {
+    if (!this.options.query.$key) {
       throw new Error('search key is required');
     }
 
-    const { querySelectors, execOptions } = this.options;
+    const { query, execOptions } = this.options;
 
     let transaction = execOptions.transaction;
 
@@ -133,14 +177,11 @@ export class Query<ResultType = unknown, DocumentType = unknown>
       transaction = this.idb.transaction(this.storeName, 'readonly');
     }
 
-    return QueryExecutorFactory.getInstance().findById<ResultType>(
-      querySelectors.$key,
-      {
-        idb: this.idb,
-        transaction: transaction,
-        storeName: this.storeName,
-      }
-    );
+    return QueryExecutorFactory.getInstance().findById<ResultType>(query.$key, {
+      idb: this.idb,
+      transaction: transaction,
+      storeName: this.storeName,
+    });
   }
 
   /**
@@ -599,7 +640,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
 
   /**
    * Returns the documents count that matches the search query
-   * 
+   *
    * @example
    * ```ts
    * const query = new Query(idb, "store-name");
@@ -608,10 +649,10 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    *  options
    * );
    * ```
-   * 
+   *
    * @param query Search query
    * @param options Query options
-   * @returns 
+   * @returns
    */
   countDocuments(
     query?: CountDocumentsSearchKey,

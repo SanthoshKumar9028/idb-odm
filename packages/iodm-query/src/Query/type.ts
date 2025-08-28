@@ -13,26 +13,27 @@ import type {
   QueryExecutorFindByIdAndUpdateOptions,
   QueryExecutorCountDocumentsOptions,
   CountDocumentsSearchKey,
+  QueryRootFilter,
+  QueryExecutorOpenCursorOptions,
 } from '../QueryExecutor/type';
 import type { Prettify } from '../utils/type';
-
-export interface IQuerySelectors {
-  $key?: SearchKey;
-}
 
 export interface IQueryOptions {
   transaction?: IDBTransaction;
 }
-
-export type TQueryFindOptions = IQueryOptions;
-
-export type TQueryFindByIdOptions = IQueryOptions;
 
 type QueryExecutorCommonKeys = keyof QueryExecutorCommonOptions;
 
 type QueryFunctionOptions<Options> = Prettify<
   IQueryOptions & Omit<Options, QueryExecutorCommonKeys>
 >;
+
+export type QueryOpenCursorOptions =
+  QueryFunctionOptions<QueryExecutorOpenCursorOptions>;
+
+export type TQueryFindOptions = IQueryOptions;
+
+export type TQueryFindByIdOptions = IQueryOptions;
 
 export type QueryInsertOneOptions =
   QueryFunctionOptions<QueryExecutorInsertOptions>;
@@ -66,13 +67,18 @@ export type QueryCountDocumentsOptions =
 
 export type QueryOptions<DocumentType = unknown> =
   | {
+      type: '_openCursor';
+      query: QueryRootFilter;
+      execOptions: QueryOpenCursorOptions;
+    }
+  | {
       type: '_find';
-      querySelectors: Partial<IQuerySelectors>;
+      query: Partial<QueryRootFilter>;
       execOptions: TQueryFindOptions;
     }
   | {
       type: '_findById';
-      querySelectors: { $key: IDBValidKey };
+      query: { $key: IDBValidKey };
       execOptions: TQueryFindByIdOptions;
     }
   | {
@@ -130,8 +136,12 @@ export type QueryOptions<DocumentType = unknown> =
     };
 
 export interface IBaseQuery<ResultType, DocumentType = unknown> {
+  openCursor(
+    query: QueryRootFilter,
+    options: QueryOpenCursorOptions
+  ): IBaseQuery<ResultType>;
   find(
-    query: IQuerySelectors,
+    query: QueryRootFilter,
     options?: TQueryFindOptions
   ): IBaseQuery<ResultType>;
   findById(
