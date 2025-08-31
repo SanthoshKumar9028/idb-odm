@@ -30,6 +30,31 @@ describe('Query', () => {
     );
   });
 
+  describe('openCursor', () => {
+    it('should call queryExecutor openCursor method', async () => {
+      (
+        QueryExecutorFactory.getInstance as MockedFunction<any>
+      ).mockImplementation(() => ({ openCursor: () => ({}) }));
+
+      const res = await new Query<any>(mockIdb, 'test').openCursor();
+
+      expect(res).toEqual({});
+    });
+
+    it('should not call idb transaction if transaction options is provided', async () => {
+      (
+        QueryExecutorFactory.getInstance as MockedFunction<any>
+      ).mockImplementation(() => ({ openCursor: () => ({}) }));
+
+      await new Query<any>(mockIdb, 'test').openCursor(
+        {},
+        { transaction: {} as IDBTransaction }
+      );
+
+      expect(mockTransaction).toHaveBeenCalledTimes(0);
+    });
+  });
+
   describe('find', () => {
     it('should call queryExecutor find method', async () => {
       (

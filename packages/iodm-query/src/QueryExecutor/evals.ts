@@ -44,7 +44,7 @@ export const evalSelector = (key: string, selector: QuerySelector, doc: any) => 
 
   if (
     !isEmptyValue(selector['$not']) &&
-    !evalSelector(key, selector['$not'], doc)
+    evalSelector(key, selector['$not'], doc)
   ) {
     return false;
   }

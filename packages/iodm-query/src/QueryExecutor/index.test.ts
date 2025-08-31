@@ -3,46 +3,191 @@ import { BaseQueryExecutor } from '.';
 import {
   QueryExecutorInsertManyResponse,
   QueryExecutorInsertOneResponse,
-  QueryExecutorReplaceOneOptions,
 } from './type';
 
 describe('BaseQueryExecutor', () => {
   const queryExecutor = new BaseQueryExecutor();
 
-  describe('find', () => {
-    const mockGetAll = vi.fn();
+  describe('openCursor', () => {
+    const mockOpenCursor = vi.fn();
+    const testDocs = [
+      { value: 1, status: 'one' },
+      { value: 2, status: 'two' },
+      { value: 3, status: 'three' },
+    ];
+
+    mockOpenCursor.mockImplementation(() => {
+      let i = 0;
+      const event: any = {};
+
+      const reuc = () => {
+        event.result = {
+          value: testDocs[i++],
+          continue() {
+            reuc();
+          },
+        };
+        event.onsuccess({});
+      };
+
+      setTimeout(reuc, 0);
+      return event;
+    });
 
     const transaction: any = {
       objectStore() {
         return {
-          getAll: mockGetAll,
+          openCursor: mockOpenCursor,
         };
       },
     };
+
+    afterEach(() => mockOpenCursor.mockClear());
+
+    const mockIdb: any = {
+      transaction,
+    };
+
+    it('should work with for await of loop', async () => {
+      const itr = await queryExecutor.openCursor<any>(
+        {},
+        {
+          idb: mockIdb,
+          storeName: 'test',
+          transaction,
+        }
+      );
+
+      const openCursorDocs: any[] = [];
+      for await (const doc of itr) {
+        openCursorDocs.push(doc);
+      }
+
+      expect(openCursorDocs).toEqual(testDocs);
+    });
+
+    it('should handle error', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onerror(...params: any[]) {} };
+        setTimeout(() => event.onerror(new Event('error')), 0);
+        return event;
+      });
+
+      const itr = await queryExecutor.openCursor<any>(
+        { $key: '' },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+
+      await expect(() =>
+        itr[Symbol.asyncIterator]().next()
+      ).rejects.toThrowError(Event);
+    });
+  });
+
+  describe('find', () => {
+    const mockOpenCursor = vi.fn();
+    const testDocs = [
+      { value: 1, status: 'one' },
+      { value: 2, status: 'two' },
+      { value: 3, status: 'three' },
+    ];
+
+    mockOpenCursor.mockImplementation(() => {
+      let i = 0;
+      const event: any = {};
+
+      const reuc = () => {
+        event.result = {
+          value: testDocs[i++],
+          continue() {
+            reuc();
+          },
+        };
+        event.onsuccess({});
+      };
+
+      setTimeout(reuc, 0);
+      return event;
+    });
+
+    const transaction: any = {
+      objectStore() {
+        return {
+          openCursor: mockOpenCursor,
+        };
+      },
+    };
+
+    afterEach(() => mockOpenCursor.mockClear());
 
     const mockIdb: any = {
       transaction,
     };
 
     it('should return array', async () => {
-      mockGetAll.mockImplementationOnce(() => {
-        const event = { onsuccess(...params: any[]) {} };
-        setTimeout(
-          () => event.onsuccess({ target: { result: [{ one: 1 }] } }),
-          0
-        );
-        return event;
-      });
-
       const data = await queryExecutor.find(
         { $key: '' },
         { idb: mockIdb, storeName: 'test', transaction }
       );
-      expect(data).toEqual([{ one: 1 }]);
+      expect(data).toEqual(testDocs);
+    });
+
+    it('should work with $and operator', async () => {
+      const data = await queryExecutor.find(
+        { $and: [{ value: { $gte: 2 } }, { value: { $lte: 2 } }] },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+      expect(data).toEqual([{ value: 2, status: 'two' }]);
+    });
+
+    it('should work with $or operator', async () => {
+      const data = await queryExecutor.find(
+        { $or: [{ value: 1 }, { value: { $eq: 2 } }] },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+      expect(data).toEqual([
+        { value: 1, status: 'one' },
+        { value: 2, status: 'two' },
+      ]);
+    });
+
+    it('should work with equality operator', async () => {
+      const data = await queryExecutor.find(
+        { value: { $eq: 1, $nq: 2 } },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+      expect(data).toEqual([{ value: 1, status: 'one' }]);
+    });
+
+    it('should work with logical operator', async () => {
+      const data = await queryExecutor.find(
+        { value: { $gt: 1, $gte: 1, $lt: 3, $lte: 3 } },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+      expect(data).toEqual([{ value: 2, status: 'two' }]);
+    });
+
+    it('should work with regular expression', async () => {
+      const data = await queryExecutor.find(
+        { status: /two/i },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+      expect(data).toEqual([{ value: 2, status: 'two' }]);
+    });
+
+    it('should work with $not operator', async () => {
+      const data = await queryExecutor.find(
+        { value: { $not: { $eq: 2 } } },
+        { idb: mockIdb, storeName: 'test', transaction }
+      );
+      expect(data).toEqual([
+        { value: 1, status: 'one' },
+        { value: 3, status: 'three' },
+      ]);
     });
 
     it('should handle error', async () => {
-      mockGetAll.mockImplementationOnce(() => {
+      mockOpenCursor.mockImplementationOnce(() => {
         const event = { onerror(...params: any[]) {} };
         setTimeout(() => event.onerror(new Event('error')), 0);
         return event;
@@ -612,7 +757,7 @@ describe('BaseQueryExecutor', () => {
         transaction,
       });
 
-      expect(docPromise).rejects.toThrowError();
+      await expect(docPromise).rejects.toThrowError();
       expect(mockGet).toHaveBeenCalledTimes(1);
       expect(mockDelete).toHaveBeenCalledTimes(0);
     });
@@ -723,7 +868,7 @@ describe('BaseQueryExecutor', () => {
         }
       );
 
-      expect(updatePromise).rejects.toThrowError();
+      await expect(updatePromise).rejects.toThrowError();
       expect(mockGet).toHaveBeenCalledTimes(1);
       expect(mockPut).toHaveBeenCalledTimes(0);
     });
@@ -813,7 +958,7 @@ describe('BaseQueryExecutor', () => {
         throwOnError: true,
       });
 
-      expect(countPromise).rejects.toThrowError();
+      await expect(countPromise).rejects.toThrowError();
       expect(mockCount).toHaveBeenCalledTimes(1);
     });
   });
