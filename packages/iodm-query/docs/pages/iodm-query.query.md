@@ -4,7 +4,7 @@
 
 ## Query class
 
-> This API is provided as an alpha preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
+> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
 Query builder for IndexedDB
@@ -53,7 +53,237 @@ Description
 
 </td><td>
 
-**_(ALPHA)_** Constructs a new instance of the `Query` class
+**_(BETA)_** Constructs a new instance of the `Query` class
+
+
+</td></tr>
+</tbody></table>
+
+## Methods
+
+<table><thead><tr><th>
+
+Method
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[countDocuments(query, options)](./iodm-query.query.countdocuments.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Returns the documents count that matches the search query
+
+
+</td></tr>
+<tr><td>
+
+[deleteMany(query, options)](./iodm-query.query.deletemany.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Deletes all matched documents
+
+
+</td></tr>
+<tr><td>
+
+[deleteOne(query, options)](./iodm-query.query.deleteone.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Based on the query, first matched document will be deleted
+
+
+</td></tr>
+<tr><td>
+
+[exec()](./iodm-query.query.exec.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Executes the query with accumulated options
+
+
+</td></tr>
+<tr><td>
+
+[find(query, options)](./iodm-query.query.find.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Finds list of item from the IndexedDB
+
+
+</td></tr>
+<tr><td>
+
+[findById(id, options)](./iodm-query.query.findbyid.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Finds single item from the IndexedDB
+
+
+</td></tr>
+<tr><td>
+
+[findByIdAndDelete(id, options)](./iodm-query.query.findbyidanddelete.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Removes the document with the id and returnes the deleted document. if the document is not present `undefined` will be returned
+
+
+</td></tr>
+<tr><td>
+
+[findByIdAndUpdate(id, payload, options)](./iodm-query.query.findbyidandupdate.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Updates the document with the id and returns the updated document. if the document is not present `undefined` will be returned
+
+
+</td></tr>
+<tr><td>
+
+[insertMany(payload, options)](./iodm-query.query.insertmany.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Inserts multiple documents into IndexedDB object store
+
+
+</td></tr>
+<tr><td>
+
+[insertOne(payload, options)](./iodm-query.query.insertone.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Inserts a single Document into IndexedDB object store
+
+
+</td></tr>
+<tr><td>
+
+[openCursor(query, options)](./iodm-query.query.opencursor.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Opens a iterable cursor, with the cursor object it's possible to iterate one document after another
+
+
+</td></tr>
+<tr><td>
+
+[replaceOne(payload, options)](./iodm-query.query.replaceone.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** To replace existing document with new document, if key is not present new document will be inserted
+
+
+</td></tr>
+<tr><td>
+
+[then(onFulfilled, onRejected)](./iodm-query.query.then.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
+
+[updateMany(query, payload, options)](./iodm-query.query.updatemany.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Based on the query, matched documents will be updated
+
+
+</td></tr>
+<tr><td>
+
+[updateOne(query, payload, options)](./iodm-query.query.updateone.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Based on the query, first matched document will be updated
 
 
 </td></tr>

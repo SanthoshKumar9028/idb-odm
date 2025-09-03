@@ -32,7 +32,7 @@ import type {
  * const item = await query.findById(id);
  * ```
  * 
- * @alpha
+ * @beta
  */
 export class Query<ResultType = unknown, DocumentType = unknown>
   implements IQuery<ResultType, DocumentType>

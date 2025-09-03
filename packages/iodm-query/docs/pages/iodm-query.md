@@ -19,12 +19,30 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[BaseQueryExecutor](./iodm-query.basequeryexecutor.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [Query](./iodm-query.query.md)
 
 
 </td><td>
 
-**_(ALPHA)_** Query builder for IndexedDB
+**_(BETA)_** Query builder for IndexedDB
+
+
+</td></tr>
+<tr><td>
+
+[QueryExecutorFactory](./iodm-query.queryexecutorfactory.md)
+
+
+</td><td>
 
 
 </td></tr>
