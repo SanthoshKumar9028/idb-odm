@@ -18,22 +18,22 @@ import type {
 } from '../QueryExecutor/type';
 import type { Prettify } from '../utils/type';
 
-export interface IQueryOptions {
+interface QueryOptionsWithTransaction {
   transaction?: IDBTransaction;
 }
 
 type QueryExecutorCommonKeys = keyof QueryExecutorCommonOptions;
 
 type QueryFunctionOptions<Options> = Prettify<
-  IQueryOptions & Omit<Options, QueryExecutorCommonKeys>
+  QueryOptionsWithTransaction & Omit<Options, QueryExecutorCommonKeys>
 >;
 
 export type QueryOpenCursorOptions =
   QueryFunctionOptions<QueryExecutorOpenCursorOptions>;
 
-export type TQueryFindOptions = IQueryOptions;
+export type QueryFindOptions = QueryOptionsWithTransaction;
 
-export type TQueryFindByIdOptions = IQueryOptions;
+export type QueryFindByIdOptions = QueryOptionsWithTransaction;
 
 export type QueryInsertOneOptions =
   QueryFunctionOptions<QueryExecutorInsertOptions>;
@@ -74,12 +74,12 @@ export type QueryOptions<DocumentType = unknown> =
   | {
       type: '_find';
       query: Partial<QueryRootFilter>;
-      execOptions: TQueryFindOptions;
+      execOptions: QueryFindOptions;
     }
   | {
       type: '_findById';
       query: { $key: IDBValidKey };
-      execOptions: TQueryFindByIdOptions;
+      execOptions: QueryFindByIdOptions;
     }
   | {
       type: '_insertOne';
@@ -142,11 +142,11 @@ export interface IBaseQuery<ResultType, DocumentType = unknown> {
   ): IBaseQuery<ResultType>;
   find(
     query: QueryRootFilter,
-    options?: TQueryFindOptions
+    options?: QueryFindOptions
   ): IBaseQuery<ResultType>;
   findById(
     id: SearchKey,
-    options?: TQueryFindByIdOptions
+    options?: QueryFindByIdOptions
   ): IBaseQuery<ResultType>;
   insertOne(
     payload: unknown,
@@ -193,10 +193,10 @@ export interface IBaseQuery<ResultType, DocumentType = unknown> {
   ): IBaseQuery<ResultType>;
 }
 
-export type TQueryKeys = keyof IBaseQuery<unknown> & {};
+export type QueryKeys = keyof IBaseQuery<unknown> & {};
 
-export type TQueryInternalKeys = keyof {
-  [K in TQueryKeys as `_${K}`]: unknown;
+export type QueryInternalKeys = keyof {
+  [K in QueryKeys as `_${K}`]: unknown;
 };
 
 export interface IQuery<ResultType, DocumentType>

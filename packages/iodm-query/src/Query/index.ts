@@ -10,8 +10,8 @@ import type {
   QueryOptions,
   QueryInsertOneOptions,
   QueryInsertManyOptions,
-  TQueryFindByIdOptions,
-  TQueryFindOptions,
+  QueryFindByIdOptions,
+  QueryFindOptions,
   QueryReplaceOneOptions,
   QueryUpdateManyOptions,
   QueryDeleteManyOptions,
@@ -31,6 +31,8 @@ import type {
  * const list = await query.find({ $key: "text" });
  * const item = await query.findById(id);
  * ```
+ * 
+ * @alpha
  */
 export class Query<ResultType = unknown, DocumentType = unknown>
   implements IQuery<ResultType, DocumentType>
@@ -41,8 +43,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
 
   /**
    *
-   * @param idb Instance of the IndexedDB database
-   * @param storeName Query operations will be performed on store object that having this store name
+   * @param idb - Instance of the IndexedDB database
+   * @param storeName - Query operations will be performed on store object that having this store name
    */
   constructor(idb: IDBDatabase, storeName: string) {
     this.idb = idb;
@@ -62,8 +64,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * }
    * ```
    *
-   * @param query Search query object
-   * @param options Query options
+   * @param query - Search query object
+   * @param options - Query options
    * @returns
    */
   openCursor(
@@ -104,14 +106,14 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * const data = await query.find({ $key: "text" });
    * ```
    *
-   * @param query Search query object
-   * @param options Query options
+   * @param query - Search query object
+   * @param options - Query options
    *
    * @returns
    */
   find(
     query: QueryRootFilter = { $key: null },
-    options: TQueryFindOptions = {}
+    options: QueryFindOptions = {}
   ) {
     this.options = { type: '_find', query, execOptions: options };
     return this;
@@ -147,11 +149,11 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * const item = await query.findById("id");
    * ```
    *
-   * @param id Search id
-   * @param options Query options
+   * @param id - Search id
+   * @param options - Query options
    * @returns
    */
-  findById(id: IDBValidKey, options: TQueryFindByIdOptions = {}) {
+  findById(id: IDBValidKey, options: QueryFindByIdOptions = {}) {
     this.options = {
       type: '_findById',
       query: { $key: id },
@@ -193,8 +195,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * await query.insertOne(document, options);
    * ```
    *
-   * @param payload Document to insert
-   * @param options Query options
+   * @param payload - Document to insert
+   * @param options - Query options
    * @returns
    */
   insertOne(payload: DocumentType, options: QueryInsertOneOptions = {}) {
@@ -248,8 +250,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * by default when error is thrown during a document insert the entire transaction will not be aborted.
    * This behavior can be changed using the throwOnError option
    *
-   * @param payload Array of documents
-   * @param options Query options
+   * @param payload - Array of documents
+   * @param options - Query options
    * @returns
    */
   insertMany(payload: DocumentType[], options: QueryInsertManyOptions = {}) {
@@ -293,8 +295,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * await query.replaceOne({ $key: key }, newDoc, options);
    * ```
    *
-   * @param payload Document object to override
-   * @param options Query options
+   * @param payload - Document object to override
+   * @param options - Query options
    * @returns
    */
   replaceOne(payload: DocumentType, options: QueryReplaceOneOptions = {}) {
@@ -341,9 +343,9 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * await query.updateMany({ $key: keyRange }, newDoc, options);
    * ```
    *
-   * @param query Update query to find match
-   * @param payload Callback to update the found document
-   * @param options Query options
+   * @param query - Update query to find match
+   * @param payload - Callback to update the found document
+   * @param options - Query options
    * @returns
    */
   updateMany(
@@ -393,9 +395,9 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * await query.updateOne({ $key: key }, newDoc, options);
    * ```
    *
-   * @param query Update query to find match
-   * @param payload New document or Callback to update the found document
-   * @param options Query options
+   * @param query - Update query to find match
+   * @param payload - New document or Callback to update the found document
+   * @param options - Query options
    * @returns
    */
   updateOne(
@@ -445,8 +447,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * await query.deleteMany({ $key: key }, options);
    * ```
    *
-   * @param query Delete query to match documents
-   * @param options Query options
+   * @param query - Delete query to match documents
+   * @param options - Query options
    * @returns
    */
   deleteMany(
@@ -494,8 +496,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @remarks
    * This is similar to calling the `deleteMany` with `deleteLimit = 1` option
    *
-   * @param query Delete query to match documents
-   * @param options Query options
+   * @param query - Delete query to match documents
+   * @param options - Query options
    * @returns
    */
   deleteOne(
@@ -541,8 +543,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * const deletedDoc = await query.findByIdAndDelete(id, options);
    * ```
    *
-   * @param id Valid search key to find a document
-   * @param options Query options
+   * @param id - Valid search key to find a document
+   * @param options - Query options
    * @returns
    */
   findByIdAndDelete(
@@ -595,9 +597,9 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * );
    * ```
    *
-   * @param id Valid search key to find a document
-   * @param payload Callback to update the found document
-   * @param options Query options
+   * @param id - Valid search key to find a document
+   * @param payload - Callback to update the found document
+   * @param options - Query options
    * @returns
    */
   findByIdAndUpdate(
@@ -650,8 +652,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * );
    * ```
    *
-   * @param query Search query
-   * @param options Query options
+   * @param query - Search query
+   * @param options - Query options
    * @returns
    */
   countDocuments(

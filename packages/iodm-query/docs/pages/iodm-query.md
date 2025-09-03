@@ -24,7 +24,7 @@ Description
 
 </td><td>
 
-Query builder for IndexedDB
+**_(ALPHA)_** Query builder for IndexedDB
 
 
 </td></tr>
@@ -78,7 +78,7 @@ Description
 </td></tr>
 <tr><td>
 
-[TQueryInternalKeys](./iodm-query.tqueryinternalkeys.md)
+[QueryCountDocumentsOptions](./iodm-query.querycountdocumentsoptions.md)
 
 
 </td><td>
@@ -87,7 +87,124 @@ Description
 </td></tr>
 <tr><td>
 
-[TQueryKeys](./iodm-query.tquerykeys.md)
+[QueryDeleteManyOptions](./iodm-query.querydeletemanyoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryDeleteOneOptions](./iodm-query.querydeleteoneoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryFindByIdAndDeleteOptions](./iodm-query.queryfindbyidanddeleteoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryFindByIdAndUpdateOptions](./iodm-query.queryfindbyidandupdateoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryFindByIdOptions](./iodm-query.queryfindbyidoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryFindOptions](./iodm-query.queryfindoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryInsertManyOptions](./iodm-query.queryinsertmanyoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryInsertOneOptions](./iodm-query.queryinsertoneoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryInternalKeys](./iodm-query.queryinternalkeys.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryKeys](./iodm-query.querykeys.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryOpenCursorOptions](./iodm-query.queryopencursoroptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryOptions](./iodm-query.queryoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryReplaceOneOptions](./iodm-query.queryreplaceoneoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryUpdateManyOptions](./iodm-query.queryupdatemanyoptions.md)
 
 
 </td><td>
