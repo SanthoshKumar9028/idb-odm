@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-deleteMany<ResultType>(query: QueryExecutorDeleteQuery, options: QueryExecutorDeleteManyOptions): Promise<ResultType>;
+deleteMany<ResultType>(query: QueryRootFilter, options: QueryExecutorDeleteManyOptions): Promise<ResultType>;
 ```
 
 ## Parameters
@@ -35,7 +35,7 @@ query
 
 </td><td>
 
-QueryExecutorDeleteQuery
+[QueryRootFilter](./iodm-query.queryrootfilter.md)
 
 
 </td><td>

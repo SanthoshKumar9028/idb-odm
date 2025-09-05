@@ -12,7 +12,7 @@ Based on the query, first matched document will be updated
 **Signature:**
 
 ```typescript
-updateOne(query: QueryExecutorUpdateQuery, payload: DocumentType | ((param: DocumentType) => DocumentType), options?: QueryUpdateManyOptions): this;
+updateOne(query: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<DocumentType>, options?: QueryUpdateManyOptions): this;
 ```
 
 ## Parameters
@@ -40,7 +40,7 @@ query
 
 </td><td>
 
-QueryExecutorUpdateQuery
+[QueryRootFilter](./iodm-query.queryrootfilter.md)
 
 
 </td><td>
@@ -56,7 +56,7 @@ payload
 
 </td><td>
 
-DocumentType \| ((param: DocumentType) =&gt; DocumentType)
+QueryExecutorUpdateManyUpdater&lt;DocumentType&gt;
 
 
 </td><td>

@@ -12,7 +12,7 @@ Deletes all matched documents
 **Signature:**
 
 ```typescript
-deleteMany(query: QueryExecutorDeleteQuery, options?: QueryDeleteManyOptions): this;
+deleteMany(query: QueryRootFilter, options?: QueryDeleteManyOptions): this;
 ```
 
 ## Parameters
@@ -40,7 +40,7 @@ query
 
 </td><td>
 
-QueryExecutorDeleteQuery
+[QueryRootFilter](./iodm-query.queryrootfilter.md)
 
 
 </td><td>

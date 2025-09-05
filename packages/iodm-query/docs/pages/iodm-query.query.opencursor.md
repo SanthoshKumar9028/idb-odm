@@ -40,7 +40,7 @@ query
 
 </td><td>
 
-QueryRootFilter
+[QueryRootFilter](./iodm-query.queryrootfilter.md)
 
 
 </td><td>

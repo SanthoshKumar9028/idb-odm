@@ -7,5 +7,5 @@
 **Signature:**
 
 ```typescript
-export type QueryKeys = keyof IBaseQuery<unknown> & {};
+export type QueryKeys = keyof IBaseQuery<unknown, unknown> & {};
 ```

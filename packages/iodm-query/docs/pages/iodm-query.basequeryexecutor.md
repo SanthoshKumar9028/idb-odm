@@ -162,7 +162,7 @@ Description
 </td></tr>
 <tr><td>
 
-[updateMany(query, payload, options)](./iodm-query.basequeryexecutor.updatemany.md)
+[updateMany(query, updater, options)](./iodm-query.basequeryexecutor.updatemany.md)
 
 
 </td><td>
@@ -174,7 +174,7 @@ Description
 </td></tr>
 <tr><td>
 
-[updateOne(query, payload, options)](./iodm-query.basequeryexecutor.updateone.md)
+[updateOne(query, updater, options)](./iodm-query.basequeryexecutor.updateone.md)
 
 
 </td><td>

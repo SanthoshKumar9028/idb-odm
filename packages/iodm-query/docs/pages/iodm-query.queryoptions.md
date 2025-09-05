@@ -35,21 +35,21 @@ export type QueryOptions<DocumentType = unknown> = {
     execOptions: QueryReplaceOneOptions;
 } | {
     type: '_updateMany';
-    query: QueryExecutorUpdateQuery;
-    payload: (param: DocumentType) => DocumentType;
+    query: QueryRootFilter;
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>;
     execOptions: QueryUpdateManyOptions;
 } | {
     type: '_updateOne';
-    query: QueryExecutorUpdateQuery;
-    payload: DocumentType | ((param: DocumentType) => DocumentType);
+    query: QueryRootFilter;
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>;
     execOptions: QueryUpdateOneOptions;
 } | {
     type: '_deleteMany';
-    query: QueryExecutorDeleteQuery;
+    query: QueryRootFilter;
     execOptions: QueryDeleteManyOptions;
 } | {
     type: '_deleteOne';
-    query: QueryExecutorDeleteQuery;
+    query: QueryRootFilter;
     execOptions: QueryDeleteOneOptions;
 } | {
     type: '_findByIdAndDelete';
@@ -66,5 +66,5 @@ export type QueryOptions<DocumentType = unknown> = {
     execOptions: QueryCountDocumentsOptions;
 };
 ```
-**References:** [QueryOpenCursorOptions](./iodm-query.queryopencursoroptions.md)<!-- -->, [QueryFindOptions](./iodm-query.queryfindoptions.md)<!-- -->, [QueryFindByIdOptions](./iodm-query.queryfindbyidoptions.md)<!-- -->, [QueryInsertOneOptions](./iodm-query.queryinsertoneoptions.md)<!-- -->, [QueryInsertManyOptions](./iodm-query.queryinsertmanyoptions.md)<!-- -->, [QueryReplaceOneOptions](./iodm-query.queryreplaceoneoptions.md)<!-- -->, [QueryUpdateManyOptions](./iodm-query.queryupdatemanyoptions.md)<!-- -->, [QueryDeleteManyOptions](./iodm-query.querydeletemanyoptions.md)<!-- -->, [QueryDeleteOneOptions](./iodm-query.querydeleteoneoptions.md)<!-- -->, [QueryFindByIdAndDeleteOptions](./iodm-query.queryfindbyidanddeleteoptions.md)<!-- -->, [QueryFindByIdAndUpdateOptions](./iodm-query.queryfindbyidandupdateoptions.md)<!-- -->, [QueryCountDocumentsOptions](./iodm-query.querycountdocumentsoptions.md)
+**References:** [QueryRootFilter](./iodm-query.queryrootfilter.md)<!-- -->, [QueryOpenCursorOptions](./iodm-query.queryopencursoroptions.md)<!-- -->, [QueryFindOptions](./iodm-query.queryfindoptions.md)<!-- -->, [QueryFindByIdOptions](./iodm-query.queryfindbyidoptions.md)<!-- -->, [QueryInsertOneOptions](./iodm-query.queryinsertoneoptions.md)<!-- -->, [QueryInsertManyOptions](./iodm-query.queryinsertmanyoptions.md)<!-- -->, [QueryReplaceOneOptions](./iodm-query.queryreplaceoneoptions.md)<!-- -->, [QueryUpdateManyOptions](./iodm-query.queryupdatemanyoptions.md)<!-- -->, [QueryDeleteManyOptions](./iodm-query.querydeletemanyoptions.md)<!-- -->, [QueryDeleteOneOptions](./iodm-query.querydeleteoneoptions.md)<!-- -->, [QueryFindByIdAndDeleteOptions](./iodm-query.queryfindbyidanddeleteoptions.md)<!-- -->, [QueryFindByIdAndUpdateOptions](./iodm-query.queryfindbyidandupdateoptions.md)<!-- -->, [QueryCountDocumentsOptions](./iodm-query.querycountdocumentsoptions.md)
 

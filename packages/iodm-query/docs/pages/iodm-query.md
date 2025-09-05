@@ -70,6 +70,33 @@ Description
 
 
 </td></tr>
+<tr><td>
+
+[QueryFilter](./iodm-query.queryfilter.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryRootSelector](./iodm-query.queryrootselector.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QuerySelector](./iodm-query.queryselector.md)
+
+
+</td><td>
+
+
+</td></tr>
 </tbody></table>
 
 ## Type Aliases
@@ -214,6 +241,15 @@ Description
 <tr><td>
 
 [QueryReplaceOneOptions](./iodm-query.queryreplaceoneoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[QueryRootFilter](./iodm-query.queryrootfilter.md)
 
 
 </td><td>

@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-updateOne<ResultType, DocumentType = unknown>(query: QueryExecutorUpdateQuery, payload: DocumentType | ((param: DocumentType) => DocumentType), options: QueryExecutorUpdateOneOptions): Promise<ResultType>;
+updateOne<ResultType, DocumentType = unknown>(query: QueryRootFilter, updater: QueryExecutorUpdateManyUpdater<DocumentType>, options: QueryExecutorUpdateOneOptions): Promise<ResultType>;
 ```
 
 ## Parameters
@@ -35,7 +35,7 @@ query
 
 </td><td>
 
-QueryExecutorUpdateQuery
+[QueryRootFilter](./iodm-query.queryrootfilter.md)
 
 
 </td><td>
@@ -44,12 +44,12 @@ QueryExecutorUpdateQuery
 </td></tr>
 <tr><td>
 
-payload
+updater
 
 
 </td><td>
 
-DocumentType \| ((param: DocumentType) =&gt; DocumentType)
+QueryExecutorUpdateManyUpdater&lt;DocumentType&gt;
 
 
 </td><td>

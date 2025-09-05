@@ -12,7 +12,7 @@ Based on the query, first matched document will be deleted
 **Signature:**
 
 ```typescript
-deleteOne(query: QueryExecutorDeleteQuery, options?: QueryDeleteOneOptions): this;
+deleteOne(query: QueryRootFilter, options?: QueryDeleteOneOptions): this;
 ```
 
 ## Parameters
@@ -40,7 +40,7 @@ query
 
 </td><td>
 
-QueryExecutorDeleteQuery
+[QueryRootFilter](./iodm-query.queryrootfilter.md)
 
 
 </td><td>
