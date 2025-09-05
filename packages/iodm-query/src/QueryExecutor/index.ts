@@ -1,5 +1,5 @@
 import { isFunction } from '../utils/type-guards';
-import { evalFilter } from './evals';
+import { applyUpdates, evalFilter } from './evals';
 import type {
   QueryExecutorCommonOptions,
   QueryExecutorInsertOptions,
@@ -9,9 +9,7 @@ import type {
   QueryExecutorReplaceOneOptions,
   QueryExecutorUpdateManyOptions,
   QueryExecutorUpdateOneOptions,
-  QueryExecutorUpdateQuery,
   QueryExecutorUpdateManyResponse,
-  QueryExecutorDeleteQuery,
   QueryExecutorDeleteManyOptions,
   QueryExecutorDeleteManyResponse,
   QueryExecutorDeleteOneOptions,
@@ -21,6 +19,7 @@ import type {
   CountDocumentsSearchKey,
   QueryRootFilter,
   QueryExecutorOpenCursorOptions,
+  QueryExecutorUpdateManyUpdater,
 } from './type';
 
 export class BaseQueryExecutor {
@@ -216,8 +215,8 @@ export class BaseQueryExecutor {
   }
 
   async updateMany<ResultType, DocumentType = unknown>(
-    query: QueryExecutorUpdateQuery,
-    payload: (param: DocumentType) => DocumentType,
+    query: QueryRootFilter,
+    updater: QueryExecutorUpdateManyUpdater<DocumentType>,
     options: QueryExecutorUpdateManyOptions
   ): Promise<ResultType> {
     const { storeName, transaction, updateLimit, throwOnError } = options;
@@ -244,10 +243,17 @@ export class BaseQueryExecutor {
 
         const cursor = event.target.result as IDBCursorWithValue;
 
+        if (!evalFilter(query, cursor.value)) {
+          cursor.continue();
+          return;
+        }
+
         ++updateRes.matchedCount;
 
         try {
-          const newDoc = payload(cursor.value);
+          const newDoc = isFunction(updater)
+            ? updater(cursor.value)
+            : applyUpdates(cursor.value, updater);
 
           const updateReq = cursor.update(newDoc);
 
@@ -292,22 +298,18 @@ export class BaseQueryExecutor {
   }
 
   async updateOne<ResultType, DocumentType = unknown>(
-    query: QueryExecutorUpdateQuery,
-    payload: DocumentType | ((param: DocumentType) => DocumentType),
+    query: QueryRootFilter,
+    updater: QueryExecutorUpdateManyUpdater<DocumentType>,
     options: QueryExecutorUpdateOneOptions
   ): Promise<ResultType> {
-    return this.updateMany(
-      query,
-      isFunction(payload) ? payload : () => payload,
-      {
-        ...options,
-        updateLimit: 1,
-      }
-    );
+    return this.updateMany(query, updater, {
+      ...options,
+      updateLimit: 1,
+    });
   }
 
   async deleteMany<ResultType>(
-    query: QueryExecutorDeleteQuery,
+    query: QueryRootFilter,
     options: QueryExecutorDeleteManyOptions
   ) {
     const { storeName, transaction, deleteLimit, throwOnError } = options;
@@ -333,6 +335,11 @@ export class BaseQueryExecutor {
         }
 
         const cursor = event.target.result as IDBCursorWithValue;
+
+        if (!evalFilter(query, cursor.value)) {
+          cursor.continue();
+          return;
+        }
 
         ++deleteRes.matchedCount;
 
@@ -380,7 +387,7 @@ export class BaseQueryExecutor {
   }
 
   async deleteOne<ResultType>(
-    query: QueryExecutorDeleteQuery,
+    query: QueryRootFilter,
     options: QueryExecutorDeleteOneOptions
   ) {
     return this.deleteMany<ResultType>(query, { ...options, deleteLimit: 1 });

@@ -80,9 +80,16 @@ export interface QueryExecutorReplaceOneOptions
   objectStore?: IDBObjectStore;
 }
 
-export interface QueryExecutorUpdateQuery {
-  $key?: SearchKey;
+export interface UpdaterOptions {
+  $set?: Record<string, any>;
+  $unset?: Record<string, ''>;
+  $push?: Record<string, any>;
+  $pop?: Record<string, 1 | -1>;
 }
+
+export type QueryExecutorUpdateManyUpdater<DocumentType> =
+  | UpdaterOptions
+  | ((param: DocumentType) => DocumentType);
 
 export interface QueryExecutorUpdateManyOptions
   extends QueryExecutorCommonOptionsThrownOnError {
@@ -96,8 +103,6 @@ export interface QueryExecutorUpdateManyResponse {
 
 export interface QueryExecutorUpdateOneOptions
   extends QueryExecutorCommonOptionsThrownOnError {}
-
-export interface QueryExecutorDeleteQuery extends QueryExecutorUpdateQuery {}
 
 export interface QueryExecutorDeleteManyOptions
   extends QueryExecutorCommonOptionsThrownOnError {

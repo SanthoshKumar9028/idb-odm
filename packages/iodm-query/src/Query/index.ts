@@ -2,8 +2,7 @@ import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
 import type {
   QueryRootFilter,
   CountDocumentsSearchKey,
-  QueryExecutorDeleteQuery,
-  QueryExecutorUpdateQuery,
+  QueryExecutorUpdateManyUpdater,
 } from '../QueryExecutor/type';
 import type {
   IQuery,
@@ -31,7 +30,7 @@ import type {
  * const list = await query.find({ $key: "text" });
  * const item = await query.findById(id);
  * ```
- * 
+ *
  * @beta
  */
 export class Query<ResultType = unknown, DocumentType = unknown>
@@ -349,8 +348,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @returns
    */
   updateMany(
-    query: QueryExecutorUpdateQuery,
-    payload: (param: DocumentType) => DocumentType,
+    query: QueryRootFilter,
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
     options: QueryUpdateManyOptions = {}
   ) {
     this.options = {
@@ -401,8 +400,8 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @returns
    */
   updateOne(
-    query: QueryExecutorUpdateQuery,
-    payload: DocumentType | ((param: DocumentType) => DocumentType),
+    query: QueryRootFilter,
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
     options: QueryUpdateManyOptions = {}
   ) {
     this.options = {
@@ -451,10 +450,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @param options - Query options
    * @returns
    */
-  deleteMany(
-    query: QueryExecutorDeleteQuery,
-    options: QueryDeleteManyOptions = {}
-  ) {
+  deleteMany(query: QueryRootFilter, options: QueryDeleteManyOptions = {}) {
     this.options = {
       type: '_deleteMany',
       query,
@@ -500,10 +496,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @param options - Query options
    * @returns
    */
-  deleteOne(
-    query: QueryExecutorDeleteQuery,
-    options: QueryDeleteOneOptions = {}
-  ) {
+  deleteOne(query: QueryRootFilter, options: QueryDeleteOneOptions = {}) {
     this.options = {
       type: '_deleteOne',
       query,

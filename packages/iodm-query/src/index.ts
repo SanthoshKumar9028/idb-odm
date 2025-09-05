@@ -19,4 +19,10 @@ export type {
   QueryCountDocumentsOptions,
   QueryOpenCursorOptions,
 } from './Query/type';
+export type {
+  QuerySelector,
+  QueryFilter,
+  QueryRootSelector,
+  QueryRootFilter,
+} from './QueryExecutor/type';
 export type { Prettify } from './utils/type';

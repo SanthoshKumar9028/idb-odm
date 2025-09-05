@@ -5,9 +5,7 @@ import type {
   QueryExecutorReplaceOneOptions,
   QueryExecutorUpdateManyOptions,
   QueryExecutorUpdateOneOptions,
-  QueryExecutorUpdateQuery,
   QueryExecutorDeleteManyOptions,
-  QueryExecutorDeleteQuery,
   QueryExecutorDeleteOneOptions,
   QueryExecutorFindByIdAndDeleteOptions,
   QueryExecutorFindByIdAndUpdateOptions,
@@ -15,6 +13,7 @@ import type {
   CountDocumentsSearchKey,
   QueryRootFilter,
   QueryExecutorOpenCursorOptions,
+  QueryExecutorUpdateManyUpdater,
 } from '../QueryExecutor/type';
 import type { Prettify } from '../utils/type';
 
@@ -98,24 +97,24 @@ export type QueryOptions<DocumentType = unknown> =
     }
   | {
       type: '_updateMany';
-      query: QueryExecutorUpdateQuery;
-      payload: (param: DocumentType) => DocumentType;
+      query: QueryRootFilter;
+      payload: QueryExecutorUpdateManyUpdater<DocumentType>;
       execOptions: QueryUpdateManyOptions;
     }
   | {
       type: '_updateOne';
-      query: QueryExecutorUpdateQuery;
-      payload: DocumentType | ((param: DocumentType) => DocumentType);
+      query: QueryRootFilter;
+      payload: QueryExecutorUpdateManyUpdater<DocumentType>;
       execOptions: QueryUpdateOneOptions;
     }
   | {
       type: '_deleteMany';
-      query: QueryExecutorDeleteQuery;
+      query: QueryRootFilter;
       execOptions: QueryDeleteManyOptions;
     }
   | {
       type: '_deleteOne';
-      query: QueryExecutorDeleteQuery;
+      query: QueryRootFilter;
       execOptions: QueryDeleteOneOptions;
     }
   | {
@@ -135,65 +134,65 @@ export type QueryOptions<DocumentType = unknown> =
       execOptions: QueryCountDocumentsOptions;
     };
 
-export interface IBaseQuery<ResultType, DocumentType = unknown> {
+export interface IBaseQuery<ResultType, DocumentType> {
   openCursor(
     query: QueryRootFilter,
     options: QueryOpenCursorOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
   find(
     query: QueryRootFilter,
     options?: QueryFindOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
   findById(
     id: SearchKey,
     options?: QueryFindByIdOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
   insertOne(
     payload: unknown,
     options?: QueryInsertOneOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
   insertMany(
     payload: unknown[],
     options?: QueryInsertManyOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
   replaceOne(
     payload: DocumentType,
-    options: QueryExecutorReplaceOneOptions
-  ): IBaseQuery<ResultType>;
+    options: QueryReplaceOneOptions
+  ): IBaseQuery<ResultType, DocumentType>;
   updateMany(
-    query: QueryExecutorUpdateQuery,
-    payload: (param: DocumentType) => DocumentType,
-    options: QueryExecutorUpdateManyOptions
-  ): IBaseQuery<ResultType>;
+    query: QueryRootFilter,
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    options: QueryUpdateManyOptions
+  ): IBaseQuery<ResultType, DocumentType>;
   updateOne(
-    query: QueryExecutorUpdateQuery,
-    payload: DocumentType | ((param: DocumentType) => DocumentType),
-    options: QueryExecutorUpdateOneOptions
-  ): IBaseQuery<ResultType>;
+    query: QueryRootFilter,
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    options: QueryUpdateOneOptions
+  ): IBaseQuery<ResultType, DocumentType>;
   deleteMany(
-    query: QueryExecutorDeleteQuery,
+    query: QueryRootFilter,
     options: QueryDeleteManyOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
   deleteOne(
-    query: QueryExecutorDeleteQuery,
+    query: QueryRootFilter,
     options: QueryDeleteOneOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
   findByIdAndDelete(
     id: IDBValidKey,
     options: QueryFindByIdAndDeleteOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
   findByIdAndUpdate(
     id: IDBValidKey,
     payload: (param: DocumentType) => DocumentType,
     options: QueryFindByIdAndUpdateOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
   countDocuments(
     query: CountDocumentsSearchKey,
     options: QueryCountDocumentsOptions
-  ): IBaseQuery<ResultType>;
+  ): IBaseQuery<ResultType, DocumentType>;
 }
 
-export type QueryKeys = keyof IBaseQuery<unknown> & {};
+export type QueryKeys = keyof IBaseQuery<unknown, unknown> & {};
 
 export type QueryInternalKeys = keyof {
   [K in QueryKeys as `_${K}`]: unknown;

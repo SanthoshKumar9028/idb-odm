@@ -1,5 +1,5 @@
-import { isEmptyValue, isRegExp } from "../utils/type-guards";
-import type { QueryRootFilter, QuerySelector } from "./type";
+import { isEmptyValue, isRegExp } from '../utils/type-guards';
+import type { QueryRootFilter, QuerySelector, UpdaterOptions } from './type';
 
 export const operators = [
   '$eq',
@@ -17,7 +17,11 @@ export const isSelector = (value: unknown): value is QuerySelector => {
   return operators.some((key) => key in value);
 };
 
-export const evalSelector = (key: string, selector: QuerySelector, doc: any) => {
+export const evalSelector = (
+  key: string,
+  selector: QuerySelector,
+  doc: any
+) => {
   if ('$eq' in selector && !(selector['$eq'] === doc[key])) {
     return false;
   }
@@ -81,4 +85,42 @@ export const evalFilter = (filter: QueryRootFilter, doc: any) => {
   }
 
   return true;
+};
+
+export const applyUpdates = (doc: any, updateOptions: UpdaterOptions) => {
+  if (typeof doc !== 'object' || !doc) return doc;
+
+  if (updateOptions.$set) {
+    for (const key in updateOptions.$set) {
+      doc[key] = updateOptions.$set[key];
+    }
+  }
+
+  if (updateOptions.$unset) {
+    for (const key in updateOptions.$unset) {
+      delete doc[key];
+    }
+  }
+
+  if (updateOptions.$push) {
+    for (const key in updateOptions.$push) {
+      if (Array.isArray(doc[key])) {
+        doc[key].push(updateOptions.$push[key]);
+      }
+    }
+  }
+
+  if (updateOptions.$pop) {
+    for (const key in updateOptions.$pop) {
+      if (Array.isArray(doc[key])) {
+        if (updateOptions.$pop[key] == 1) {
+          doc[key].pop();
+        } else {
+          doc[key].shift();
+        }
+      }
+    }
+  }
+
+  return doc;
 };

@@ -468,6 +468,112 @@ describe('BaseQueryExecutor', () => {
       expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
     });
 
+    it('should update with $set operator', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () =>
+            event.onsuccess({
+              target: {
+                result: { value: { test: '123' }, update: mockUpdate },
+              },
+            }),
+          0
+        );
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<any, any>(
+        { $key: '123' },
+        { $set: { desc: 'test' } },
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledWith({ test: '123', desc: 'test' });
+      expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
+    });
+
+    it('should update with $unset operator', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () =>
+            event.onsuccess({
+              target: {
+                result: { value: { test: '123' }, update: mockUpdate },
+              },
+            }),
+          0
+        );
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<any, any>(
+        { $key: '123' },
+        { $unset: { desc: '' } },
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledWith({ test: '123' });
+      expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
+    });
+
+    it('should update with $push operator', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () =>
+            event.onsuccess({
+              target: {
+                result: {
+                  value: { test: '123', skills: [] },
+                  update: mockUpdate,
+                },
+              },
+            }),
+          0
+        );
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<any, any>(
+        { $key: '123' },
+        { $push: { skills: 1 } },
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledWith({ test: '123', skills: [1] });
+      expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
+    });
+
+    it('should update with $pop operator', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () =>
+            event.onsuccess({
+              target: {
+                result: {
+                  value: { test: '123', skills: [1] },
+                  update: mockUpdate,
+                },
+              },
+            }),
+          0
+        );
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<any, any>(
+        { $key: '123' },
+        { $pop: { skills: 1 } },
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledWith({ test: '123', skills: [] });
+      expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
+    });
+
     it('should handle error', async () => {
       mockOpenCursor.mockImplementationOnce(() => {
         const event = { onerror(...params: any[]) {} };
