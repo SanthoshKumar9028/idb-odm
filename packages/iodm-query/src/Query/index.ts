@@ -1,7 +1,6 @@
 import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
 import type {
   QueryRootFilter,
-  CountDocumentsSearchKey,
   QueryExecutorUpdateManyUpdater,
 } from '../QueryExecutor/type';
 import type {
@@ -450,7 +449,10 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @param options - Query options
    * @returns
    */
-  deleteMany(query: QueryRootFilter, options: QueryDeleteManyOptions = {}) {
+  deleteMany(
+    query: QueryRootFilter = { $key: null },
+    options: QueryDeleteManyOptions = {}
+  ) {
     this.options = {
       type: '_deleteMany',
       query,
@@ -496,7 +498,10 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @param options - Query options
    * @returns
    */
-  deleteOne(query: QueryRootFilter, options: QueryDeleteOneOptions = {}) {
+  deleteOne(
+    query: QueryRootFilter = { $key: null },
+    options: QueryDeleteOneOptions = {}
+  ) {
     this.options = {
       type: '_deleteOne',
       query,
@@ -650,7 +655,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    * @returns
    */
   countDocuments(
-    query?: CountDocumentsSearchKey,
+    query: QueryRootFilter = { $key: null },
     options: QueryCountDocumentsOptions = {}
   ) {
     this.options = {

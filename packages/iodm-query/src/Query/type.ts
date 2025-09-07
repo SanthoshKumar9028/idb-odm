@@ -10,7 +10,6 @@ import type {
   QueryExecutorFindByIdAndDeleteOptions,
   QueryExecutorFindByIdAndUpdateOptions,
   QueryExecutorCountDocumentsOptions,
-  CountDocumentsSearchKey,
   QueryRootFilter,
   QueryExecutorOpenCursorOptions,
   QueryExecutorUpdateManyUpdater,
@@ -130,7 +129,7 @@ export type QueryOptions<DocumentType = unknown> =
     }
   | {
       type: '_countDocuments';
-      query: CountDocumentsSearchKey;
+      query: QueryRootFilter;
       execOptions: QueryCountDocumentsOptions;
     };
 
@@ -187,7 +186,7 @@ export interface IBaseQuery<ResultType, DocumentType> {
     options: QueryFindByIdAndUpdateOptions
   ): IBaseQuery<ResultType, DocumentType>;
   countDocuments(
-    query: CountDocumentsSearchKey,
+    query: QueryRootFilter,
     options: QueryCountDocumentsOptions
   ): IBaseQuery<ResultType, DocumentType>;
 }

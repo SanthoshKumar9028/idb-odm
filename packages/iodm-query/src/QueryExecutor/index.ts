@@ -16,7 +16,6 @@ import type {
   QueryExecutorFindByIdAndDeleteOptions,
   QueryExecutorFindByIdAndUpdateOptions,
   QueryExecutorCountDocumentsOptions,
-  CountDocumentsSearchKey,
   QueryRootFilter,
   QueryExecutorOpenCursorOptions,
   QueryExecutorUpdateManyUpdater,
@@ -528,19 +527,32 @@ export class BaseQueryExecutor {
   }
 
   async countDocuments<ResultType>(
-    query: CountDocumentsSearchKey,
+    query: QueryRootFilter,
     options: QueryExecutorCountDocumentsOptions
   ) {
-    const { storeName, transaction, throwOnError } = options;
-    const objectStore = transaction.objectStore(storeName);
-
     return new Promise<ResultType>((res, rej) => {
-      const countReq = objectStore.count(query);
+      const { storeName, transaction, throwOnError } = options;
 
-      countReq.onsuccess = function () {
-        res(this.result as ResultType);
+      let count = 0;
+      const cursorReq = transaction
+        .objectStore(storeName)
+        .openCursor(query.$key);
+
+      cursorReq.onsuccess = function () {
+        const cursor = this.result;
+
+        if (!cursor || !cursor.value) {
+          res(count as ResultType);
+          return;
+        }
+
+        if (evalFilter(query, cursor.value)) {
+          ++count;
+        }
+
+        cursor.continue();
       };
-      countReq.onerror = function (event) {
+      cursorReq.onerror = (event) => {
         if (throwOnError) {
           rej(event);
         } else {

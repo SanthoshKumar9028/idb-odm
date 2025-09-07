@@ -35,8 +35,6 @@ export type QueryRootFilter = QueryRootSelector & QueryFilter;
 
 export type SearchKey = SearchKeyRequired | undefined | null;
 
-export type CountDocumentsSearchKey = Exclude<SearchKey, null>;
-
 export interface QueryExecutorCommonOptions {
   idb: IDBDatabase;
   storeName: string;

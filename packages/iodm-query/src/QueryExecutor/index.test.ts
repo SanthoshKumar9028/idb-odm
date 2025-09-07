@@ -1000,72 +1000,98 @@ describe('BaseQueryExecutor', () => {
   });
 
   describe('countDocuments', () => {
-    const mockCount = vi.fn();
+    const mockOpenCursor = vi.fn();
+    const testDocs = [
+      { value: 1, status: 'one' },
+      { value: 2, status: 'two' },
+      { value: 3, status: 'three' },
+    ];
 
-    afterEach(() => {
-      mockCount.mockClear();
+    mockOpenCursor.mockImplementation(() => {
+      let i = 0;
+      const event: any = {};
+
+      const reuc = () => {
+        event.result = {
+          value: testDocs[i++],
+          continue() {
+            reuc();
+          },
+        };
+        event.onsuccess({});
+      };
+
+      setTimeout(reuc, 0);
+      return event;
     });
 
     const transaction: any = {
       objectStore() {
         return {
-          count: mockCount,
+          openCursor: mockOpenCursor,
         };
       },
     };
 
-    const mockIdb: any = { transaction };
+    afterEach(() => mockOpenCursor.mockClear());
+
+    const mockIdb: any = {
+      transaction,
+    };
 
     it('should return document counts', async () => {
-      mockCount.mockImplementationOnce(() => {
-        const event = { onsuccess(...params: any[]) {}, result: 10 };
-        setTimeout(() => event.onsuccess({}), 0);
-        return event;
-      });
+      const count = await queryExecutor.countDocuments(
+        { $key: '123', value: { $gte: 2 } },
+        {
+          idb: mockIdb,
+          storeName: 'test',
+          transaction,
+        }
+      );
 
-      const count = await queryExecutor.countDocuments('123', {
-        idb: mockIdb,
-        storeName: 'test',
-        transaction,
-      });
-
-      expect(count).toBe(10);
-      expect(mockCount).toHaveBeenCalledTimes(1);
+      expect(count).toBe(2);
+      expect(mockOpenCursor).toHaveBeenCalledTimes(1);
     });
 
     it('should return undefined if error occurs', async () => {
-      mockCount.mockImplementationOnce(() => {
+      mockOpenCursor.mockImplementationOnce(() => {
         const event = { onerror(...params: any[]) {} };
         setTimeout(() => event.onerror({ preventDefault: () => {} }), 0);
         return event;
       });
 
-      const count = await queryExecutor.countDocuments('123', {
-        idb: mockIdb,
-        storeName: 'test',
-        transaction,
-      });
+      const count = await queryExecutor.countDocuments(
+        { $key: '123' },
+        {
+          idb: mockIdb,
+          storeName: 'test',
+          transaction,
+        }
+      );
 
       expect(count).toBe(undefined);
-      expect(mockCount).toHaveBeenCalledTimes(1);
+      expect(mockOpenCursor).toHaveBeenCalledTimes(1);
     });
 
     it('should throw error if throwOnError option is true', async () => {
-      mockCount.mockImplementationOnce(() => {
+      mockOpenCursor.mockImplementationOnce(() => {
         const event = { onerror(...params: any[]) {} };
         setTimeout(() => event.onerror({ preventDefault: () => {} }), 0);
         return event;
       });
 
-      const countPromise = queryExecutor.countDocuments('123', {
-        idb: mockIdb,
-        storeName: 'test',
-        transaction,
-        throwOnError: true,
-      });
+      const countPromise = queryExecutor.countDocuments(
+        { $key: '123' },
+        {
+          idb: mockIdb,
+          storeName: 'test',
+          transaction,
+          throwOnError: true,
+        }
+      );
 
       await expect(countPromise).rejects.toThrowError();
-      expect(mockCount).toHaveBeenCalledTimes(1);
+      expect(mockOpenCursor).toHaveBeenCalledTimes(1);
     });
   });
 });

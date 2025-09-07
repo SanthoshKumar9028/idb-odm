@@ -290,13 +290,10 @@ describe('Query', () => {
       const res = await new Query<QueryExecutorUpdateManyResponse, ITestUser>(
         mockIdb,
         'test'
-      ).updateOne(
-        { $key: '123' },
-        {
-          _id: '123',
-          name: 'test',
-        }
-      );
+      ).updateOne({ $key: '123' }, () => ({
+        _id: '123',
+        name: 'test',
+      }));
 
       expect(res).toEqual({});
     });
@@ -313,10 +310,10 @@ describe('Query', () => {
         'test'
       ).updateOne(
         { $key: '123' },
-        {
+        () => ({
           _id: '123',
           name: 'test',
-        },
+        }),
         { transaction: {} as IDBTransaction }
       );
 
@@ -449,7 +446,9 @@ describe('Query', () => {
         countDocuments: () => 1,
       }));
 
-      const res = await new Query(mockIdb, 'test').countDocuments('123');
+      const res = await new Query(mockIdb, 'test').countDocuments({
+        $key: '123',
+      });
 
       expect(res).toEqual(1);
     });
@@ -461,9 +460,12 @@ describe('Query', () => {
         countDocuments: () => 1,
       }));
 
-      await new Query(mockIdb, 'test').countDocuments('123', {
-        transaction: {} as IDBTransaction,
-      });
+      await new Query(mockIdb, 'test').countDocuments(
+        { $key: '123' },
+        {
+          transaction: {} as IDBTransaction,
+        }
+      );
 
       expect(mockTransaction).toHaveBeenCalledTimes(0);
     });
