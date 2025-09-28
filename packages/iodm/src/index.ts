@@ -1,5 +1,2 @@
-export { IModel } from './Model/index';
-
-export const add = (a: number, b: number) => {
-  return a + b;
-};
+export { AbstractModel, model } from './Model/index';
+export { Schema } from './Schema/index';

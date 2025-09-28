@@ -1,0 +1,3 @@
+export type IfAny<IFTYPE, THENTYPE, ELSETYPE = IFTYPE> = 0 extends 1 & IFTYPE
+  ? THENTYPE
+  : ELSETYPE;
