@@ -1,2 +1,2 @@
-export { AbstractModel, model } from './Model/index';
-export { Schema } from './Schema/index';
+export { AbstractModel, model } from './model/index';
+export { Schema } from './schema/index';

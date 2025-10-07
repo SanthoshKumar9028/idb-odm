@@ -1,5 +1,5 @@
-import { model } from './Model';
-import { Schema } from './Schema';
+import { model } from './model';
+import { Schema } from './schema';
 
 interface TUser {
   name: string;
@@ -14,10 +14,12 @@ interface TStaticMethods {
 }
 
 const userSchema = new Schema<TUser, TInstanceMethods, TStaticMethods>({
-  age: 1,
-  name: '',
+  age: Number,
+  name: String,
 });
 
 const UserModel = model('name', userSchema);
 
 const a = new UserModel();
+
+a.validate();
