@@ -4,10 +4,14 @@ export interface ValidateOptions {
   modelInstance: ModelInstance;
 }
 
+export interface ValidationRuleOptions {
+  message: string;
+}
+
 export abstract class ValidationRule {
   message: string;
-  constructor(message: string) {
-    this.message = message;
+  constructor(options: ValidationRuleOptions) {
+    this.message = options.message;
   }
 
   abstract validate(value: any, options: ValidateOptions): boolean;

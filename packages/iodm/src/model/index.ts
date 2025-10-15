@@ -4,24 +4,47 @@ import type { IModel, ModelInstance } from './types';
 
 const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   // instance properties and methods
-  new: boolean;
-  constructor() {
-    this.new = false;
+  _new!: boolean;
+  _schema!: Schema<any, {}, {}> | null;
+  _storeName!: string | null;
+  _db!: IDBDatabase | null;
+
+  constructor(defaultValues: any) {
+    const thisPrototype = Object.getPrototypeOf(this);
+    this._schema = thisPrototype._schema;
+    this._storeName = thisPrototype._storeName;
+    this._db = thisPrototype._db;
+
+    if (defaultValues && typeof defaultValues === 'object') {
+      for (const key in defaultValues) {
+        (this as any)[key] = defaultValues[key];
+      }
+    }
   }
+
   save(): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
   validate(): boolean {
-    return AbstractModelTemp.schema.validate(this, {
+    return this.getSchema().validate(this, {
       modelInstance: this,
     });
   }
 
-  // static properties and methods
-  static schema: Schema<any, {}, {}>;
-  static storeName: String;
-  static db: IDBDatabase;
+  toJSON() {
+    console.log('model toJSON is called')
+    return this.getSchema().castFrom(this);
+  }
 
+  getSchema() {
+    if (!this._schema) {
+      throw new Error('Schema is required');
+    }
+    return this._schema;
+  }
+
+  // static properties and methods
   /**
    * Model find method that overrieds the IQuery find method
    * @returns empty array
@@ -47,8 +70,8 @@ function model<TSchema extends Schema = any>(
   ObtainSchemaGeneric<TSchema, 'TStaticMethods'> {
   class NewModel extends AbstractModel {}
 
-  NewModel.storeName = name;
-  NewModel.schema = schema.clone();
+  NewModel.prototype._schema = schema.clone();
+  NewModel.prototype._storeName = name;
 
   return NewModel as any;
 }

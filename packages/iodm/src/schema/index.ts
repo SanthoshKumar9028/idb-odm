@@ -1,13 +1,17 @@
-import { BaseSchema } from './base-schema';
-import { NumberSchema } from './primitive/number.ts';
+import { BaseSchema, type BaseSchemaConstructorOptions } from './base-schema';
+import {
+  NumberSchema,
+  type NumberSchemaConstructorOptions,
+} from './primitive/number.ts';
 import { StringSchema } from './primitive/string.ts';
 import type { ValidateOptions } from './validation-rule/type.ts';
 
 type SchemaDefinitionValue =
+  | Schema
   | typeof String
   | typeof Number
   | { type: typeof String; required?: boolean }
-  | { type: typeof Number; required?: boolean };
+  | { type: typeof Number; required?: boolean; min?: number };
 
 export class Schema<
   RawDocType = any,
@@ -33,15 +37,30 @@ export class Schema<
       const constructor =
         'type' in definition[prop] ? definition[prop].type : definition[prop];
 
-      switch (constructor) {
-        case String:
-          this.tree[prop] = new StringSchema();
-          break;
-        case Number:
-          this.tree[prop] = new NumberSchema();
-          break;
-        default:
-          throw new Error(`Type for ${prop} is not supported`);
+      const schemaOptions: BaseSchemaConstructorOptions = {
+        name: prop,
+        required: undefined,
+      };
+
+      if ('type' in definition[prop]) {
+        schemaOptions.required = definition[prop].required;
+      }
+
+      if (constructor === String) {
+        this.tree[prop] = new StringSchema(schemaOptions);
+      } else if (constructor === Number) {
+        const numberSchemaOptions: NumberSchemaConstructorOptions =
+          schemaOptions;
+
+        if ('min' in definition[prop]) {
+          numberSchemaOptions.min = definition[prop].min;
+        }
+
+        this.tree[prop] = new NumberSchema(numberSchemaOptions);
+      } else if (constructor instanceof Schema) {
+        this.tree[prop] = constructor.clone();
+      } else {
+        throw new Error(`Type for ${prop} is not supported`);
       }
     }
   }
@@ -62,5 +81,19 @@ export class Schema<
     }
 
     return true;
+  }
+
+  castFrom(value: unknown) {
+    if (!value || typeof value !== 'object') {
+      throw new Error('Cant cast value to object schema');
+    }
+
+    const obj: Record<string, any> = {};
+
+    for (const key in this.tree) {
+      obj[key] = this.tree[key].castFrom(value[key as keyof typeof value]);
+    }
+
+    return obj;
   }
 }

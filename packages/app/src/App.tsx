@@ -1,13 +1,41 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 
-import { Query } from 'iodm-query';
+import { Schema, model } from 'iodm';
 
-interface IPost {
-  _id: string;
+interface IAddress {
+  no: number;
+  street?: string;
+  contact?: string;
+}
+
+interface IUser {
+  // _id: string;
   title: string;
   content: string;
+  address: IAddress;
 }
+
+const addressSchema = new Schema<IAddress>({
+  no: {
+    type: Number,
+    required: true,
+    min: 100,
+  },
+  street: String,
+  contact: String,
+});
+
+const userSchema = new Schema<IUser>({
+  title: String,
+  content: {
+    type: String,
+    required: true,
+  },
+  address: addressSchema,
+});
+
+const UserModel = model('User', userSchema);
 
 function App() {
   const [idb, setIdb] = useState<IDBDatabase | null>(null);
@@ -53,15 +81,18 @@ function App() {
           onClick={async () => {
             if (!idb) return;
 
-            const itr = await new Query<any, IPost>(
-              idb,
-              'posts'
-            ).openCursor({$or: [{_id: 1}, {_id: 4}]});
+            const user = new UserModel({
+              title: 'Batman',
+              content: 'abcd',
+              address: {
+                no: 123,
+                contact: '123',
+                street: 'asdf asdf',
+              },
+            });
 
-            for await (const doc of itr) {
-              await new Promise((res) => setTimeout(res, 5));
-              console.log('doc', doc);
-            }
+            console.log('user.validate()', user.validate());
+            console.log('user.validate()', JSON.stringify(user));
           }}
         >
           find
