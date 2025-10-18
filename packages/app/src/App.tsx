@@ -3,36 +3,32 @@ import './App.css';
 
 import { Schema, model } from 'iodm';
 
-interface IAddress {
-  no: number;
-  street?: string;
-  contact?: string;
+interface ITodo {
+  _id: number;
+  title: string;
+  content: string;
 }
 
 interface IUser {
-  // _id: string;
-  title: string;
-  content: string;
-  address: IAddress;
+  _id: number;
+  name: string;
 }
 
-const addressSchema = new Schema<IAddress>({
-  no: {
+const todoSchema = new Schema<ITodo>({
+  _id: {
     type: Number,
     required: true,
-    min: 100,
   },
-  street: String,
-  contact: String,
-});
-
-const userSchema = new Schema<IUser>({
-  title: String,
-  content: {
+  title: {
     type: String,
     required: true,
   },
-  address: addressSchema,
+  content: String,
+});
+
+const userSchema = new Schema<IUser>({
+  _id: Number,
+  name: String,
 });
 
 const UserModel = model('User', userSchema);
@@ -48,27 +44,23 @@ function App() {
 
       const db = ev.target.result as IDBDatabase;
 
-      const store = db.createObjectStore('posts', {
+      const store = db.createObjectStore('User', {
         keyPath: '_id',
       });
 
-      for (let i = 1; i < 5; ++i) {
+      for (let i = 1; i < 3; ++i) {
         store.add({
           _id: i,
-          title: 'awsome title' + i,
-          content: 'awsome content',
+          name: 'user ' + i,
         });
       }
-
-      // store.add({ _id: '2', title: 'awsome title', content: 'awsome content' });
-      // store.add({ _id: '3', title: 'awsome title', content: 'awsome content' });
-      // store.add({ _id: '4', title: 'awsome title', content: 'awsome content' });
     };
 
     openReq.onsuccess = (ev) => {
       if (!ev.target || !('result' in ev.target)) return;
 
       setIdb(ev.target.result as IDBDatabase);
+      UserModel._db = ev.target.result as IDBDatabase;
     };
 
     openReq.onerror = (ev) => console.error('idb error', ev);
@@ -81,18 +73,15 @@ function App() {
           onClick={async () => {
             if (!idb) return;
 
+            UserModel.find();
+
             const user = new UserModel({
-              title: 'Batman',
-              content: 'abcd',
-              address: {
-                no: 123,
-                contact: '123',
-                street: 'asdf asdf',
-              },
+              _id: 1,
+              name: 'Batman',
             });
 
             console.log('user.validate()', user.validate());
-            console.log('user.validate()', JSON.stringify(user));
+            console.log('user.validate()', JSON.parse(JSON.stringify(user)));
           }}
         >
           find

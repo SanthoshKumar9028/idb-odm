@@ -1,13 +1,8 @@
 import type { Schema } from '../schema';
 
 export interface ModelInstance {
-  _new: boolean;
-  _schema: Schema<any, {}, {}> | null;
-  _storeName: string | null;
-  _db: IDBDatabase | null;
   save(): Promise<any>;
   validate(): boolean;
-  getSchema(): Schema<any, {}, {}> | null;
 }
 
 export interface IModel<TRawDocType = {}, TInstanceMethods = {}> {
@@ -17,6 +12,13 @@ export interface IModel<TRawDocType = {}, TInstanceMethods = {}> {
     options?: boolean
   ): TRawDocType & TInstanceMethods & ModelInstance;
 
-  find(): never[];
+  _schema: Schema<any, {}, {}> | null;
+  _storeName: string | null;
+  _db: IDBDatabase | null;
+
+  getSchema(): Schema<any, {}, {}>;
+  getDB(): IDBDatabase;
+
+  find(): Array<IModel<TRawDocType, TInstanceMethods>>;
   findById(): any;
 }
