@@ -12,7 +12,7 @@ Based on the query, first matched document will be deleted
 **Signature:**
 
 ```typescript
-deleteOne(query: QueryRootFilter, options?: QueryDeleteOneOptions): this;
+deleteOne(query?: QueryRootFilter, options?: QueryDeleteOneOptions): this;
 ```
 
 ## Parameters
@@ -45,7 +45,7 @@ query
 
 </td><td>
 
-Delete query to match documents
+_(Optional)_ Delete query to match documents
 
 
 </td></tr>

@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-countDocuments<ResultType>(query: CountDocumentsSearchKey, options: QueryExecutorCountDocumentsOptions): Promise<ResultType>;
+countDocuments<ResultType>(query: QueryRootFilter, options: QueryExecutorCountDocumentsOptions): Promise<ResultType>;
 ```
 
 ## Parameters
@@ -35,7 +35,7 @@ query
 
 </td><td>
 
-CountDocumentsSearchKey
+[QueryRootFilter](./iodm-query.queryrootfilter.md)
 
 
 </td><td>

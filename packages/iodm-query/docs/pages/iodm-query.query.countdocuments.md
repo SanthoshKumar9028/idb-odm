@@ -12,7 +12,7 @@ Returns the documents count that matches the search query
 **Signature:**
 
 ```typescript
-countDocuments(query?: CountDocumentsSearchKey, options?: QueryCountDocumentsOptions): this;
+countDocuments(query?: QueryRootFilter, options?: QueryCountDocumentsOptions): this;
 ```
 
 ## Parameters
@@ -40,7 +40,7 @@ query
 
 </td><td>
 
-CountDocumentsSearchKey
+[QueryRootFilter](./iodm-query.queryrootfilter.md)
 
 
 </td><td>

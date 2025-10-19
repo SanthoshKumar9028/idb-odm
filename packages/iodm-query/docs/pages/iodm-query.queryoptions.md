@@ -62,7 +62,7 @@ export type QueryOptions<DocumentType = unknown> = {
     execOptions: QueryFindByIdAndUpdateOptions;
 } | {
     type: '_countDocuments';
-    query: CountDocumentsSearchKey;
+    query: QueryRootFilter;
     execOptions: QueryCountDocumentsOptions;
 };
 ```
