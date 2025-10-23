@@ -1,7 +1,6 @@
 import { isFunction } from '../utils/type-guards';
 import { applyUpdates, evalFilter } from './evals';
 import type {
-  QueryExecutorCommonOptions,
   QueryExecutorInsertOptions,
   InsertSuccess,
   InsertError,
@@ -19,6 +18,8 @@ import type {
   QueryRootFilter,
   QueryExecutorOpenCursorOptions,
   QueryExecutorUpdateManyUpdater,
+  QueryExecutorFindOptions,
+  QueryExecutorFindByIdOptions,
 } from './type';
 
 export class BaseQueryExecutor {
@@ -80,10 +81,10 @@ export class BaseQueryExecutor {
 
   async find<ResultType>(
     query: QueryRootFilter,
-    options: QueryExecutorCommonOptions
+    options: QueryExecutorFindOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
-      const { storeName, transaction } = options;
+      const { storeName, transaction, Constructor } = options;
 
       const result: unknown[] = [];
       const cursorReq = transaction
@@ -99,7 +100,9 @@ export class BaseQueryExecutor {
         }
 
         if (evalFilter(query, cursor.value)) {
-          result.push(cursor.value);
+          result.push(
+            Constructor ? new Constructor(cursor.value) : cursor.value
+          );
         }
 
         cursor.continue();
@@ -112,10 +115,10 @@ export class BaseQueryExecutor {
 
   async findById<ResultType>(
     id: IDBValidKey,
-    options: QueryExecutorCommonOptions
+    options: QueryExecutorFindByIdOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
-      const { storeName, transaction } = options;
+      const { storeName, transaction, Constructor } = options;
 
       const objectStore = transaction.objectStore(storeName);
 
@@ -125,7 +128,11 @@ export class BaseQueryExecutor {
         let result = undefined as ResultType;
 
         if (event.target && 'result' in event.target) {
-          result = event.target.result as ResultType;
+          result = (
+            Constructor
+              ? new Constructor(event.target.result)
+              : event.target.result
+          ) as ResultType;
         }
 
         res(result);

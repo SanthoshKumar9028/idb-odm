@@ -1,3 +1,4 @@
+import type { Query } from 'iodm-query';
 import type { Schema } from '../schema';
 
 export interface ModelInstance {
@@ -5,12 +6,16 @@ export interface ModelInstance {
   validate(): boolean;
 }
 
-export interface IModel<TRawDocType = {}, TInstanceMethods = {}> {
+export interface IModel<
+  TRawDocType = {},
+  TInstanceMethods = {},
+  HydratedDoc = TRawDocType & TInstanceMethods & ModelInstance
+> {
   new <DocType = Partial<TRawDocType>>(
     doc?: DocType,
     fields?: any | null,
     options?: boolean
-  ): TRawDocType & TInstanceMethods & ModelInstance;
+  ): HydratedDoc;
 
   _schema: Schema<any, {}, {}> | null;
   _storeName: string | null;
@@ -18,7 +23,8 @@ export interface IModel<TRawDocType = {}, TInstanceMethods = {}> {
 
   getSchema(): Schema<any, {}, {}>;
   getDB(): IDBDatabase;
+  getStoreName(): string;
 
-  find(): Array<IModel<TRawDocType, TInstanceMethods>>;
-  findById(): any;
+  find(): Query<HydratedDoc[], unknown>;
+  findById(id: IDBValidKey): Query<HydratedDoc, unknown>;
 }

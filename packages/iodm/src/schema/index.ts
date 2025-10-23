@@ -44,6 +44,8 @@ export class Schema<
 
       this.tree[prop] = this.parseSchemaDefinition(prop, definition[prop]);
     }
+
+    this.tree['_id'] = new StringSchema({ name: '_id', required: true });
   }
 
   parseSchemaDefinition(

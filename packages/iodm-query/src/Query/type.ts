@@ -13,6 +13,8 @@ import type {
   QueryRootFilter,
   QueryExecutorOpenCursorOptions,
   QueryExecutorUpdateManyUpdater,
+  QueryExecutorFindOptions,
+  QueryExecutorFindByIdOptions,
 } from '../QueryExecutor/type';
 import type { Prettify } from '../utils/type';
 
@@ -29,9 +31,10 @@ type QueryFunctionOptions<Options> = Prettify<
 export type QueryOpenCursorOptions =
   QueryFunctionOptions<QueryExecutorOpenCursorOptions>;
 
-export type QueryFindOptions = QueryOptionsWithTransaction;
+export type QueryFindOptions = QueryFunctionOptions<QueryExecutorFindOptions>;
 
-export type QueryFindByIdOptions = QueryOptionsWithTransaction;
+export type QueryFindByIdOptions =
+  QueryFunctionOptions<QueryExecutorFindByIdOptions>;
 
 export type QueryInsertOneOptions =
   QueryFunctionOptions<QueryExecutorInsertOptions>;

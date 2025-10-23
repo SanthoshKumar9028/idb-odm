@@ -46,6 +46,14 @@ export interface QueryExecutorCommonOptionsThrownOnError
   throwOnError?: boolean;
 }
 
+export interface QueryExecutorFindOptions extends QueryExecutorCommonOptions {
+  Constructor?: {
+    new (obj: any): any;
+  };
+}
+
+export interface QueryExecutorFindByIdOptions extends QueryExecutorFindOptions {}
+
 export interface QueryExecutorOpenCursorOptions
   extends QueryExecutorCommonOptionsThrownOnError {}
 

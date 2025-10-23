@@ -1,3 +1,4 @@
+import { Query } from 'iodm-query';
 import type { Schema } from '../schema';
 import type { InferSchemaType, ObtainSchemaGeneric } from '../schema/types';
 import type { IModel, ModelInstance } from './types';
@@ -13,18 +14,35 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     }
   }
 
-  save(): Promise<any> {
-    throw new Error('Method not implemented.');
+  async save(): Promise<any> {
+    this.validate();
+
+    return new Query(
+      this.getInstanceDB(),
+      this.getInstanceStoreName()
+    ).replaceOne(this.toJSON());
   }
 
   validate(): boolean {
-    return AbstractModelTemp.getSchema(this).validate(this, {
+    return this.getInstanceSchema().validate(this, {
       modelInstance: this,
     });
   }
 
   toJSON() {
-    return AbstractModelTemp.getSchema(this).castFrom(this);
+    return this.getInstanceSchema().castFrom(this);
+  }
+
+  getInstanceSchema() {
+    return AbstractModelTemp.getSchema(this);
+  }
+
+  getInstanceDB() {
+    return AbstractModelTemp.getDB(this);
+  }
+
+  getInstanceStoreName() {
+    return AbstractModelTemp.getStoreName(this);
   }
 
   // static properties and methods
@@ -35,7 +53,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
   static getSchema(obj?: any) {
     const thisPrototype = obj ? Object.getPrototypeOf(obj).constructor : this;
-    const _schema = thisPrototype._schema;
+    const _schema: Schema<any, {}, {}> | undefined = thisPrototype._schema;
 
     if (!_schema) {
       throw new Error('Schema is required');
@@ -45,7 +63,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
   static getDB(obj?: any) {
     const thisPrototype = obj ? Object.getPrototypeOf(obj).constructor : this;
-    const _db = thisPrototype._db;
+    const _db: IDBDatabase | undefined = thisPrototype._db;
 
     if (!_db) {
       throw new Error('db is required');
@@ -53,19 +71,33 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     return _db;
   }
 
+  static getStoreName(obj?: any) {
+    const thisPrototype = obj ? Object.getPrototypeOf(obj).constructor : this;
+    const _storeName: string | undefined = thisPrototype._storeName;
+
+    if (!_storeName) {
+      throw new Error('db is required');
+    }
+    return _storeName;
+  }
+
   /**
    * Model find method that overrieds the IQuery find method
    * @returns empty array
    */
   static find() {
-    console.log('this.getDB()', this.getDB());
-    console.log('this.getSchema()', this.getSchema());
-    return [];
+    return new Query<any[], any>(this.getDB(), this.getStoreName()).find(
+      undefined,
+      {
+        Constructor: this,
+      }
+    );
   }
 
-  static findById() {
-    console.log('findById with update for browser IModel...');
-    return [];
+  static findById(id: IDBValidKey) {
+    return new Query<any, any>(this.getDB(), this.getStoreName()).findById(id, {
+      Constructor: this,
+    });
   }
 };
 
