@@ -20,6 +20,10 @@ const userSchema = new Schema<TUser, TInstanceMethods, TStaticMethods>({
 
 const UserModel = model('name', userSchema);
 
+UserModel.find().then(docs => {
+  docs[0]
+})
+
 const a = new UserModel();
 
 a.validate();

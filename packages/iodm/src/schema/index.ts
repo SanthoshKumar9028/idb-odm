@@ -1,5 +1,7 @@
+import type { QueryExecutorGetCommonOptions } from 'iodm-query';
 import { BaseSchema, type BaseSchemaConstructorOptions } from './base-schema';
 import { ArraySchema } from './non-primitive/array/index.ts';
+import { RefSchema } from './non-primitive/ref/index.ts';
 import {
   NumberSchema,
   type NumberSchemaConstructorOptions,
@@ -26,6 +28,7 @@ export class Schema<
   TInstanceMethods = {},
   TStaticMethods = {}
 > extends BaseSchema {
+  private refNames: string[];
   private tree: Record<string, BaseSchema>;
   private rawDefinition: SchemaDefinition<RawDocType>;
 
@@ -34,6 +37,7 @@ export class Schema<
 
     this.rawDefinition = definition;
     this.tree = {};
+    this.refNames = [];
 
     for (let prop in definition) {
       if ('type' in this.rawDefinition[prop]) {
@@ -45,10 +49,12 @@ export class Schema<
       this.tree[prop] = this.parseSchemaDefinition(prop, definition[prop]);
     }
 
-    this.tree['_id'] = new StringSchema({ name: '_id', required: true });
+    if (!this.tree['_id']) {
+      this.tree['_id'] = new StringSchema({ name: '_id', required: true });
+    }
   }
 
-  parseSchemaDefinition(
+  private parseSchemaDefinition(
     prop: string,
     definition: SchemaDefinitionValue
   ): BaseSchema {
@@ -64,12 +70,32 @@ export class Schema<
     }
 
     if (constructor === String) {
+      if ('ref' in definition && definition['ref']) {
+        this.refNames.push(definition.ref);
+
+        return new RefSchema({
+          name: prop,
+          ref: definition.ref,
+          valueSchema: new StringSchema(schemaOptions),
+        });
+      }
+
       return new StringSchema(schemaOptions);
     } else if (constructor === Number) {
       const numberSchemaOptions: NumberSchemaConstructorOptions = schemaOptions;
 
       if ('min' in definition) {
         numberSchemaOptions.min = definition.min;
+      }
+
+      if ('ref' in definition && definition['ref']) {
+        this.refNames.push(definition.ref);
+
+        return new RefSchema({
+          name: prop,
+          ref: definition.ref,
+          valueSchema: new NumberSchema(numberSchemaOptions),
+        });
       }
 
       return new NumberSchema(numberSchemaOptions);
@@ -89,10 +115,24 @@ export class Schema<
     throw new Error(`Type for ${prop} is not supported`);
   }
 
+  getRefNames() {
+    return this.refNames;
+  }
+
   clone() {
     return new Schema<RawDocType, TInstanceMethods, TStaticMethods>(
       this.rawDefinition
     );
+  }
+
+  async save(value: unknown, options: ValidateOptions) {
+    if (!value || typeof value !== 'object') {
+      throw new Error('value must be an Object');
+    }
+
+    for (const prop in this.tree) {
+      await this.tree[prop].save(value[prop as keyof typeof value], options);
+    }
   }
 
   validate(value: unknown, options: ValidateOptions) {
@@ -107,6 +147,20 @@ export class Schema<
     return true;
   }
 
+  async preProcess(
+    doc: Record<string, unknown>,
+    options: QueryExecutorGetCommonOptions
+  ) {
+    const newDoc: Record<string, unknown> = {};
+
+    for (const key in doc) {
+      if (this.tree[key]) {
+        newDoc[key] = await this.tree[key].preProcess(doc, options);
+      }
+    }
+    return newDoc;
+  }
+
   castFrom(value: unknown) {
     if (!value || typeof value !== 'object') {
       throw new Error('Cant cast value to object schema');
@@ -117,6 +171,9 @@ export class Schema<
     for (const key in this.tree) {
       obj[key] = this.tree[key].castFrom(value[key as keyof typeof value]);
     }
+
+    console.log('castFrom > obj', obj);
+    
 
     return obj;
   }

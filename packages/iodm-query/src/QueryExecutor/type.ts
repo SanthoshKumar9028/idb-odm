@@ -46,13 +46,24 @@ export interface QueryExecutorCommonOptionsThrownOnError
   throwOnError?: boolean;
 }
 
-export interface QueryExecutorFindOptions extends QueryExecutorCommonOptions {
+export interface PopulateField {
+  path: string;
+}
+
+export interface QueryExecutorGetCommonOptions
+  extends QueryExecutorCommonOptions {
+  populateFields?: Record<string, PopulateField>;
   Constructor?: {
     new (obj: any): any;
+    preProcess(doc: any, options: QueryExecutorGetCommonOptions): Promise<any>;
   };
 }
 
-export interface QueryExecutorFindByIdOptions extends QueryExecutorFindOptions {}
+export interface QueryExecutorFindOptions
+  extends QueryExecutorGetCommonOptions {}
+
+export interface QueryExecutorFindByIdOptions
+  extends QueryExecutorGetCommonOptions {}
 
 export interface QueryExecutorOpenCursorOptions
   extends QueryExecutorCommonOptionsThrownOnError {}

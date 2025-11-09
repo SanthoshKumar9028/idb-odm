@@ -2,6 +2,7 @@ import { QueryExecutorFactory } from '../QueryExecutor/QueryExecutorFactory';
 import type {
   QueryRootFilter,
   QueryExecutorUpdateManyUpdater,
+  PopulateField,
 } from '../QueryExecutor/type';
 import type {
   IQuery,
@@ -172,12 +173,14 @@ export class Query<ResultType = unknown, DocumentType = unknown>
     const { query, execOptions } = this.options;
 
     let transaction = execOptions.transaction;
+    
 
     if (!transaction) {
       transaction = this.idb.transaction(this.storeName, 'readonly');
     }
 
     return QueryExecutorFactory.getInstance().findById<ResultType>(query.$key, {
+      ...execOptions,
       idb: this.idb,
       transaction: transaction,
       storeName: this.storeName,
@@ -688,6 +691,21 @@ export class Query<ResultType = unknown, DocumentType = unknown>
         transaction,
       }
     );
+  }
+
+  populate(path: string | PopulateField) {
+    if (this.options?.type === '_find' || this.options?.type === '_findById') {
+      this.options.execOptions.populateFields =
+        this.options.execOptions.populateFields || {};
+
+      if (typeof path === 'string') {
+        this.options.execOptions.populateFields[path] = { path };
+      } else {
+        this.options.execOptions.populateFields[path.path] = path;
+      }
+    }
+
+    return this;
   }
 
   /**

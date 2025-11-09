@@ -1,7 +1,8 @@
-import { Query } from 'iodm-query';
+import { Query, type QueryExecutorGetCommonOptions } from 'iodm-query';
 import type { Schema } from '../schema';
 import type { InferSchemaType, ObtainSchemaGeneric } from '../schema/types';
 import type { IModel, ModelInstance } from './types';
+import { models } from '../models';
 
 const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   // instance properties and methods
@@ -16,6 +17,10 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
   async save(): Promise<any> {
     this.validate();
+
+    await this.getInstanceSchema().save(this, {
+      modelInstance: this,
+    });
 
     return new Query(
       this.getInstanceDB(),
@@ -81,6 +86,19 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     return _storeName;
   }
 
+  static async preProcess(doc: any, options: QueryExecutorGetCommonOptions) {
+    if (!doc || typeof doc !== 'object') return doc;
+
+    return this.getSchema().preProcess(doc, options);
+  }
+
+  private static createTransaction(mode?: IDBTransactionMode) {
+    return this.getDB().transaction(
+      [this.getStoreName(), ...this.getSchema().getRefNames()],
+      mode
+    );
+  }
+
   /**
    * Model find method that overrieds the IQuery find method
    * @returns empty array
@@ -90,6 +108,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       undefined,
       {
         Constructor: this,
+        transaction: this.createTransaction('readonly'),
       }
     );
   }
@@ -114,7 +133,7 @@ function model<TSchema extends Schema = any>(
   NewModel._schema = schema.clone();
   NewModel._storeName = name;
 
-  return NewModel as any;
+  return (models[name] = NewModel as any);
 }
 
 export { AbstractModel, model };

@@ -3,34 +3,42 @@ import './App.css';
 
 import { Schema, model } from 'iodm';
 
-interface ITodo {
+interface IAddress {
   _id: number;
-  title: string;
-  content: string;
+  no: number;
+  street: string;
 }
+
+const addressSchema = new Schema<IAddress>({
+  _id: Number,
+  no: Number,
+  street: String,
+});
 
 interface IUser {
   _id: number;
   name: string;
+  age: number;
+  address: number | IAddress;
 }
 
-const todoSchema = new Schema<ITodo>({
+const userSchema = new Schema<IUser>({
   _id: {
+    type: Number,
+  },
+  name: String,
+  age: {
     type: Number,
     required: true,
   },
-  title: {
-    type: String,
-    required: true,
+  address: {
+    type: Number,
+    ref: 'Address',
   },
-  content: String,
 });
 
-const userSchema = new Schema<IUser>({
-  _id: Number,
-  name: String,
-});
-
+// const TodoModel = model('Todo', todoSchema);
+const AddressModel = model('Address', addressSchema);
 const UserModel = model('User', userSchema);
 
 function App() {
@@ -48,12 +56,16 @@ function App() {
         keyPath: '_id',
       });
 
-      for (let i = 1; i < 3; ++i) {
-        store.add({
-          _id: i,
-          name: 'user ' + i,
-        });
-      }
+      // for (let i = 1; i < 3; ++i) {
+      //   store.add({
+      //     _id: String(i),
+      //     name: 'user ' + i,
+      //   });
+      // }
+
+      const address = db.createObjectStore('Address', {
+        keyPath: '_id',
+      });
     };
 
     openReq.onsuccess = (ev) => {
@@ -66,6 +78,8 @@ function App() {
     openReq.onerror = (ev) => console.error('idb error', ev);
   }, []);
 
+  console.log('idb', idb?.name);
+
   return (
     <>
       <div>
@@ -73,15 +87,44 @@ function App() {
           onClick={async () => {
             if (!idb) return;
 
-            UserModel.find();
+            UserModel._db = idb;
+            AddressModel._db = idb;
 
-            const user = new UserModel({
-              _id: 1,
-              name: 'Batman',
-            });
+            UserModel.find()
+              // .populate('address')
+              .then(async (res) => {
+                console.log('res', res);
 
-            console.log('user.validate()', user.validate());
-            console.log('user.validate()', JSON.parse(JSON.stringify(user)));
+                // res[0].address.street = "Old Old Anna Street";
+                // if (typeof res[0].address === 'number') {
+                // }
+                // res[0].address = 100;
+
+                // res[0].save();
+
+                // if (res[0].address instanceof AddressModel) {
+                //   res[0].address.save();
+                // } else {
+                //   console.error('res[0].address is not a AddressModel instance');
+                // }
+              });
+            
+
+            // const user = new UserModel({
+            //   _id: 2,
+            //   name: 'Superman',
+            //   age: 30,
+            //   address: {
+            //     _id: 101,
+            //     no: 10,
+            //     street: 'Gandhi street',
+            //   },
+            // });
+
+            // user.save();
+
+            console.log(UserModel._schema);
+            // console.log('user.validate()', JSON.parse(JSON.stringify(user)));
           }}
         >
           find

@@ -91,7 +91,7 @@ export class BaseQueryExecutor {
         .objectStore(storeName)
         .openCursor(query.$key);
 
-      cursorReq.onsuccess = function () {
+      cursorReq.onsuccess = async function () {
         const cursor = this.result;
 
         if (!cursor || !cursor.value) {
@@ -100,9 +100,11 @@ export class BaseQueryExecutor {
         }
 
         if (evalFilter(query, cursor.value)) {
-          result.push(
-            Constructor ? new Constructor(cursor.value) : cursor.value
-          );
+          const newDoc = cursor.value && Constructor
+            ? await Constructor.preProcess(cursor.value, options)
+            : cursor.value;
+
+          result.push(Constructor ? new Constructor(newDoc) : newDoc);
         }
 
         cursor.continue();
@@ -125,11 +127,11 @@ export class BaseQueryExecutor {
       const getReq = objectStore.get(id);
 
       getReq.onsuccess = (event) => {
-        let result = undefined as ResultType;
+        let result = null as ResultType;
 
         if (event.target && 'result' in event.target) {
           result = (
-            Constructor
+            event.target.result && Constructor
               ? new Constructor(event.target.result)
               : event.target.result
           ) as ResultType;

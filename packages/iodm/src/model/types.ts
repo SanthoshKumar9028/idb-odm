@@ -1,4 +1,4 @@
-import type { Query } from 'iodm-query';
+import type { Query, QueryExecutorGetCommonOptions } from 'iodm-query';
 import type { Schema } from '../schema';
 
 export interface ModelInstance {
@@ -24,6 +24,7 @@ export interface IModel<
   getSchema(): Schema<any, {}, {}>;
   getDB(): IDBDatabase;
   getStoreName(): string;
+  preProcess(doc: any, options: QueryExecutorGetCommonOptions): Promise<any>;
 
   find(): Query<HydratedDoc[], unknown>;
   findById(id: IDBValidKey): Query<HydratedDoc, unknown>;

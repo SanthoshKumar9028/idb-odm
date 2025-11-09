@@ -24,5 +24,6 @@ export type {
   QueryFilter,
   QueryRootSelector,
   QueryRootFilter,
+  QueryExecutorGetCommonOptions,
 } from './QueryExecutor/type';
 export type { Prettify } from './utils/type';
