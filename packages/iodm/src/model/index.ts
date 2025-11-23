@@ -1,4 +1,8 @@
-import { Query, type QueryExecutorGetCommonOptions } from 'iodm-query';
+import type {
+  QueryExecutorGetCommonOptions,
+  QueryFindByIdAndUpdateOptions,
+} from 'iodm-query';
+import { Query } from 'iodm-query';
 import type { Schema } from '../schema';
 import type { InferSchemaType, ObtainSchemaGeneric } from '../schema/types';
 import type { IModel, ModelInstance } from './types';
@@ -116,6 +120,32 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   static findById(id: IDBValidKey) {
     return new Query<any, any>(this.getDB(), this.getStoreName()).findById(id, {
       Constructor: this,
+      transaction: this.createTransaction('readonly'),
+    });
+  }
+
+  static findByIdAndUpdate(
+    id: IDBValidKey,
+    payload: (param: any) => any,
+    options?: QueryFindByIdAndUpdateOptions
+  ) {
+    return new Query<any, any>(
+      this.getDB(),
+      this.getStoreName()
+    ).findByIdAndUpdate(id, payload, {
+      Constructor: this,
+      transaction: this.createTransaction('readwrite'),
+      ...options,
+    });
+  }
+
+  static findByIdAndDelete(id: IDBValidKey) {
+    return new Query<any, any>(
+      this.getDB(),
+      this.getStoreName()
+    ).findByIdAndDelete(id, {
+      Constructor: this,
+      transaction: this.createTransaction('readwrite'),
     });
   }
 };

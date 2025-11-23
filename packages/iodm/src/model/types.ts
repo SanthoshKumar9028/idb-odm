@@ -1,4 +1,8 @@
-import type { Query, QueryExecutorGetCommonOptions } from 'iodm-query';
+import type {
+  Query,
+  QueryExecutorGetCommonOptions,
+  QueryFindByIdAndUpdateOptions,
+} from 'iodm-query';
 import type { Schema } from '../schema';
 
 export interface ModelInstance {
@@ -28,4 +32,10 @@ export interface IModel<
 
   find(): Query<HydratedDoc[], unknown>;
   findById(id: IDBValidKey): Query<HydratedDoc, unknown>;
+  findByIdAndUpdate(
+    id: IDBValidKey,
+    payload: (param: TRawDocType) => TRawDocType,
+    options?: QueryFindByIdAndUpdateOptions
+  ): Query<HydratedDoc, unknown>;
+  findByIdAndDelete(id: IDBValidKey): Query<HydratedDoc, unknown>;
 }

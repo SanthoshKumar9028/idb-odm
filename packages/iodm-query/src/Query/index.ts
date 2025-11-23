@@ -173,7 +173,6 @@ export class Query<ResultType = unknown, DocumentType = unknown>
     const { query, execOptions } = this.options;
 
     let transaction = execOptions.transaction;
-    
 
     if (!transaction) {
       transaction = this.idb.transaction(this.storeName, 'readonly');
@@ -694,7 +693,12 @@ export class Query<ResultType = unknown, DocumentType = unknown>
   }
 
   populate(path: string | PopulateField) {
-    if (this.options?.type === '_find' || this.options?.type === '_findById') {
+    if (
+      this.options?.type === '_find' ||
+      this.options?.type === '_findById' ||
+      this.options?.type === '_findByIdAndUpdate' ||
+      this.options?.type === '_findByIdAndDelete'
+    ) {
       this.options.execOptions.populateFields =
         this.options.execOptions.populateFields || {};
 

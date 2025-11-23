@@ -100,11 +100,12 @@ export class BaseQueryExecutor {
         }
 
         if (evalFilter(query, cursor.value)) {
-          const newDoc = cursor.value && Constructor
-            ? await Constructor.preProcess(cursor.value, options)
-            : cursor.value;
+          const newDoc =
+            cursor.value && Constructor
+              ? await Constructor.preProcess(cursor.value, options)
+              : cursor.value;
 
-          result.push(Constructor ? new Constructor(newDoc) : newDoc);
+          result.push(newDoc && Constructor ? new Constructor(newDoc) : newDoc);
         }
 
         cursor.continue();
@@ -126,14 +127,17 @@ export class BaseQueryExecutor {
 
       const getReq = objectStore.get(id);
 
-      getReq.onsuccess = (event) => {
+      getReq.onsuccess = async (event) => {
         let result = null as ResultType;
 
         if (event.target && 'result' in event.target) {
-          result = (
+          const newDoc =
             event.target.result && Constructor
-              ? new Constructor(event.target.result)
-              : event.target.result
+              ? await Constructor.preProcess(event.target.result, options)
+              : event.target.result;
+
+          result = (
+            newDoc && Constructor ? new Constructor(newDoc) : newDoc
           ) as ResultType;
         }
 
@@ -405,13 +409,18 @@ export class BaseQueryExecutor {
     id: IDBValidKey,
     options: QueryExecutorFindByIdAndDeleteOptions
   ): Promise<ResultType> {
-    const { storeName, transaction, throwOnError = true } = options;
+    const {
+      storeName,
+      transaction,
+      Constructor,
+      throwOnError = true,
+    } = options;
     const objectStore = transaction.objectStore(storeName);
 
     return new Promise((res, rej) => {
       const getReq = objectStore.get(id);
 
-      getReq.onsuccess = (event) => {
+      getReq.onsuccess = async (event) => {
         let doc = undefined;
 
         if (event.target && 'result' in event.target) {
@@ -422,6 +431,10 @@ export class BaseQueryExecutor {
           res(doc as ResultType);
           return;
         }
+
+        doc = Constructor ? await Constructor.preProcess(doc, options) : doc;
+
+        doc = (Constructor ? new Constructor(doc) : doc) as ResultType;
 
         try {
           const putReq = objectStore.delete(id);
@@ -468,6 +481,7 @@ export class BaseQueryExecutor {
     const {
       storeName,
       transaction,
+      Constructor,
       throwOnError = true,
       new: returnNewDoc = true,
     } = options;
@@ -497,12 +511,18 @@ export class BaseQueryExecutor {
 
           const putReq = objectStore.put(newDoc);
 
-          putReq.onsuccess = () => {
+          putReq.onsuccess = async () => {
+            let docToReturn = doc as ResultType;
+
             if (returnNewDoc) {
-              res(newDoc as unknown as ResultType);
-            } else {
-              res(doc as ResultType);
+              docToReturn = newDoc as unknown as ResultType;
             }
+
+            docToReturn = Constructor
+              ? await Constructor.preProcess(docToReturn, options)
+              : docToReturn;
+
+            res(Constructor ? new Constructor(docToReturn) : docToReturn);
           };
 
           putReq.onerror = (event) => {

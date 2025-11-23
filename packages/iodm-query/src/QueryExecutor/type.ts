@@ -135,10 +135,12 @@ export interface QueryExecutorDeleteManyResponse {
 }
 
 export interface QueryExecutorFindByIdAndDeleteOptions
-  extends QueryExecutorCommonOptionsThrownOnError {}
+  extends QueryExecutorCommonOptionsThrownOnError,
+    QueryExecutorGetCommonOptions {}
 
 export interface QueryExecutorFindByIdAndUpdateOptions
-  extends QueryExecutorCommonOptionsThrownOnError {
+  extends QueryExecutorCommonOptionsThrownOnError,
+    QueryExecutorGetCommonOptions {
   new?: boolean;
 }
 
