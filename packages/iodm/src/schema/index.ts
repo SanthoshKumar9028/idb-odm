@@ -8,6 +8,7 @@ import {
 } from './primitive/number.ts';
 import { StringSchema } from './primitive/string.ts';
 import type { ValidateOptions } from './validation-rule/type.ts';
+import { RefArraySchema } from './non-primitive/ref-array/index.ts';
 
 type SchemaDefinitionValue =
   | Schema
@@ -77,6 +78,7 @@ export class Schema<
           name: prop,
           ref: definition.ref,
           valueSchema: new StringSchema(schemaOptions),
+          required: definition.required,
         });
       }
 
@@ -95,6 +97,7 @@ export class Schema<
           name: prop,
           ref: definition.ref,
           valueSchema: new NumberSchema(numberSchemaOptions),
+          required: definition.required,
         });
       }
 
@@ -102,6 +105,17 @@ export class Schema<
     } else if (Array.isArray(constructor)) {
       if (constructor.length === 0) {
         throw new Error(`Array type must have a value type`);
+      }
+
+      if ('ref' in constructor[0] && constructor[0].ref) {
+        this.refNames.push(constructor[0].ref);
+
+        return new RefArraySchema({
+          name: prop,
+          ref: constructor[0].ref,
+          valueSchema: this.parseSchemaDefinition(prop, constructor[0].type),
+          required: constructor[0].required,
+        });
       }
 
       return new ArraySchema({
@@ -171,9 +185,6 @@ export class Schema<
     for (const key in this.tree) {
       obj[key] = this.tree[key].castFrom(value[key as keyof typeof value]);
     }
-
-    console.log('castFrom > obj', obj);
-    
 
     return obj;
   }

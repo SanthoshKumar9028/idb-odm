@@ -20,6 +20,7 @@ interface IUser {
   name: string;
   age: number;
   address: number | IAddress;
+  visited: IAddress[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -35,6 +36,7 @@ const userSchema = new Schema<IUser>({
     type: Number,
     ref: 'Address',
   },
+  visited: [{ type: Number, ref: 'Address', required: true }],
 });
 
 // const TodoModel = model('Todo', todoSchema);
@@ -92,13 +94,24 @@ function App() {
 
             UserModel.find()
               // .populate('address')
+              .populate('visited')
               .then(async (res) => {
                 console.log('res', res);
 
                 // res[0].address.street = "Old Old Anna Street";
                 // if (typeof res[0].address === 'number') {
                 // }
-                // res[0].address = 100;
+                // res[0].visited = [
+                //   { _id: 1, no: 10, street: 'visited street 1' },
+                //   { _id: 2, no: 20, street: 'visited street 2' },
+                //   { _id: 3, no: 30, street: 'visited street 3' },
+                // ];
+
+                // res[0].visited.push({
+                //   _id: 4,
+                //   no: 40,
+                //   street: 'something',
+                // });
 
                 // res[0].save();
 
@@ -108,11 +121,10 @@ function App() {
                 //   console.error('res[0].address is not a AddressModel instance');
                 // }
               });
-            
 
             // const user = new UserModel({
-            //   _id: 2,
-            //   name: 'Superman',
+            //   _id: 1,
+            //   name: 'Batman',
             //   age: 30,
             //   address: {
             //     _id: 101,
@@ -123,7 +135,7 @@ function App() {
 
             // user.save();
 
-            console.log(UserModel._schema);
+            // console.log(UserModel._schema);
             // console.log('user.validate()', JSON.parse(JSON.stringify(user)));
           }}
         >

@@ -11,8 +11,8 @@ export interface RefSchemaConstructorOptions
 }
 
 export class RefSchema extends BaseSchema {
-  private ref: string;
-  private valueSchema: BaseSchema;
+  protected ref: string;
+  protected valueSchema: BaseSchema;
 
   constructor(options: RefSchemaConstructorOptions) {
     super(options);
@@ -23,7 +23,7 @@ export class RefSchema extends BaseSchema {
 
   validate(value: unknown, options: ValidateOptions): boolean {
     if (value && typeof value === 'object' && '_id' in value) {
-        return this.valueSchema.validate(value._id, options);
+      return this.valueSchema.validate(value._id, options);
     }
 
     return this.valueSchema.validate(value, options);
@@ -58,22 +58,19 @@ export class RefSchema extends BaseSchema {
           throw new Error(`Ref ${this.ref} model is not created`);
         }
 
-        return await new Query(options.idb, this.ref).findById(
-          subDocId,
-          {
-            Constructor: models[this.ref],
-            // need to remove the prefix for nested objects
-            // populateFields: options.populateFields,
-            transaction: options.transaction,
-          }
-        );
+        return await new Query(options.idb, this.ref).findById(subDocId, {
+          Constructor: models[this.ref],
+          // need to remove the prefix for nested objects
+          // populateFields: options.populateFields,
+          transaction: options.transaction,
+        });
       }
     }
 
     return this.name ? doc[this.name] : doc;
   }
 
-  castFrom(value: unknown): unknown {    
+  castFrom(value: unknown): unknown {
     if (value && typeof value === 'object' && '_id' in value) {
       return value._id && this.valueSchema.castFrom(value._id);
     }
