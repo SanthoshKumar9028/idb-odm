@@ -25,10 +25,13 @@ export interface IModel<
   _storeName: string | null;
   _db: IDBDatabase | null;
 
+  init(idb: IDBDatabase): void;
   getSchema(): Schema<any, {}, {}>;
   getDB(): IDBDatabase;
+  setDB(idb: IDBDatabase): void;
   getStoreName(): string;
   preProcess(doc: any, options: QueryExecutorGetCommonOptions): Promise<any>;
+  onUpgradeNeeded(idb: IDBDatabase): void;
 
   find(): Query<HydratedDoc[], unknown>;
   findById(id: IDBValidKey): Query<HydratedDoc, unknown>;

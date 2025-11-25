@@ -80,6 +80,10 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     return _db;
   }
 
+  static setDB(idb: IDBDatabase) {
+    this._db = idb;
+  }
+
   static getStoreName(obj?: any) {
     const thisPrototype = obj ? Object.getPrototypeOf(obj).constructor : this;
     const _storeName: string | undefined = thisPrototype._storeName;
@@ -88,6 +92,16 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       throw new Error('db is required');
     }
     return _storeName;
+  }
+
+  static init(idb: IDBDatabase) {
+    this.setDB(idb);
+  }
+
+  static onUpgradeNeeded(idb: IDBDatabase) {
+    if (this._storeName && !idb.objectStoreNames.contains(this._storeName)) {
+      idb.createObjectStore(this._storeName);
+    }
   }
 
   static async preProcess(doc: any, options: QueryExecutorGetCommonOptions) {

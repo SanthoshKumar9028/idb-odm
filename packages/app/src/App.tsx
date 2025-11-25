@@ -1,97 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import './App.css';
-
-import { Schema, model } from 'iodm';
-
-interface IAddress {
-  _id: number;
-  no: number;
-  street: string;
-}
-
-const addressSchema = new Schema<IAddress>({
-  _id: Number,
-  no: Number,
-  street: String,
-});
-
-interface IUser {
-  _id: number;
-  name: string;
-  age: number;
-  address: number | IAddress;
-  visited: IAddress[];
-}
-
-const userSchema = new Schema<IUser>({
-  _id: {
-    type: Number,
-  },
-  name: String,
-  age: {
-    type: Number,
-    required: true,
-  },
-  address: {
-    type: Number,
-    ref: 'Address',
-  },
-  visited: [{ type: Number, ref: 'Address', required: true }],
-});
-
-// const TodoModel = model('Todo', todoSchema);
-const AddressModel = model('Address', addressSchema);
-const UserModel = model('User', userSchema);
+import { UserModel } from './models';
 
 function App() {
-  const [idb, setIdb] = useState<IDBDatabase | null>(null);
-
   useEffect(() => {
-    const openReq = window.indexedDB.open('test-db', 1);
-
-    openReq.onupgradeneeded = (ev) => {
-      if (!ev.target || !('result' in ev.target)) return;
-
-      const db = ev.target.result as IDBDatabase;
-
-      const store = db.createObjectStore('User', {
-        keyPath: '_id',
+    UserModel.find()
+      .populate('address')
+      .then(async (res) => {
+        console.log('res', res);
       });
-
-      // for (let i = 1; i < 3; ++i) {
-      //   store.add({
-      //     _id: String(i),
-      //     name: 'user ' + i,
-      //   });
-      // }
-
-      const address = db.createObjectStore('Address', {
-        keyPath: '_id',
-      });
-    };
-
-    openReq.onsuccess = (ev) => {
-      if (!ev.target || !('result' in ev.target)) return;
-
-      setIdb(ev.target.result as IDBDatabase);
-      UserModel._db = ev.target.result as IDBDatabase;
-    };
-
-    openReq.onerror = (ev) => console.error('idb error', ev);
   }, []);
-
-  console.log('idb', idb?.name);
 
   return (
     <>
       <div>
         <button
           onClick={async () => {
-            if (!idb) return;
-
-            UserModel._db = idb;
-            AddressModel._db = idb;
-
             UserModel.find()
               // .populate('address')
               .populate('visited')
