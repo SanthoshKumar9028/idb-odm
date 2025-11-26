@@ -2,6 +2,10 @@ import type {
   QueryExecutorGetCommonOptions,
   QueryFindByIdAndUpdateOptions,
 } from 'iodm-query';
+import type {
+  QueryExecutorUpdateManyUpdater,
+  QueryRootFilter,
+} from 'iodm-query/dist/QueryExecutor/type';
 import { Query } from 'iodm-query';
 import type { Schema } from '../schema';
 import type { InferSchemaType, ObtainSchemaGeneric } from '../schema/types';
@@ -100,7 +104,9 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
   static onUpgradeNeeded(idb: IDBDatabase) {
     if (this._storeName && !idb.objectStoreNames.contains(this._storeName)) {
-      idb.createObjectStore(this._storeName);
+      idb.createObjectStore(this._storeName, {
+        keyPath: '_id',
+      });
     }
   }
 
@@ -121,9 +127,9 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
    * Model find method that overrieds the IQuery find method
    * @returns empty array
    */
-  static find() {
+  static find(filter?: QueryRootFilter) {
     return new Query<any[], any>(this.getDB(), this.getStoreName()).find(
-      undefined,
+      filter,
       {
         Constructor: this,
         transaction: this.createTransaction('readonly'),
@@ -140,7 +146,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
   static findByIdAndUpdate(
     id: IDBValidKey,
-    payload: (param: any) => any,
+    payload: QueryExecutorUpdateManyUpdater<any>,
     options?: QueryFindByIdAndUpdateOptions
   ) {
     return new Query<any, any>(
@@ -161,6 +167,15 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       Constructor: this,
       transaction: this.createTransaction('readwrite'),
     });
+  }
+
+  static deleteOne(filter?: QueryRootFilter) {
+    return new Query<any, any>(this.getDB(), this.getStoreName()).deleteOne(
+      filter,
+      {
+        transaction: this.createTransaction('readwrite'),
+      }
+    );
   }
 };
 

@@ -4,6 +4,7 @@ import type {
   QueryFindByIdAndUpdateOptions,
 } from 'iodm-query';
 import type { Schema } from '../schema';
+import type { QueryExecutorDeleteManyResponse, QueryExecutorUpdateManyUpdater, QueryRootFilter } from 'iodm-query/dist/QueryExecutor/type';
 
 export interface ModelInstance {
   save(): Promise<any>;
@@ -33,12 +34,13 @@ export interface IModel<
   preProcess(doc: any, options: QueryExecutorGetCommonOptions): Promise<any>;
   onUpgradeNeeded(idb: IDBDatabase): void;
 
-  find(): Query<HydratedDoc[], unknown>;
+  find(filter?: QueryRootFilter): Query<HydratedDoc[], unknown>;
   findById(id: IDBValidKey): Query<HydratedDoc, unknown>;
   findByIdAndUpdate(
     id: IDBValidKey,
-    payload: (param: TRawDocType) => TRawDocType,
+    payload: QueryExecutorUpdateManyUpdater<TRawDocType>,
     options?: QueryFindByIdAndUpdateOptions
   ): Query<HydratedDoc, unknown>;
   findByIdAndDelete(id: IDBValidKey): Query<HydratedDoc, unknown>;
+  deleteOne(filter?: QueryRootFilter): Query<QueryExecutorDeleteManyResponse, unknown>;
 }
