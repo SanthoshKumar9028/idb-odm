@@ -475,7 +475,7 @@ export class BaseQueryExecutor {
 
   async findByIdAndUpdate<ResultType, DocumentType = unknown>(
     id: IDBValidKey,
-    payload: (param: DocumentType) => DocumentType,
+    updater: QueryExecutorUpdateManyUpdater<DocumentType>,
     options: QueryExecutorFindByIdAndUpdateOptions
   ): Promise<ResultType> {
     const {
@@ -491,10 +491,10 @@ export class BaseQueryExecutor {
       const getReq = objectStore.get(id);
 
       getReq.onsuccess = (event) => {
-        let doc = undefined;
+        let doc: DocumentType | undefined = undefined;
 
         if (event.target && 'result' in event.target) {
-          doc = event.target.result;
+          doc = event.target.result as DocumentType;
         }
 
         if (!doc) {
@@ -503,11 +503,9 @@ export class BaseQueryExecutor {
         }
 
         try {
-          const updatedDoc = payload(doc as DocumentType);
-
-          const newDoc = objectStore.keyPath
-            ? { ...updatedDoc, [objectStore.keyPath.toString()]: id }
-            : updatedDoc;
+          const newDoc = isFunction(updater)
+            ? updater(doc)
+            : applyUpdates(doc, updater);
 
           const putReq = objectStore.put(newDoc);
 

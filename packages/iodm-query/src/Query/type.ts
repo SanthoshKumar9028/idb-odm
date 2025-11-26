@@ -127,7 +127,7 @@ export type QueryOptions<DocumentType = unknown> =
   | {
       type: '_findByIdAndUpdate';
       id: IDBValidKey;
-      payload: (param: DocumentType) => DocumentType;
+      payload: QueryExecutorUpdateManyUpdater<DocumentType>;
       execOptions: QueryFindByIdAndUpdateOptions;
     }
   | {

@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "iodm-query",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Query wrapper for browser IndexedDB",
   "main": "dist/index.es.js",
   "types": "dist/index.d.ts",

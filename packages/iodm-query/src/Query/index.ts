@@ -604,7 +604,7 @@ export class Query<ResultType = unknown, DocumentType = unknown>
    */
   findByIdAndUpdate(
     id: IDBValidKey,
-    payload: (param: DocumentType) => DocumentType,
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
     options: QueryFindByIdAndUpdateOptions = {}
   ) {
     this.options = {
