@@ -20,7 +20,7 @@ const userSchema = new Schema<TUser, TInstanceMethods, TStaticMethods>({
 
 const UserModel = model('name', userSchema);
 
-UserModel.find().then(docs => {
+UserModel.find().then((docs: any) => {
   docs[0]
 })
 
