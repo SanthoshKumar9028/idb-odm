@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "iodm",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Object Data Modeling library for IndexedDB",
   "main": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -28,7 +28,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "iodm-query": "0.0.5"
+    "iodm-query": "0.0.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
