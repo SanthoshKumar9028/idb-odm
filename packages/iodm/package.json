@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "iodm",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Object Data Modeling library for IndexedDB",
   "main": "dist/index.es.js",
   "types": "dist/index.d.ts",
