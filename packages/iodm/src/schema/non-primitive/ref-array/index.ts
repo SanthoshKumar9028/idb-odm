@@ -1,8 +1,10 @@
 import type { BaseSchemaConstructorOptions } from '../../base-schema';
-import type { ValidateOptions } from '../../validation-rule/type';
+import type { SchemaMethodOptions } from '../../types';
+import type { QueryExecutorGetCommonOptions } from 'iodm-query';
+
 import { BaseSchema } from '../../base-schema';
 import { models } from '../../../models';
-import { Query, type QueryExecutorGetCommonOptions } from 'iodm-query';
+import { Query } from 'iodm-query';
 import { RefSchema } from '../ref';
 
 export interface RefArraySchemaConstructorOptions
@@ -12,7 +14,7 @@ export interface RefArraySchemaConstructorOptions
 }
 
 export class RefArraySchema extends RefSchema {
-  validate(value: unknown, options: ValidateOptions): boolean {
+  validate(value: unknown, options: SchemaMethodOptions): boolean {
     this.validationRules.forEach((rule) => rule.validate(value, options));
 
     if (!Array.isArray(value)) return true;
@@ -20,7 +22,7 @@ export class RefArraySchema extends RefSchema {
     return value.every((v) => super.validate(v, options));
   }
 
-  async save(value: unknown, options: ValidateOptions) {
+  async save(value: unknown, options: SchemaMethodOptions) {
     if (!Array.isArray(value)) return;
     return Promise.all(value.map((v) => super.save(v, options)));
   }
@@ -72,9 +74,9 @@ export class RefArraySchema extends RefSchema {
     return subDocIds;
   }
 
-  castFrom(value: unknown): unknown {
+  castFrom(value: unknown, options: SchemaMethodOptions): unknown {
     if (!Array.isArray(value)) return undefined;
 
-    return value.map((v) => super.castFrom(v));
+    return value.map((v) => super.castFrom(v, options));
   }
 }

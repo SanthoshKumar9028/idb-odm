@@ -3,14 +3,16 @@ import type { IModel } from './model/types';
 interface ConfigureIndexedDBProps {
   db: string;
   version: number;
-  models: Array<IModel>;
-  onupgradeneeded?: (event: IDBOpenDBRequest) => any;
+  models: Array<IModel<any, any, any>>;
+  onUpgradeNeededPre?: (event: IDBOpenDBRequest) => any;
+  onUpgradeNeededPost?: (event: IDBOpenDBRequest) => any;
 }
 
 export const configureIDB = async (
   config: ConfigureIndexedDBProps
 ): Promise<IDBDatabase> => {
-  const { models, db, version, onupgradeneeded } = config;
+  const { models, db, version, onUpgradeNeededPost, onUpgradeNeededPre } =
+    config;
 
   return new Promise((res, rej) => {
     const openReq = indexedDB.open(db, version);
@@ -26,11 +28,13 @@ export const configureIDB = async (
     };
 
     openReq.onupgradeneeded = function () {
+      onUpgradeNeededPre && onUpgradeNeededPre(this);
+
       models.forEach((model) => {
         model.onUpgradeNeeded(this.result);
       });
 
-      onupgradeneeded && onupgradeneeded(this);
+      onUpgradeNeededPost && onUpgradeNeededPost(this);
     };
   });
 };

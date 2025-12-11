@@ -6,10 +6,11 @@ import type {
   QueryExecutorUpdateManyUpdater,
   QueryRootFilter,
 } from 'iodm-query/dist/QueryExecutor/type';
-import { Query } from 'iodm-query';
 import type { Schema } from '../schema';
 import type { InferSchemaType, ObtainSchemaGeneric } from '../schema/types';
 import type { IModel, ModelInstance } from './types';
+
+import { Query } from 'iodm-query';
 import { models } from '../models';
 
 const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
@@ -26,9 +27,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   async save(): Promise<any> {
     this.validate();
 
-    await this.getInstanceSchema().save(this, {
-      modelInstance: this,
-    });
+    await this.getInstanceSchema().save(this, this.getSchemaMethodOptions());
 
     return new Query(
       this.getInstanceDB(),
@@ -37,13 +36,17 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   }
 
   validate(): boolean {
-    return this.getInstanceSchema().validate(this, {
-      modelInstance: this,
-    });
+    return this.getInstanceSchema().validate(
+      this,
+      this.getSchemaMethodOptions()
+    );
   }
 
   toJSON() {
-    return this.getInstanceSchema().castFrom(this);
+    return this.getInstanceSchema().castFrom(
+      this,
+      this.getSchemaMethodOptions()
+    );
   }
 
   getInstanceSchema() {
@@ -56,6 +59,12 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
   getInstanceStoreName() {
     return AbstractModelTemp.getStoreName(this);
+  }
+
+  getSchemaMethodOptions() {
+    return {
+      modelInstance: this,
+    };
   }
 
   // static properties and methods
@@ -105,7 +114,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   static onUpgradeNeeded(idb: IDBDatabase) {
     if (this._storeName && !idb.objectStoreNames.contains(this._storeName)) {
       idb.createObjectStore(this._storeName, {
-        keyPath: '_id',
+        keyPath: this.getSchema().getSchemaOptions().keyPath,
       });
     }
   }

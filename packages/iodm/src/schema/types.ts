@@ -1,5 +1,6 @@
 import type { Schema } from '.';
 import type { IfAny } from '../types';
+import type { ModelInstance } from '../model/types';
 
 export type ObtainSchemaGeneric<
   TSchema,
@@ -21,3 +22,11 @@ export type InferSchemaType<TSchema> = IfAny<
   any,
   ObtainSchemaGeneric<TSchema, 'DocType'>
 >;
+
+export interface SchemaOptions {
+  keyPath: string;
+}
+
+export interface SchemaMethodOptions {
+  modelInstance: ModelInstance;
+}

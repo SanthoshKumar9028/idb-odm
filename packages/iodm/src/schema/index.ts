@@ -1,13 +1,13 @@
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
-import { BaseSchema, type BaseSchemaConstructorOptions } from './base-schema';
+import type { SchemaMethodOptions, SchemaOptions } from './types.ts';
+import type { BaseSchemaConstructorOptions } from './base-schema';
+import type { NumberSchemaConstructorOptions } from './primitive/number.ts';
+
+import { BaseSchema } from './base-schema';
 import { ArraySchema } from './non-primitive/array/index.ts';
 import { RefSchema } from './non-primitive/ref/index.ts';
-import {
-  NumberSchema,
-  type NumberSchemaConstructorOptions,
-} from './primitive/number.ts';
+import { NumberSchema } from './primitive/number.ts';
 import { StringSchema } from './primitive/string.ts';
-import type { ValidateOptions } from './validation-rule/type.ts';
 import { RefArraySchema } from './non-primitive/ref-array/index.ts';
 
 type SchemaDefinitionValue =
@@ -33,8 +33,11 @@ export class Schema<
   private tree: Record<string, BaseSchema>;
   private rawDefinition: SchemaDefinition<RawDocType>;
 
-  constructor(definition: SchemaDefinition<RawDocType>) {
-    super();
+  constructor(
+    definition: SchemaDefinition<RawDocType>,
+    options?: Partial<SchemaOptions>
+  ) {
+    super({}, options);
 
     this.rawDefinition = definition;
     this.tree = {};
@@ -50,7 +53,7 @@ export class Schema<
       this.tree[prop] = this.parseSchemaDefinition(prop, definition[prop]);
     }
 
-    if (!this.tree['_id']) {
+    if (!this.tree[this.schemaOptions.keyPath]) {
       this.tree['_id'] = new StringSchema({ name: '_id', required: true });
     }
   }
@@ -135,11 +138,12 @@ export class Schema<
 
   clone() {
     return new Schema<RawDocType, TInstanceMethods, TStaticMethods>(
-      this.rawDefinition
+      this.rawDefinition,
+      this.schemaOptions
     );
   }
 
-  async save(value: unknown, options: ValidateOptions) {
+  async save(value: unknown, options: SchemaMethodOptions) {
     if (!value || typeof value !== 'object') {
       throw new Error('value must be an Object');
     }
@@ -149,7 +153,7 @@ export class Schema<
     }
   }
 
-  validate(value: unknown, options: ValidateOptions) {
+  validate(value: unknown, options: SchemaMethodOptions) {
     if (!value || typeof value !== 'object') {
       throw new Error('value must be an Object');
     }
@@ -175,7 +179,7 @@ export class Schema<
     return newDoc;
   }
 
-  castFrom(value: unknown) {
+  castFrom(value: unknown, options: SchemaMethodOptions) {
     if (!value || typeof value !== 'object') {
       throw new Error('Cant cast value to object schema');
     }
@@ -183,7 +187,10 @@ export class Schema<
     const obj: Record<string, any> = {};
 
     for (const key in this.tree) {
-      obj[key] = this.tree[key].castFrom(value[key as keyof typeof value]);
+      obj[key] = this.tree[key].castFrom(
+        value[key as keyof typeof value],
+        options
+      );
     }
 
     return obj;

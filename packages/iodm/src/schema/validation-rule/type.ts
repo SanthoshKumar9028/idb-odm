@@ -1,8 +1,4 @@
-import type { ModelInstance } from '../../model/types';
-
-export interface ValidateOptions {
-  modelInstance: ModelInstance;
-}
+import type { SchemaMethodOptions } from '../types';
 
 export interface ValidationRuleOptions {
   message: string;
@@ -14,5 +10,5 @@ export abstract class ValidationRule {
     this.message = options.message;
   }
 
-  abstract validate(value: any, options: ValidateOptions): boolean;
+  abstract validate(value: any, options: SchemaMethodOptions): boolean;
 }

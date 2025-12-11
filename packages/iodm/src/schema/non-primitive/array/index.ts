@@ -1,5 +1,6 @@
 import type { BaseSchemaConstructorOptions } from '../../base-schema';
-import type { ValidateOptions } from '../../validation-rule/type';
+import type { SchemaMethodOptions } from '../../types';
+
 import { BaseSchema } from '../../base-schema';
 
 export interface ArraySchemaConstructorOptions
@@ -16,8 +17,8 @@ export class ArraySchema extends BaseSchema {
     this.valueSchema = options.valueSchema;
   }
 
-  validate(value: unknown, options: ValidateOptions): boolean {
-    const castedValue = this.castFrom(value);
+  validate(value: unknown, options: SchemaMethodOptions): boolean {
+    const castedValue = this.castFrom(value, options);
 
     this.validationRules.forEach((rule) => rule.validate(castedValue, options));
 
@@ -30,12 +31,12 @@ export class ArraySchema extends BaseSchema {
     return true;
   }
 
-  castFrom(value: unknown) {
+  castFrom(value: unknown, options: SchemaMethodOptions) {
     if (value === undefined || value === null) return value;
     if (!Array.isArray(value)) {
       throw new Error('cant cast to a array');
     }
 
-    return value.map((v) => this.valueSchema.castFrom(v));
+    return value.map((v) => this.valueSchema.castFrom(v, options));
   }
 }
