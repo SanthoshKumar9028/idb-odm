@@ -1,5 +1,5 @@
 import type { BaseSchemaConstructorOptions } from '../../base-schema';
-import type { SchemaMethodOptions } from '../../types';
+import type { SchemaMethodOptions, SchemaSaveMethodOptions } from '../../types';
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
 
 import { BaseSchema } from '../../base-schema';
@@ -22,7 +22,7 @@ export class RefArraySchema extends RefSchema {
     return value.every((v) => super.validate(v, options));
   }
 
-  async save(value: unknown, options: SchemaMethodOptions) {
+  async save(value: unknown, options: SchemaSaveMethodOptions) {
     if (!Array.isArray(value)) return;
     return Promise.all(value.map((v) => super.save(v, options)));
   }

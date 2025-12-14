@@ -105,7 +105,11 @@ export class BaseQueryExecutor {
               ? await Constructor.preProcess(cursor.value, options)
               : cursor.value;
 
-          result.push(newDoc && Constructor ? new Constructor(newDoc) : newDoc);
+          result.push(
+            newDoc && Constructor
+              ? new Constructor(newDoc, { isNew: false })
+              : newDoc
+          );
         }
 
         cursor.continue();
@@ -137,7 +141,9 @@ export class BaseQueryExecutor {
               : event.target.result;
 
           result = (
-            newDoc && Constructor ? new Constructor(newDoc) : newDoc
+            newDoc && Constructor
+              ? new Constructor(newDoc, { isNew: false })
+              : newDoc
           ) as ResultType;
         }
 
@@ -434,7 +440,9 @@ export class BaseQueryExecutor {
 
         doc = Constructor ? await Constructor.preProcess(doc, options) : doc;
 
-        doc = (Constructor ? new Constructor(doc) : doc) as ResultType;
+        doc = (
+          Constructor ? new Constructor(doc, { isNew: false }) : doc
+        ) as ResultType;
 
         try {
           const putReq = objectStore.delete(id);
@@ -520,7 +528,11 @@ export class BaseQueryExecutor {
               ? await Constructor.preProcess(docToReturn, options)
               : docToReturn;
 
-            res(Constructor ? new Constructor(docToReturn) : docToReturn);
+            res(
+              Constructor
+                ? new Constructor(docToReturn, { isNew: false })
+                : docToReturn
+            );
           };
 
           putReq.onerror = (event) => {

@@ -54,7 +54,7 @@ export interface QueryExecutorGetCommonOptions
   extends QueryExecutorCommonOptions {
   populateFields?: Record<string, PopulateField>;
   Constructor?: {
-    new (obj: any): any;
+    new (obj: any, options: { isNew: boolean }): any;
     preProcess(doc: any, options: QueryExecutorGetCommonOptions): Promise<any>;
   };
 }

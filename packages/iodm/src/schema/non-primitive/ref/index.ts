@@ -1,5 +1,5 @@
 import type { BaseSchemaConstructorOptions } from '../../base-schema';
-import type { SchemaMethodOptions } from '../../types';
+import type { SchemaMethodOptions, SchemaSaveMethodOptions } from '../../types';
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
 
 import { BaseSchema } from '../../base-schema';
@@ -45,15 +45,21 @@ export class RefSchema extends BaseSchema {
     return this.valueSchema.validate(value, options);
   }
 
-  async save(value: unknown, _options: SchemaMethodOptions) {
+  async save(value: unknown, options: SchemaSaveMethodOptions) {
     if (!value || typeof value !== 'object') return;
 
     const RefModel = this.getRefModel();
 
     const modelObj = value instanceof RefModel ? value : new RefModel(value);
 
-    modelObj.validate();
-    return modelObj.save();
+    try {
+      modelObj.validate();
+
+      return modelObj.save({ transaction: options.transaction });
+    } catch (e) {
+      options.transaction.abort();
+      throw e;
+    }
   }
 
   async preProcess(

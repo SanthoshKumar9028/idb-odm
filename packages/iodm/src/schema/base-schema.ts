@@ -1,6 +1,10 @@
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
 import type { ValidationRule } from './validation-rule/type';
-import type { SchemaMethodOptions, SchemaOptions } from './types';
+import type {
+  SchemaMethodOptions,
+  SchemaOptions,
+  SchemaSaveMethodOptions,
+} from './types';
 
 import { RequiredValidationRule } from './validation-rule/required';
 import { applySchemaOptionsDefaults } from './helpers';
@@ -58,7 +62,10 @@ export abstract class BaseSchema {
     return this.name ? _doc[this.name] : _doc;
   }
 
-  async save(_value: unknown, _options: SchemaMethodOptions): Promise<any> {}
+  async save(
+    _value: unknown,
+    _options: SchemaSaveMethodOptions
+  ): Promise<any> {}
 
   validate(value: unknown, options: SchemaMethodOptions): boolean {
     const castedValue = this.castFrom(value, options);

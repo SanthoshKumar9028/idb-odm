@@ -8,15 +8,23 @@ import type {
 } from 'iodm-query/dist/QueryExecutor/type';
 import type { Schema } from '../schema';
 import type { InferSchemaType, ObtainSchemaGeneric } from '../schema/types';
-import type { IModel, ModelInstance } from './types';
+import type {
+  IModel,
+  ModelInstance,
+  ModelOptions,
+  ModelSaveOptions,
+} from './types';
 
 import { Query } from 'iodm-query';
 import { models } from '../models';
 
 const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   // instance properties and methods
+  private $_isNew: boolean;
 
-  constructor(defaultValues: any) {
+  constructor(defaultValues: any, options?: ModelOptions) {
+    this.$_isNew = options?.isNew ?? true;
+
     if (defaultValues && typeof defaultValues === 'object') {
       for (const key in defaultValues) {
         (this as any)[key] = defaultValues[key];
@@ -24,15 +32,47 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     }
   }
 
-  async save(): Promise<any> {
-    this.validate();
+  async save(options?: ModelSaveOptions): Promise<any> {
+    const transaction = options?.transaction
+      ? options.transaction
+      : this.createInstanceTransaction('readwrite');
 
-    await this.getInstanceSchema().save(this, this.getSchemaMethodOptions());
+    try {
+      this.validate();
 
-    return new Query(
-      this.getInstanceDB(),
-      this.getInstanceStoreName()
-    ).replaceOne(this.toJSON());
+      await this.getInstanceSchema().save(this, {
+        transaction,
+        ...this.getSchemaMethodOptions(),
+      });
+
+      let queryResult: unknown;
+
+      if (this.$_isNew) {
+        queryResult = await new Query(
+          this.getInstanceDB(),
+          this.getInstanceStoreName()
+        ).insertOne(this.toJSON(), {
+          transaction,
+          throwOnError: true,
+        });
+
+        this.$_isNew = false;
+      } else {
+        queryResult = await new Query(
+          this.getInstanceDB(),
+          this.getInstanceStoreName()
+        ).replaceOne(this.toJSON(), {
+          transaction,
+        });
+      }
+
+      return queryResult;
+    } catch (e) {
+      if (!(e instanceof Event && e.type === 'error')) {
+        transaction.abort();
+      }
+      throw e;
+    }
   }
 
   validate(): boolean {
@@ -59,6 +99,13 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
   getInstanceStoreName() {
     return AbstractModelTemp.getStoreName(this);
+  }
+
+  createInstanceTransaction(mode?: IDBTransactionMode) {
+    return this.getInstanceDB().transaction(
+      [this.getInstanceStoreName(), ...this.getInstanceSchema().getRefNames()],
+      mode
+    );
   }
 
   getSchemaMethodOptions() {

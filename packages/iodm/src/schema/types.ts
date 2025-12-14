@@ -30,3 +30,7 @@ export interface SchemaOptions {
 export interface SchemaMethodOptions {
   modelInstance: ModelInstance;
 }
+
+export interface SchemaSaveMethodOptions extends SchemaMethodOptions {
+  transaction: IDBTransaction;
+}

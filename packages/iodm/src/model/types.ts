@@ -4,11 +4,24 @@ import type {
   QueryFindByIdAndUpdateOptions,
 } from 'iodm-query';
 import type { Schema } from '../schema';
-import type { QueryExecutorDeleteManyResponse, QueryExecutorUpdateManyUpdater, QueryRootFilter } from 'iodm-query/dist/QueryExecutor/type';
+import type {
+  QueryExecutorDeleteManyResponse,
+  QueryExecutorUpdateManyUpdater,
+  QueryRootFilter,
+} from 'iodm-query/dist/QueryExecutor/type';
+
+export interface ModelSaveOptions {
+  transaction?: IDBTransaction;
+}
 
 export interface ModelInstance {
-  save(): Promise<any>;
+  save(options?: ModelSaveOptions): Promise<any>;
   validate(): boolean;
+  createInstanceTransaction(mode?: string): IDBTransaction;
+}
+
+export interface ModelOptions {
+  isNew?: boolean;
 }
 
 export interface IModel<
@@ -18,8 +31,7 @@ export interface IModel<
 > {
   new <DocType = Partial<TRawDocType>>(
     doc?: DocType,
-    fields?: any | null,
-    options?: boolean
+    options?: ModelOptions
   ): HydratedDoc;
 
   _schema: Schema<any, {}, {}> | null;
@@ -42,5 +54,7 @@ export interface IModel<
     options?: QueryFindByIdAndUpdateOptions
   ): Query<HydratedDoc, unknown>;
   findByIdAndDelete(id: IDBValidKey): Query<HydratedDoc, unknown>;
-  deleteOne(filter?: QueryRootFilter): Query<QueryExecutorDeleteManyResponse, unknown>;
+  deleteOne(
+    filter?: QueryRootFilter
+  ): Query<QueryExecutorDeleteManyResponse, unknown>;
 }

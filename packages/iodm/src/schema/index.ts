@@ -1,5 +1,9 @@
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
-import type { SchemaMethodOptions, SchemaOptions } from './types.ts';
+import type {
+  SchemaMethodOptions,
+  SchemaOptions,
+  SchemaSaveMethodOptions,
+} from './types.ts';
 import type { BaseSchemaConstructorOptions } from './base-schema';
 import type { NumberSchemaConstructorOptions } from './primitive/number.ts';
 
@@ -143,7 +147,7 @@ export class Schema<
     );
   }
 
-  async save(value: unknown, options: SchemaMethodOptions) {
+  async save(value: unknown, options: SchemaSaveMethodOptions) {
     if (!value || typeof value !== 'object') {
       throw new Error('value must be an Object');
     }

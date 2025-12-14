@@ -231,8 +231,9 @@ export class Query<ResultType = unknown, DocumentType = unknown>
 
     return QueryExecutorFactory.getInstance().insertOne<ResultType>(payload, {
       idb: this.idb,
-      transaction: transaction,
       storeName: this.storeName,
+      ...this.options.execOptions,
+      transaction: transaction,
     });
   }
 
@@ -280,9 +281,9 @@ export class Query<ResultType = unknown, DocumentType = unknown>
 
     return QueryExecutorFactory.getInstance().insertMany<ResultType>(payload, {
       idb: this.idb,
-      transaction,
       storeName: this.storeName,
-      throwOnError: this.options.execOptions.throwOnError,
+      ...this.options.execOptions,
+      transaction,
     });
   }
 
