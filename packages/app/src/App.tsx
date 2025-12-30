@@ -18,9 +18,14 @@ function App() {
           onClick={async () => {
             UserModel.find()
               // .populate('address')
-              .populate('visited')
+              // .populate('visited')
               .then(async (res) => {
                 console.log('res', res);
+                console.log('fullname', res[0].fullname);
+
+                // res[0].fullname = '30 Batman';
+
+                // res[0].save();
 
                 // res[0].address.street = "Old Old Anna Street";
                 // if (typeof res[0].address === 'number') {
@@ -56,6 +61,11 @@ function App() {
             //     street: 'Gandhi street',
             //   },
             // });
+
+            // console.log(user.fullname);
+            // user.fullname = "100 Superman";
+
+            // console.log(user);
 
             // user.save();
 

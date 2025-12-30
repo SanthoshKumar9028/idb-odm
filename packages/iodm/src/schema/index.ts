@@ -13,6 +13,7 @@ import { RefSchema } from './non-primitive/ref/index.ts';
 import { NumberSchema } from './primitive/number.ts';
 import { StringSchema } from './primitive/string.ts';
 import { RefArraySchema } from './non-primitive/ref-array/index.ts';
+import { VirtualType } from './virtual-type/VirtualType.ts';
 
 type SchemaDefinitionValue =
   | Schema
@@ -23,9 +24,8 @@ type SchemaDefinitionValue =
   | { type: typeof Number; required?: boolean; min?: number; ref?: string }
   | { type: SchemaDefinitionValue[]; required?: boolean };
 
-type SchemaDefinition<RawDocType> = Record<
-  keyof RawDocType,
-  SchemaDefinitionValue
+type SchemaDefinition<RawDocType> = Partial<
+  Record<keyof RawDocType, SchemaDefinitionValue>
 >;
 
 export class Schema<
@@ -33,7 +33,8 @@ export class Schema<
   TInstanceMethods = {},
   TStaticMethods = {}
 > extends BaseSchema {
-  private refNames: string[];
+  virtuals: Record<string, VirtualType<RawDocType>>;
+  private refNames: Set<string>;
   private tree: Record<string, BaseSchema>;
   private rawDefinition: SchemaDefinition<RawDocType>;
 
@@ -45,16 +46,19 @@ export class Schema<
 
     this.rawDefinition = definition;
     this.tree = {};
-    this.refNames = [];
+    this.refNames = new Set();
+    this.virtuals = {};
 
     for (let prop in definition) {
-      if ('type' in this.rawDefinition[prop]) {
+      if (this.rawDefinition?.[prop] && 'type' in this.rawDefinition[prop]) {
         this.rawDefinition[prop] = {
           ...this.rawDefinition[prop],
         } as SchemaDefinitionValue;
       }
 
-      this.tree[prop] = this.parseSchemaDefinition(prop, definition[prop]);
+      if (definition[prop]) {
+        this.tree[prop] = this.parseSchemaDefinition(prop, definition[prop]);
+      }
     }
 
     if (!this.tree[this.schemaOptions.keyPath]) {
@@ -79,7 +83,7 @@ export class Schema<
 
     if (constructor === String) {
       if ('ref' in definition && definition['ref']) {
-        this.refNames.push(definition.ref);
+        this.refNames.add(definition.ref);
 
         return new RefSchema({
           name: prop,
@@ -98,7 +102,7 @@ export class Schema<
       }
 
       if ('ref' in definition && definition['ref']) {
-        this.refNames.push(definition.ref);
+        this.refNames.add(definition.ref);
 
         return new RefSchema({
           name: prop,
@@ -115,7 +119,7 @@ export class Schema<
       }
 
       if ('ref' in constructor[0] && constructor[0].ref) {
-        this.refNames.push(constructor[0].ref);
+        this.refNames.add(constructor[0].ref);
 
         return new RefArraySchema({
           name: prop,
@@ -136,15 +140,25 @@ export class Schema<
     throw new Error(`Type for ${prop} is not supported`);
   }
 
-  getRefNames() {
-    return this.refNames;
+  getRefNames(): string[] {
+    return [...this.refNames.values()];
   }
 
   clone() {
-    return new Schema<RawDocType, TInstanceMethods, TStaticMethods>(
+    const newSchema = new Schema<RawDocType, TInstanceMethods, TStaticMethods>(
       this.rawDefinition,
       this.schemaOptions
     );
+
+    newSchema.virtuals = Object.entries(this.virtuals).reduce(
+      (acc, [key, value]) => {
+        acc[key] = value.clone();
+        return acc;
+      },
+      {} as Record<string, VirtualType<RawDocType>>
+    );
+
+    return newSchema;
   }
 
   async save(value: unknown, options: SchemaSaveMethodOptions) {
@@ -191,6 +205,8 @@ export class Schema<
     const obj: Record<string, any> = {};
 
     for (const key in this.tree) {
+      if (this.tree[key].isVirtual) continue;
+
       obj[key] = this.tree[key].castFrom(
         value[key as keyof typeof value],
         options
@@ -198,5 +214,20 @@ export class Schema<
     }
 
     return obj;
+  }
+
+  virtual(key: string): VirtualType<RawDocType> {
+    if (this.tree[key]) {
+      throw new Error('Creating virtual for the existing key');
+    }
+
+    const virtualProp = new VirtualType<RawDocType>({
+      name: key,
+    });
+
+    this.tree[key] = virtualProp;
+    this.virtuals[key] = virtualProp;
+
+    return virtualProp;
   }
 }

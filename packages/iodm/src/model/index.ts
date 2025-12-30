@@ -17,6 +17,7 @@ import type {
 
 import { Query } from 'iodm-query';
 import { models } from '../models';
+import { syncModelToSchema } from './sync-model-to-schema';
 
 const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   // instance properties and methods
@@ -247,6 +248,8 @@ function model<TSchema extends Schema = any>(
 
   NewModel._schema = schema.clone();
   NewModel._storeName = name;
+
+  syncModelToSchema(NewModel as IModel);
 
   return (models[name] = NewModel as any);
 }
