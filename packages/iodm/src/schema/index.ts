@@ -1,11 +1,13 @@
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
 import type {
+  InjectFunctionContext,
   SchemaMethodOptions,
   SchemaOptions,
   SchemaSaveMethodOptions,
 } from './types.ts';
 import type { BaseSchemaConstructorOptions } from './base-schema';
 import type { NumberSchemaConstructorOptions } from './primitive/number.ts';
+import type { IModel } from '../model/types.ts';
 
 import { BaseSchema } from './base-schema';
 import { ArraySchema } from './non-primitive/array/index.ts';
@@ -34,6 +36,18 @@ export class Schema<
   TStaticMethods = {}
 > extends BaseSchema {
   virtuals: Record<string, VirtualType<RawDocType>>;
+  methods: {
+    [K in keyof TInstanceMethods]?: InjectFunctionContext<
+      RawDocType & TInstanceMethods,
+      TInstanceMethods[K]
+    >;
+  };
+  statics: {
+    [K in keyof TStaticMethods]?: InjectFunctionContext<
+      IModel<RawDocType, TInstanceMethods>,
+      TStaticMethods[K]
+    >;
+  };
   private refNames: Set<string>;
   private tree: Record<string, BaseSchema>;
   private rawDefinition: SchemaDefinition<RawDocType>;
@@ -48,6 +62,8 @@ export class Schema<
     this.tree = {};
     this.refNames = new Set();
     this.virtuals = {};
+    this.methods = {};
+    this.statics = {};
 
     for (let prop in definition) {
       if (this.rawDefinition?.[prop] && 'type' in this.rawDefinition[prop]) {
@@ -155,8 +171,11 @@ export class Schema<
         acc[key] = value.clone();
         return acc;
       },
-      {} as Record<string, VirtualType<RawDocType>>
+      {} as typeof this.virtuals
     );
+
+    newSchema.methods = { ...this.methods };
+    newSchema.statics = { ...this.statics };
 
     return newSchema;
   }

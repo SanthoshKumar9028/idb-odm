@@ -21,7 +21,16 @@ interface IUser {
   // visited: IAddress[];
 }
 
-const userSchema = new Schema<IUser>({
+interface InstanceMethods {
+  printFullName: () => void;
+  printGreetings: (msg: string) => void;
+}
+
+interface StaticsMethods {
+  getCount(): Promise<number>;
+}
+
+const userSchema = new Schema<IUser, InstanceMethods, StaticsMethods>({
   _id: {
     type: Number,
   },
@@ -37,20 +46,33 @@ const userSchema = new Schema<IUser>({
   // visited: [{ type: Number, ref: 'Address', required: true }],
 });
 
+userSchema.methods.printFullName = function () {
+  console.log('fullname:', this.fullname);
+};
+
+userSchema.methods.printGreetings = function (msg = 'Hello') {
+  console.log(msg, this.name);
+};
+
+userSchema.statics.getCount = async function () {
+  const res = await this.find();
+  return res.length;
+};
+
 userSchema
   .virtual('fullname')
   .get(function (value) {
-    console.log('value', value);
+    // console.log('value', value);
 
     return `${this.age} ${this.name}`;
   })
   .get(function (value) {
-    console.log('value', value);
+    // console.log('value', value);
 
     return this.name;
   })
   .get(function (value) {
-    console.log('value', value);
+    // console.log('value', value);
 
     return this.name;
   })

@@ -23,6 +23,10 @@ export type InferSchemaType<TSchema> = IfAny<
   ObtainSchemaGeneric<TSchema, 'DocType'>
 >;
 
+export type InjectFunctionContext<C, F> = F extends (...args: any) => any
+  ? (this: C, ...args: Parameters<F>) => ReturnType<F>
+  : F;
+
 export interface SchemaOptions {
   keyPath: string;
 }

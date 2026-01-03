@@ -19,4 +19,18 @@ export function syncModelToSchema<T extends IModel>(NewModel: T) {
       },
     });
   });
+
+  // defining all instance method props
+  Object.entries(schema.methods).forEach(([key, func]) => {
+    Object.defineProperty(NewModel.prototype, key, {
+      value: func,
+    });
+  });
+
+  // defining all statics method props
+  Object.entries(schema.statics).forEach(([key, func]) => {
+    Object.defineProperty(NewModel, key, {
+      value: func,
+    });
+  });
 }
