@@ -46,6 +46,29 @@ const userSchema = new Schema<IUser, InstanceMethods, StaticsMethods>({
   // visited: [{ type: Number, ref: 'Address', required: true }],
 });
 
+userSchema.pre('find', function (value, options) {
+  console.log('pre find user', { value, options });
+  return { value: 'value from previous hook' };
+});
+userSchema.pre('find', function (value, options) {
+  console.log('pre find user', { value, options });
+});
+
+userSchema.post('find', function (value, options) {
+  console.log('post find user', { value, options });
+  value.forEach((doc: IUser) => {
+    doc.name = doc.name.toUpperCase();
+  });
+});
+
+userSchema.pre('save', function (value, options) {
+  console.log('pre save user', { value, options });
+});
+
+userSchema.post('save', function (doc, options) {
+  console.log('post save user', { doc, options });
+});
+
 userSchema.methods.printFullName = function () {
   console.log('fullname:', this.fullname);
 };

@@ -16,6 +16,7 @@ import type {
   QueryExecutorFindOptions,
   QueryExecutorFindByIdOptions,
 } from '../QueryExecutor/type';
+import type { MiddlewareFn } from '../utils/MiddlewareStore';
 import type { Prettify } from '../utils/type';
 
 interface QueryOptionsWithTransaction {
@@ -200,8 +201,15 @@ export type QueryInternalKeys = keyof {
   [K in QueryKeys as `_${K}`]: unknown;
 };
 
+export type QueryInternalKeysMap = {
+  [K in QueryKeys as `_${K}`]: K;
+};
+
 export interface IQuery<ResultType, DocumentType>
   extends IBaseQuery<ResultType, DocumentType> {
+  populate(path: string): IQuery<ResultType, DocumentType>;
+  pre(name: string, fn: MiddlewareFn): IQuery<ResultType, DocumentType>;
+  post(name: string, fn: MiddlewareFn): IQuery<ResultType, DocumentType>;
   exec(): Promise<ResultType>;
   then(
     onFulfilled?: (value: ResultType) => any | Promise<any>,

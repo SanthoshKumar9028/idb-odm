@@ -1,3 +1,4 @@
+import type { IQuery } from 'iodm-query';
 import type { Schema } from '.';
 import type { IfAny } from '../types';
 import type { ModelInstance } from '../model/types';
@@ -26,6 +27,14 @@ export type InferSchemaType<TSchema> = IfAny<
 export type InjectFunctionContext<C, F> = F extends (...args: any) => any
   ? (this: C, ...args: Parameters<F>) => ReturnType<F>
   : F;
+
+export type FindMiddlewareContext<T, HydratedDoc> = T extends Array<any>
+  ? T[0]
+  : T extends RegExp
+  ? any
+  : T extends 'save' | 'validate'
+  ? HydratedDoc
+  : IQuery<any, any>;
 
 export interface SchemaOptions {
   keyPath: string;

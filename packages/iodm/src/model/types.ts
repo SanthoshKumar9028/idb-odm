@@ -34,10 +34,6 @@ export interface IModel<
     options?: ModelOptions
   ): HydratedDoc;
 
-  _schema: Schema<any, {}, {}> | null;
-  _storeName: string | null;
-  _db: IDBDatabase | null;
-
   init(idb: IDBDatabase): void;
   getSchema(): Schema<any, {}, {}>;
   getDB(): IDBDatabase;
@@ -45,6 +41,7 @@ export interface IModel<
   getStoreName(): string;
   preProcess(doc: any, options: QueryExecutorGetCommonOptions): Promise<any>;
   onUpgradeNeeded(idb: IDBDatabase): void;
+  syncModelToSchema({ name, schema }: { name: string; schema: Schema }): void;
 
   find(filter?: QueryRootFilter): Query<HydratedDoc[], unknown>;
   findById(id: IDBValidKey): Query<HydratedDoc, unknown>;

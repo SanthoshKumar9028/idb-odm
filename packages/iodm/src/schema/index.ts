@@ -1,5 +1,6 @@
-import type { QueryExecutorGetCommonOptions } from 'iodm-query';
+import type { MiddlewareFn, QueryExecutorGetCommonOptions } from 'iodm-query';
 import type {
+  FindMiddlewareContext,
   InjectFunctionContext,
   SchemaMethodOptions,
   SchemaOptions,
@@ -8,7 +9,9 @@ import type {
 import type { BaseSchemaConstructorOptions } from './base-schema';
 import type { NumberSchemaConstructorOptions } from './primitive/number.ts';
 import type { IModel } from '../model/types.ts';
+import type { MiddlewareKeys } from './constants.ts';
 
+import { MiddlewareExecutor } from 'iodm-query';
 import { BaseSchema } from './base-schema';
 import { ArraySchema } from './non-primitive/array/index.ts';
 import { RefSchema } from './non-primitive/ref/index.ts';
@@ -16,6 +19,7 @@ import { NumberSchema } from './primitive/number.ts';
 import { StringSchema } from './primitive/string.ts';
 import { RefArraySchema } from './non-primitive/ref-array/index.ts';
 import { VirtualType } from './virtual-type/VirtualType.ts';
+import { middlewareKeys } from './constants.ts';
 
 type SchemaDefinitionValue =
   | Schema
@@ -33,7 +37,8 @@ type SchemaDefinition<RawDocType> = Partial<
 export class Schema<
   RawDocType = any,
   TInstanceMethods = {},
-  TStaticMethods = {}
+  TStaticMethods = {},
+  HydratedDoc = RawDocType & TInstanceMethods
 > extends BaseSchema {
   virtuals: Record<string, VirtualType<RawDocType>>;
   methods: {
@@ -48,6 +53,7 @@ export class Schema<
       TStaticMethods[K]
     >;
   };
+  middleware: MiddlewareExecutor;
   private refNames: Set<string>;
   private tree: Record<string, BaseSchema>;
   private rawDefinition: SchemaDefinition<RawDocType>;
@@ -64,6 +70,7 @@ export class Schema<
     this.virtuals = {};
     this.methods = {};
     this.statics = {};
+    this.middleware = new MiddlewareExecutor();
 
     for (let prop in definition) {
       if (this.rawDefinition?.[prop] && 'type' in this.rawDefinition[prop]) {
@@ -176,6 +183,7 @@ export class Schema<
 
     newSchema.methods = { ...this.methods };
     newSchema.statics = { ...this.statics };
+    newSchema.middleware = this.middleware.clone();
 
     return newSchema;
   }
@@ -248,5 +256,45 @@ export class Schema<
     this.virtuals[key] = virtualProp;
 
     return virtualProp;
+  }
+
+  pre<E extends MiddlewareKeys | RegExp | MiddlewareKeys[] | RegExp[]>(
+    name: E,
+    fn: MiddlewareFn<FindMiddlewareContext<E, HydratedDoc>>
+  ): Schema {
+    if (Array.isArray(name)) {
+      name.forEach((e) => this.pre<MiddlewareKeys | RegExp>(e, fn));
+      return this;
+    }
+
+    if (name instanceof RegExp) {
+      this.pre(middlewareKeys.filter((key) => name.test(key)) as any, fn);
+      return this;
+    }
+
+    this.middleware.pre(name, fn);
+
+    return this;
+  }
+
+  post<E extends MiddlewareKeys | RegExp | MiddlewareKeys[] | RegExp[]>(
+    name: E,
+    fn: MiddlewareFn<FindMiddlewareContext<E, HydratedDoc>>
+  ): Schema {
+    if (Array.isArray(name)) {
+      name.forEach((e) => this.post<RegExp | MiddlewareKeys>(e, fn));
+      return this;
+    }
+
+    if (name instanceof RegExp) {
+      return this.post(
+        middlewareKeys.filter((key) => name.test(key)) as any,
+        fn
+      );
+    }
+
+    this.middleware.post(name, fn);
+
+    return this;
   }
 }

@@ -15,16 +15,21 @@ import type {
   ModelSaveOptions,
 } from './types';
 
-import { Query } from 'iodm-query';
+import { MiddlewareExecutor, AbstractQuery, Query } from 'iodm-query';
 import { models } from '../models';
-import { syncModelToSchema } from './sync-model-to-schema';
+import {
+  documentMiddlewareKeys,
+  queryMiddlewareKeys,
+} from '../schema/constants';
 
 const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   // instance properties and methods
   private $_isNew: boolean;
+  private documentMiddleware: MiddlewareExecutor;
 
   constructor(defaultValues: any, options?: ModelOptions) {
     this.$_isNew = options?.isNew ?? true;
+    this.documentMiddleware = Object.getPrototypeOf(this).documentMiddleware;
 
     if (defaultValues && typeof defaultValues === 'object') {
       for (const key in defaultValues) {
@@ -39,7 +44,11 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       : this.createInstanceTransaction('readwrite');
 
     try {
+      this.documentMiddleware.execPre('validate', this);
       this.validate();
+      this.documentMiddleware.execPost('validate', this);
+
+      this.documentMiddleware.execPre('save', this);
 
       await this.getInstanceSchema().save(this, {
         transaction,
@@ -66,6 +75,8 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
           transaction,
         });
       }
+
+      queryResult = this.documentMiddleware.execPost('save', this, queryResult);
 
       return queryResult;
     } catch (e) {
@@ -117,13 +128,14 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
   // static properties and methods
 
-  static _schema: Schema<any, {}, {}> | null;
-  static _storeName: string | null;
-  static _db: IDBDatabase | null;
+  private static schema: Schema<any, {}, {}> | null;
+  private static storeName: string | null;
+  private static db: IDBDatabase | null;
+  private static Query: typeof Query<any, any>;
 
   static getSchema(obj?: any) {
     const thisPrototype = obj ? Object.getPrototypeOf(obj).constructor : this;
-    const _schema: Schema<any, {}, {}> | undefined = thisPrototype._schema;
+    const _schema: Schema<any, {}, {}> | undefined = thisPrototype.schema;
 
     if (!_schema) {
       throw new Error('Schema is required');
@@ -132,8 +144,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   }
 
   static getDB(obj?: any) {
-    const thisPrototype = obj ? Object.getPrototypeOf(obj).constructor : this;
-    const _db: IDBDatabase | undefined = thisPrototype._db;
+    const _db = obj ? Object.getPrototypeOf(obj).constructor.db : this.db;
 
     if (!_db) {
       throw new Error('db is required');
@@ -142,12 +153,12 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   }
 
   static setDB(idb: IDBDatabase) {
-    this._db = idb;
+    this.db = idb;
   }
 
   static getStoreName(obj?: any) {
     const thisPrototype = obj ? Object.getPrototypeOf(obj).constructor : this;
-    const _storeName: string | undefined = thisPrototype._storeName;
+    const _storeName: string | undefined = thisPrototype.storeName;
 
     if (!_storeName) {
       throw new Error('db is required');
@@ -160,8 +171,8 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   }
 
   static onUpgradeNeeded(idb: IDBDatabase) {
-    if (this._storeName && !idb.objectStoreNames.contains(this._storeName)) {
-      idb.createObjectStore(this._storeName, {
+    if (this.storeName && !idb.objectStoreNames.contains(this.storeName)) {
+      idb.createObjectStore(this.storeName, {
         keyPath: this.getSchema().getSchemaOptions().keyPath,
       });
     }
@@ -185,17 +196,14 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
    * @returns empty array
    */
   static find(filter?: QueryRootFilter) {
-    return new Query<any[], any>(this.getDB(), this.getStoreName()).find(
-      filter,
-      {
-        Constructor: this,
-        transaction: this.createTransaction('readonly'),
-      }
-    );
+    return new this.Query(this.getDB(), this.getStoreName()).find(filter, {
+      Constructor: this,
+      transaction: this.createTransaction('readonly'),
+    });
   }
 
   static findById(id: IDBValidKey) {
-    return new Query<any, any>(this.getDB(), this.getStoreName()).findById(id, {
+    return new this.Query(this.getDB(), this.getStoreName()).findById(id, {
       Constructor: this,
       transaction: this.createTransaction('readonly'),
     });
@@ -206,33 +214,83 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     payload: QueryExecutorUpdateManyUpdater<any>,
     options?: QueryFindByIdAndUpdateOptions
   ) {
-    return new Query<any, any>(
-      this.getDB(),
-      this.getStoreName()
-    ).findByIdAndUpdate(id, payload, {
-      Constructor: this,
-      transaction: this.createTransaction('readwrite'),
-      ...options,
-    });
+    return new this.Query(this.getDB(), this.getStoreName()).findByIdAndUpdate(
+      id,
+      payload,
+      {
+        Constructor: this,
+        transaction: this.createTransaction('readwrite'),
+        ...options,
+      }
+    );
   }
 
   static findByIdAndDelete(id: IDBValidKey) {
-    return new Query<any, any>(
-      this.getDB(),
-      this.getStoreName()
-    ).findByIdAndDelete(id, {
-      Constructor: this,
+    return new this.Query(this.getDB(), this.getStoreName()).findByIdAndDelete(
+      id,
+      {
+        Constructor: this,
+        transaction: this.createTransaction('readwrite'),
+      }
+    );
+  }
+
+  static deleteOne(filter?: QueryRootFilter) {
+    return new this.Query(this.getDB(), this.getStoreName()).deleteOne(filter, {
       transaction: this.createTransaction('readwrite'),
     });
   }
 
-  static deleteOne(filter?: QueryRootFilter) {
-    return new Query<any, any>(this.getDB(), this.getStoreName()).deleteOne(
-      filter,
-      {
-        transaction: this.createTransaction('readwrite'),
-      }
-    );
+  static syncModelToSchema({ name, schema }: { name: string; schema: Schema }) {
+    if (this.schema) return;
+
+    const newSchema = schema.clone();
+    this.schema = newSchema;
+    this.storeName = name;
+
+    // defining all virtual props
+    Object.entries(newSchema.virtuals).forEach(([key, virtualType]) => {
+      Object.defineProperty(this.prototype, key, {
+        get() {
+          return virtualType.applyGetters(this, {
+            modelInstance: this,
+          });
+        },
+        set(value) {
+          return virtualType.applySetters(this, {
+            modelInstance: this,
+            value,
+          });
+        },
+      });
+    });
+
+    // defining all instance method props
+    Object.entries(newSchema.methods).forEach(([key, func]) => {
+      Object.defineProperty(this.prototype, key, {
+        value: func,
+      });
+    });
+
+    // defining all statics method props
+    Object.entries(newSchema.statics).forEach(([key, func]) => {
+      Object.defineProperty(this, key, {
+        value: func,
+      });
+    });
+
+    // defining document middleware executor for the model
+    this.prototype.documentMiddleware = newSchema.middleware.filter((name) => {
+      return documentMiddlewareKeys.includes(name);
+    });
+
+    // defining new Query constructor for the model
+    this.Query = class extends AbstractQuery {
+      // Query middleware executor
+      middleware: MiddlewareExecutor = newSchema.middleware.filter((name) => {
+        return queryMiddlewareKeys.includes(name);
+      });
+    };
   }
 };
 
@@ -246,10 +304,7 @@ function model<TSchema extends Schema = any>(
   ObtainSchemaGeneric<TSchema, 'TStaticMethods'> {
   class NewModel extends AbstractModel {}
 
-  NewModel._schema = schema.clone();
-  NewModel._storeName = name;
-
-  syncModelToSchema(NewModel as IModel);
+  NewModel.syncModelToSchema({ name, schema });
 
   return (models[name] = NewModel as any);
 }

@@ -4,6 +4,7 @@ import type {
   QueryExecutorUpdateManyUpdater,
   PopulateField,
 } from '../QueryExecutor/type';
+import type { MiddlewareFn } from '../utils/MiddlewareStore';
 import type {
   IQuery,
   QueryOptions,
@@ -20,25 +21,18 @@ import type {
   QueryCountDocumentsOptions,
   QueryOpenCursorOptions,
 } from './type';
+import { MiddlewareExecutor } from '../utils/MiddlewareExecutor';
+import { queryInternalKeysMap } from './constants';
 
-/**
- * Query builder for IndexedDB
- *
- * @example
- * ```ts
- * const query = new Query(idb, "store-name");
- * const list = await query.find({ $key: "text" });
- * const item = await query.findById(id);
- * ```
- *
- * @beta
- */
-export class Query<ResultType = unknown, DocumentType = unknown>
-  implements IQuery<ResultType, DocumentType>
+export abstract class AbstractQuery<
+  ResultType = unknown,
+  DocumentType = unknown
+> implements IQuery<ResultType, DocumentType>
 {
   private idb: IDBDatabase;
   private storeName: string;
   private options?: QueryOptions<DocumentType>;
+  abstract middleware: MiddlewareExecutor;
 
   /**
    *
@@ -693,6 +687,18 @@ export class Query<ResultType = unknown, DocumentType = unknown>
     );
   }
 
+  /**
+   * Specifies fields to populate in the result documents
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * const data = await query.find({}).populate('relatedField').exec();
+   * ```
+   *
+   * @param path - Path string or PopulateField object
+   * @returns
+   */
   populate(path: string | PopulateField) {
     if (
       this.options?.type === '_find' ||
@@ -710,6 +716,16 @@ export class Query<ResultType = unknown, DocumentType = unknown>
       }
     }
 
+    return this;
+  }
+
+  pre(name: string, fn: MiddlewareFn): Query<ResultType, DocumentType> {
+    this.middleware.pre(name, fn);
+    return this;
+  }
+
+  post(name: string, fn: MiddlewareFn): Query<ResultType, DocumentType> {
+    this.middleware.post(name, fn);
     return this;
   }
 
@@ -731,7 +747,19 @@ export class Query<ResultType = unknown, DocumentType = unknown>
       );
     }
 
-    return this[this.options.type]();
+    const op = queryInternalKeysMap[this.options.type];
+
+    this.middleware.execPre('exec', this);
+
+    this.middleware.execPre(op, this);
+
+    let returnValue = await this[this.options.type]();
+
+    returnValue = this.middleware.execPost(op, this, returnValue);
+
+    returnValue = this.middleware.execPost('exec', this, returnValue);
+
+    return returnValue;
   }
 
   then(
@@ -740,4 +768,23 @@ export class Query<ResultType = unknown, DocumentType = unknown>
   ): Promise<ResultType> {
     return this.exec().then(onFulfilled, onRejected);
   }
+}
+
+/**
+ * Query builder for IndexedDB
+ *
+ * @example
+ * ```ts
+ * const query = new Query(idb, "store-name");
+ * const list = await query.find({ $key: "text" });
+ * const item = await query.findById(id);
+ * ```
+ *
+ * @beta
+ */
+export class Query<
+  ResultType = unknown,
+  DocumentType = unknown
+> extends AbstractQuery<ResultType, DocumentType> {
+  middleware: MiddlewareExecutor = new MiddlewareExecutor();
 }
