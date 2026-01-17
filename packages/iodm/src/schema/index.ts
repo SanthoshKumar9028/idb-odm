@@ -2,6 +2,7 @@ import type { MiddlewareFn, QueryExecutorGetCommonOptions } from 'iodm-query';
 import type {
   FindMiddlewareContext,
   InjectFunctionContext,
+  PluginFn,
   SchemaMethodOptions,
   SchemaOptions,
   SchemaSaveMethodOptions,
@@ -54,6 +55,10 @@ export class Schema<
     >;
   };
   middleware: MiddlewareExecutor;
+  plugins: Array<{
+    fn: PluginFn<RawDocType, TInstanceMethods, TStaticMethods, HydratedDoc>;
+    opt?: any;
+  }>;
   private refNames: Set<string>;
   private tree: Record<string, BaseSchema>;
   private rawDefinition: SchemaDefinition<RawDocType>;
@@ -70,6 +75,7 @@ export class Schema<
     this.virtuals = {};
     this.methods = {};
     this.statics = {};
+    this.plugins = [];
     this.middleware = new MiddlewareExecutor();
 
     for (let prop in definition) {
@@ -184,6 +190,7 @@ export class Schema<
     newSchema.methods = { ...this.methods };
     newSchema.statics = { ...this.statics };
     newSchema.middleware = this.middleware.clone();
+    newSchema.plugins = [...this.plugins];
 
     return newSchema;
   }
@@ -296,5 +303,13 @@ export class Schema<
     this.middleware.post(name, fn);
 
     return this;
+  }
+
+  plugin(
+    fn: PluginFn<RawDocType, TInstanceMethods, TStaticMethods, HydratedDoc>,
+    opt?: any
+  ) {
+    this.plugins.push({ fn, opt });
+    fn(this, opt);
   }
 }

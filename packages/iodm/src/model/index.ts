@@ -7,7 +7,6 @@ import type {
   QueryRootFilter,
 } from 'iodm-query/dist/QueryExecutor/type';
 import type { Schema } from '../schema';
-import type { InferSchemaType, ObtainSchemaGeneric } from '../schema/types';
 import type {
   IModel,
   ModelInstance,
@@ -16,7 +15,6 @@ import type {
 } from './types';
 
 import { MiddlewareExecutor, AbstractQuery, Query } from 'iodm-query';
-import { models } from '../models';
 import {
   documentMiddlewareKeys,
   queryMiddlewareKeys,
@@ -294,19 +292,4 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   }
 };
 
-function model<TSchema extends Schema = any>(
-  name: string,
-  schema: TSchema
-): IModel<
-  InferSchemaType<TSchema>,
-  ObtainSchemaGeneric<TSchema, 'TInstanceMethods'>
-> &
-  ObtainSchemaGeneric<TSchema, 'TStaticMethods'> {
-  class NewModel extends AbstractModel {}
-
-  NewModel.syncModelToSchema({ name, schema });
-
-  return (models[name] = NewModel as any);
-}
-
-export { AbstractModel, model };
+export { AbstractModel };

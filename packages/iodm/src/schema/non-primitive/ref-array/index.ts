@@ -3,7 +3,7 @@ import type { SchemaMethodOptions, SchemaSaveMethodOptions } from '../../types';
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
 
 import { BaseSchema } from '../../base-schema';
-import { models } from '../../../models';
+import iodm from '../../../iodm';
 import { Query } from 'iodm-query';
 import { RefSchema } from '../ref';
 
@@ -50,7 +50,7 @@ export class RefArraySchema extends RefSchema {
             return subDocId;
           }
 
-          if (!models[this.ref]) {
+          if (!iodm.models[this.ref]) {
             throw new Error(`Ref ${this.ref} model is not created`);
           }
 
@@ -62,7 +62,7 @@ export class RefArraySchema extends RefSchema {
           }
 
           return new Query(options.idb, this.ref).findById(subDocId, {
-            Constructor: models[this.ref],
+            Constructor: iodm.models[this.ref],
             // need to remove the prefix for nested objects
             // populateFields: options.populateFields,
             transaction: options.transaction,

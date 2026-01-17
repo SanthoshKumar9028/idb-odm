@@ -47,3 +47,13 @@ export interface SchemaMethodOptions {
 export interface SchemaSaveMethodOptions extends SchemaMethodOptions {
   transaction: IDBTransaction;
 }
+
+export type PluginFn<
+  RawDocType,
+  TInstanceMethods,
+  TStaticMethods,
+  HydratedDoc
+> = (
+  schema: Schema<RawDocType, TInstanceMethods, TStaticMethods, HydratedDoc>,
+  opt?: any
+) => void;

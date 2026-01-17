@@ -1,4 +1,28 @@
-import { Schema, model } from 'iodm';
+import iodm, { Schema } from 'iodm';
+
+function loadedAtPlugin(schema: Schema, options: any) {
+  schema
+    .virtual('loadedAt')
+    .get(function () {
+      return this._loadedAt;
+    })
+    .set(function (v) {
+      this._loadedAt = v;
+    });
+
+  schema.post(['find', 'findById'], function (docs) {
+    if (!Array.isArray(docs)) {
+      docs = [docs];
+    }
+    const now = new Date();
+    for (const doc of docs) {
+      doc.loadedAt = now;
+    }
+  });
+}
+
+// global plugins
+iodm.plugin(loadedAtPlugin);
 
 interface IAddress {
   _id: number;
@@ -46,18 +70,21 @@ const userSchema = new Schema<IUser, InstanceMethods, StaticsMethods>({
   // visited: [{ type: Number, ref: 'Address', required: true }],
 });
 
-userSchema.pre('find', function (value, options) {
-  console.log('pre find user', { value, options });
-  return { value: 'value from previous hook' };
-});
-userSchema.pre('find', function (value, options) {
-  console.log('pre find user', { value, options });
-});
+userSchema.plugin((schema) => {
+  schema.pre('find', function (value, options) {
+    console.log('plugin > pre find user', { value, options });
+    return { value: 'value from previous hook' };
+  });
 
-userSchema.post('find', function (value, options) {
-  console.log('post find user', { value, options });
-  value.forEach((doc: IUser) => {
-    doc.name = doc.name.toUpperCase();
+  schema.pre('find', function (value, options) {
+    console.log('plugin > pre find user', { value, options });
+  });
+
+  schema.post('find', function (value, options) {
+    console.log('plugin > post find user', { value, options });
+    value.forEach((doc: IUser) => {
+      doc.name = doc.name.toUpperCase();
+    });
   });
 });
 
@@ -105,5 +132,5 @@ userSchema
   });
 
 // const TodoModel = model('Todo', todoSchema);
-export const AddressModel = model('Address', addressSchema);
-export const UserModel = model('User', userSchema);
+export const AddressModel = iodm.model('Address', addressSchema);
+export const UserModel = iodm.model('User', userSchema);

@@ -2,9 +2,9 @@ import type { BaseSchemaConstructorOptions } from '../../base-schema';
 import type { SchemaMethodOptions, SchemaSaveMethodOptions } from '../../types';
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
 
-import { BaseSchema } from '../../base-schema';
-import { models } from '../../../models';
 import { Query } from 'iodm-query';
+import { BaseSchema } from '../../base-schema';
+import iodm from '../../../iodm';
 
 export interface RefSchemaConstructorOptions
   extends BaseSchemaConstructorOptions {
@@ -25,11 +25,11 @@ export class RefSchema extends BaseSchema {
   }
 
   getRefModel() {
-    if (!models[this.ref]) {
+    if (!iodm.models[this.ref]) {
       throw new Error(`Ref ${this.ref} model is not created`);
     }
 
-    return models[this.ref];
+    return iodm.models[this.ref];
   }
 
   validate(value: unknown, options: SchemaMethodOptions): boolean {

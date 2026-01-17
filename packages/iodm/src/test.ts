@@ -1,4 +1,4 @@
-import { model } from './model';
+import iodm from './iodm';
 import { Schema } from './schema';
 
 interface TUser {
@@ -18,7 +18,7 @@ const userSchema = new Schema<TUser, TInstanceMethods, TStaticMethods>({
   name: String,
 });
 
-const UserModel = model('name', userSchema);
+const UserModel = iodm.model('name', userSchema);
 
 UserModel.find().then((docs: any) => {
   docs[0]
