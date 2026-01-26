@@ -27,7 +27,7 @@ export interface ModelOptions {
 export interface IModel<
   TRawDocType = {},
   TInstanceMethods = {},
-  HydratedDoc = TRawDocType & TInstanceMethods & ModelInstance
+  HydratedDoc = TRawDocType & TInstanceMethods & ModelInstance,
 > {
   new <DocType = Partial<TRawDocType>>(
     doc?: DocType,
@@ -54,4 +54,11 @@ export interface IModel<
   deleteOne(
     filter?: QueryRootFilter
   ): Query<QueryExecutorDeleteManyResponse, unknown>;
+}
+
+export interface PostMessage {
+  model: string;
+  type: 'pre' | 'post';
+  event: string;
+  payload: any;
 }

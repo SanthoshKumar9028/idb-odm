@@ -26,9 +26,8 @@ import { queryInternalKeysMap } from './constants';
 
 export abstract class AbstractQuery<
   ResultType = unknown,
-  DocumentType = unknown
-> implements IQuery<ResultType, DocumentType>
-{
+  DocumentType = unknown,
+> implements IQuery<ResultType, DocumentType> {
   private idb: IDBDatabase;
   private storeName: string;
   private options?: QueryOptions<DocumentType>;
@@ -784,7 +783,7 @@ export abstract class AbstractQuery<
  */
 export class Query<
   ResultType = unknown,
-  DocumentType = unknown
+  DocumentType = unknown,
 > extends AbstractQuery<ResultType, DocumentType> {
   middleware: MiddlewareExecutor = new MiddlewareExecutor();
 }

@@ -1,7 +1,7 @@
 import { MiddlewareStore, type MiddlewareFn } from './MiddlewareStore';
 
 export class MiddlewareExecutor {
-  private store: {
+  protected store: {
     pre: MiddlewareStore;
     post: MiddlewareStore;
   };

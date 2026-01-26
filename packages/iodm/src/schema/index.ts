@@ -1,5 +1,6 @@
 import type { MiddlewareFn, QueryExecutorGetCommonOptions } from 'iodm-query';
 import type {
+  BroadcastEnabledEventsOptions,
   FindMiddlewareContext,
   InjectFunctionContext,
   PluginFn,
@@ -12,7 +13,7 @@ import type { NumberSchemaConstructorOptions } from './primitive/number.ts';
 import type { IModel } from '../model/types.ts';
 import type { MiddlewareKeys } from './constants.ts';
 
-import { MiddlewareExecutor } from 'iodm-query';
+import { MiddlewareStore } from 'iodm-query';
 import { BaseSchema } from './base-schema';
 import { ArraySchema } from './non-primitive/array/index.ts';
 import { RefSchema } from './non-primitive/ref/index.ts';
@@ -21,6 +22,7 @@ import { StringSchema } from './primitive/string.ts';
 import { RefArraySchema } from './non-primitive/ref-array/index.ts';
 import { VirtualType } from './virtual-type/VirtualType.ts';
 import { middlewareKeys } from './constants.ts';
+import CustomMiddlewareExecutor from './custom-middleware-executor.ts';
 
 type SchemaDefinitionValue =
   | Schema
@@ -39,8 +41,11 @@ export class Schema<
   RawDocType = any,
   TInstanceMethods = {},
   TStaticMethods = {},
-  HydratedDoc = RawDocType & TInstanceMethods
+  HydratedDoc = RawDocType & TInstanceMethods,
 > extends BaseSchema {
+  private refNames: Set<string>;
+  private tree: Record<string, BaseSchema>;
+  private rawDefinition: SchemaDefinition<RawDocType>;
   virtuals: Record<string, VirtualType<RawDocType>>;
   methods: {
     [K in keyof TInstanceMethods]?: InjectFunctionContext<
@@ -54,14 +59,13 @@ export class Schema<
       TStaticMethods[K]
     >;
   };
-  middleware: MiddlewareExecutor;
+  middleware: CustomMiddlewareExecutor;
   plugins: Array<{
     fn: PluginFn<RawDocType, TInstanceMethods, TStaticMethods, HydratedDoc>;
     opt?: any;
   }>;
-  private refNames: Set<string>;
-  private tree: Record<string, BaseSchema>;
-  private rawDefinition: SchemaDefinition<RawDocType>;
+  broadcastEnabledEvents: Record<string, BroadcastEnabledEventsOptions>;
+  broadcastMiddleware: MiddlewareStore;
 
   constructor(
     definition: SchemaDefinition<RawDocType>,
@@ -76,7 +80,9 @@ export class Schema<
     this.methods = {};
     this.statics = {};
     this.plugins = [];
-    this.middleware = new MiddlewareExecutor();
+    this.middleware = new CustomMiddlewareExecutor(this);
+    this.broadcastMiddleware = new MiddlewareStore();
+    this.broadcastEnabledEvents = {};
 
     for (let prop in definition) {
       if (this.rawDefinition?.[prop] && 'type' in this.rawDefinition[prop]) {
@@ -190,7 +196,10 @@ export class Schema<
     newSchema.methods = { ...this.methods };
     newSchema.statics = { ...this.statics };
     newSchema.middleware = this.middleware.clone();
+    newSchema.middleware.schema = newSchema;
     newSchema.plugins = [...this.plugins];
+    newSchema.broadcastEnabledEvents = { ...this.broadcastEnabledEvents };
+    newSchema.broadcastMiddleware = this.broadcastMiddleware.clone();
 
     return newSchema;
   }
@@ -305,11 +314,35 @@ export class Schema<
     return this;
   }
 
+  onExecPreResult(_event: string, _payload: any) {
+    // empty handler, top level model will add custom logic
+  }
+  onExecPostResult(_event: string, _payload: any) {
+    // empty handler, top level model will add custom logic
+  }
+
   plugin(
     fn: PluginFn<RawDocType, TInstanceMethods, TStaticMethods, HydratedDoc>,
     opt?: any
   ) {
     this.plugins.push({ fn, opt });
     fn(this, opt);
+  }
+
+  enableBroadcastFor(
+    event: MiddlewareKeys,
+    data: BroadcastEnabledEventsOptions
+  ) {
+    this.broadcastEnabledEvents[event] = data;
+  }
+
+  broadcastHook(
+    fn: MiddlewareFn<IModel<RawDocType, TInstanceMethods>, MessageEvent<any>>
+  ) {
+    this.broadcastMiddleware.hook('broadcast', fn);
+  }
+
+  execBroadcastHooks(ctx: any, result?: any, ...args: any[]) {
+    this.broadcastMiddleware.exec('broadcast', ctx, result, ...args);
   }
 }

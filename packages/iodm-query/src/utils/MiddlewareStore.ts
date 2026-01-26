@@ -1,4 +1,8 @@
-export type MiddlewareFn<C = any> = (this: C, res: any, ...args: any[]) => any;
+export type MiddlewareFn<C = any, R = any> = (
+  this: C,
+  res: R,
+  ...args: any[]
+) => any;
 
 interface MiddlewareOptions {}
 export type MiddlewareMap = Map<

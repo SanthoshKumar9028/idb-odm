@@ -13,17 +13,20 @@ import type {
   ModelOptions,
   ModelSaveOptions,
 } from './types';
+import type CustomMiddlewareExecutor from '../schema/custom-middleware-executor';
 
-import { MiddlewareExecutor, AbstractQuery, Query } from 'iodm-query';
+import { AbstractQuery, Query } from 'iodm-query';
 import {
   documentMiddlewareKeys,
   queryMiddlewareKeys,
 } from '../schema/constants';
+import iodm from '../iodm';
+import { isPostMessage } from './helpers';
 
 const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   // instance properties and methods
   private $_isNew: boolean;
-  private documentMiddleware: MiddlewareExecutor;
+  private documentMiddleware: CustomMiddlewareExecutor;
 
   constructor(defaultValues: any, options?: ModelOptions) {
     this.$_isNew = options?.isNew ?? true;
@@ -239,6 +242,44 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     });
   }
 
+  static handlePreExec(event: string, payload: any) {
+    const options = this.schema?.broadcastEnabledEvents?.[event];
+
+    if (!options || options.type === 'post') return;
+
+    iodm.channel.postMessage({
+      model: this.storeName,
+      type: 'pre',
+      event,
+      payload: options.prepare(payload),
+    });
+  }
+
+  static handlePostExec(event: string, payload: any) {
+    const options = this.schema?.broadcastEnabledEvents?.[event];
+
+    if (!options || options.type === 'pre') return;
+
+    iodm.channel.postMessage({
+      model: this.storeName,
+      type: 'post',
+      event,
+      payload: options.prepare(payload),
+    });
+  }
+
+  static onBroadCastMessage(ev: MessageEvent<any>) {
+    const message = ev.data;
+
+    if (
+      this.schema &&
+      isPostMessage(message) &&
+      message.model === this.storeName
+    ) {
+      this.schema.execBroadcastHooks(this, ev);
+    }
+  }
+
   static syncModelToSchema({ name, schema }: { name: string; schema: Schema }) {
     if (this.schema) return;
 
@@ -285,10 +326,20 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     // defining new Query constructor for the model
     this.Query = class extends AbstractQuery {
       // Query middleware executor
-      middleware: MiddlewareExecutor = newSchema.middleware.filter((name) => {
-        return queryMiddlewareKeys.includes(name);
-      });
+      middleware: CustomMiddlewareExecutor = newSchema.middleware.filter(
+        (name) => {
+          return queryMiddlewareKeys.includes(name);
+        }
+      );
     };
+
+    iodm.channel.addEventListener(
+      'message',
+      this.onBroadCastMessage.bind(this)
+    );
+
+    newSchema.onExecPostResult = this.handlePostExec.bind(this);
+    newSchema.onExecPreResult = this.handlePreExec.bind(this);
   }
 };
 

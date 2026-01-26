@@ -36,6 +36,16 @@ const addressSchema = new Schema<IAddress>({
   street: String,
 });
 
+addressSchema.enableBroadcastFor('find', {
+  type: 'pre',
+  prepare(p) {
+    return JSON.stringify(p);
+  },
+});
+addressSchema.broadcastHook((res) => {
+  console.log('addressSchema', res);
+});
+
 interface IUser {
   _id: number;
   name: string;
@@ -130,6 +140,17 @@ userSchema
     this.age = Number(fullname.split(' ')[0]);
     this.name = fullname.split(' ')[1];
   });
+
+userSchema.enableBroadcastFor('find', {
+  type: 'post',
+  prepare(p) {
+    return JSON.stringify(p);
+  },
+});
+
+userSchema.broadcastHook(function (res) {
+  console.log('userSchema', res);
+});
 
 // const TodoModel = model('Todo', todoSchema);
 export const AddressModel = iodm.model('Address', addressSchema);

@@ -9,8 +9,16 @@ import type {
 import { AbstractModel } from './model';
 
 class Iodm {
-  models: Record<string, IModel> = {};
-  plugins: Array<{ fn: PluginFn<any, any, any, any>; opt?: any }> = [];
+  readonly BROADCAST_CHANNEL_NAME: string = '__iodm_broadcast_channel__';
+  models: Record<string, IModel>;
+  plugins: Array<{ fn: PluginFn<any, any, any, any>; opt?: any }>;
+  channel: BroadcastChannel;
+
+  constructor() {
+    this.models = {};
+    this.plugins = [];
+    this.channel = new BroadcastChannel(this.BROADCAST_CHANNEL_NAME);
+  }
 
   plugin(fn: PluginFn<any, any, any, any>, opt?: any) {
     this.plugins.push({ fn, opt });
