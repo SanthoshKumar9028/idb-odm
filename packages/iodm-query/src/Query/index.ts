@@ -30,7 +30,8 @@ export abstract class AbstractQuery<
 > implements IQuery<ResultType, DocumentType> {
   private idb: IDBDatabase;
   private storeName: string;
-  private options?: QueryOptions<DocumentType>;
+  private options: QueryOptions<DocumentType>;
+  private execCount: number = 0;
   abstract middleware: MiddlewareExecutor;
 
   /**
@@ -41,6 +42,11 @@ export abstract class AbstractQuery<
   constructor(idb: IDBDatabase, storeName: string) {
     this.idb = idb;
     this.storeName = storeName;
+    this.options = {
+      type: "_find",
+      query: { $key: null },
+      execOptions: {},
+    }
   }
 
   /**
@@ -746,6 +752,12 @@ export abstract class AbstractQuery<
       );
     }
 
+    if (this.execCount > 0) {
+      throw new Error(`Query was already executed: ${this.toString()}`);
+    }
+
+    this.execCount += 1;
+
     const op = queryInternalKeysMap[this.options.type];
 
     this.middleware.execPre('exec', this);
@@ -766,6 +778,10 @@ export abstract class AbstractQuery<
     onRejected?: (reason: any) => any | PromiseLike<any>
   ): Promise<ResultType> {
     return this.exec().then(onFulfilled, onRejected);
+  }
+
+  toString() {
+    return `Query<${this.storeName}>.${queryInternalKeysMap[this.options.type]}()`;
   }
 }
 

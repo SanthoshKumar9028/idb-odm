@@ -15,7 +15,6 @@ export interface RefSchemaConstructorOptions
 export class RefSchema extends BaseSchema {
   protected ref: string;
   protected valueSchema: BaseSchema;
-  protected subDocId: unknown;
 
   constructor(options: RefSchemaConstructorOptions) {
     super(options);
@@ -76,8 +75,6 @@ export class RefSchema extends BaseSchema {
       if (typeof subDocId === 'string' || typeof subDocId === 'number') {
         const RefModel = this.getRefModel();
 
-        this.subDocId = subDocId;
-
         return await new Query(options.idb, this.ref).findById(subDocId, {
           Constructor: RefModel,
           // need to remove the prefix for nested objects
@@ -100,6 +97,6 @@ export class RefSchema extends BaseSchema {
       );
     }
 
-    return this.valueSchema.castFrom(value ?? this.subDocId, options);
+    return this.valueSchema.castFrom(value, options);
   }
 }
