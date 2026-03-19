@@ -7,5 +7,5 @@
 **Signature:**
 
 ```typescript
-export type QueryFindOptions = QueryOptionsWithTransaction;
+export type QueryFindOptions = QueryFunctionOptions<QueryExecutorFindOptions>;
 ```

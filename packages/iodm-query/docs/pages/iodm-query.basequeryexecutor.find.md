@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-find<ResultType>(query: QueryRootFilter, options: QueryExecutorCommonOptions): Promise<ResultType>;
+find<ResultType>(query: QueryRootFilter, options: QueryExecutorFindOptions): Promise<ResultType>;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ options
 
 </td><td>
 
-QueryExecutorCommonOptions
+QueryExecutorFindOptions
 
 
 </td><td>

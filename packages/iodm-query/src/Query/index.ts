@@ -43,10 +43,10 @@ export abstract class AbstractQuery<
     this.idb = idb;
     this.storeName = storeName;
     this.options = {
-      type: "_find",
+      type: '_find',
       query: { $key: null },
       execOptions: {},
-    }
+    };
   }
 
   /**
@@ -724,11 +724,31 @@ export abstract class AbstractQuery<
     return this;
   }
 
+  /**
+   * Adds a new pre middleware function
+   *
+   * @remarks
+   * Pre middlewares will be executed before the query execution, and they can modify the query instance or even throw an error to prevent the query execution
+   *
+   * @param name - Event name
+   * @param fn - Middleware function
+   * @returns
+   */
   pre(name: string, fn: MiddlewareFn): Query<ResultType, DocumentType> {
     this.middleware.pre(name, fn);
     return this;
   }
 
+  /**
+   * Adds a new post middleware function
+   *
+   * @remarks
+   * Post middlewares will be executed after the query execution, and they can modify the returned result or even throw an error
+   *
+   * @param name - Event name
+   * @param fn - Middleware function
+   * @returns
+   */
   post(name: string, fn: MiddlewareFn): Query<ResultType, DocumentType> {
     this.middleware.post(name, fn);
     return this;
@@ -780,6 +800,18 @@ export abstract class AbstractQuery<
     return this.exec().then(onFulfilled, onRejected);
   }
 
+  /**
+   * Returns a string representation of the query, useful for debugging purposes
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * console.log(query.find({ $key: "text" }).toString());
+   * // Output: Query<store-name>.find()
+   * ```
+   *
+   * @returns String
+   */
   toString() {
     return `Query<${this.storeName}>.${queryInternalKeysMap[this.options.type]}()`;
   }

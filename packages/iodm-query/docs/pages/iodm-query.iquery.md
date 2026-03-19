@@ -35,6 +35,33 @@ Description
 </td></tr>
 <tr><td>
 
+[populate(path)](./iodm-query.iquery.populate.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[post(name, fn)](./iodm-query.iquery.post.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[pre(name, fn)](./iodm-query.iquery.pre.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [then(onFulfilled, onRejected)](./iodm-query.iquery.then.md)
 
 

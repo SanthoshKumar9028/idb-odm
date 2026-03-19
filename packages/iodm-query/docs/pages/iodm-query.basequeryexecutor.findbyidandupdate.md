@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-findByIdAndUpdate<ResultType, DocumentType = unknown>(id: IDBValidKey, payload: (param: DocumentType) => DocumentType, options: QueryExecutorFindByIdAndUpdateOptions): Promise<ResultType>;
+findByIdAndUpdate<ResultType, DocumentType = unknown>(id: IDBValidKey, updater: QueryExecutorUpdateManyUpdater<DocumentType>, options: QueryExecutorFindByIdAndUpdateOptions): Promise<ResultType>;
 ```
 
 ## Parameters
@@ -44,12 +44,12 @@ IDBValidKey
 </td></tr>
 <tr><td>
 
-payload
+updater
 
 
 </td><td>
 
-(param: DocumentType) =&gt; DocumentType
+QueryExecutorUpdateManyUpdater&lt;DocumentType&gt;
 
 
 </td><td>

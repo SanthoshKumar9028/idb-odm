@@ -102,7 +102,7 @@ Description
 </td></tr>
 <tr><td>
 
-[findByIdAndUpdate(id, payload, options)](./iodm-query.basequeryexecutor.findbyidandupdate.md)
+[findByIdAndUpdate(id, updater, options)](./iodm-query.basequeryexecutor.findbyidandupdate.md)
 
 
 </td><td>
