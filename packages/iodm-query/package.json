@@ -9,7 +9,11 @@
     "dist"
   ],
   "keywords": [
-    "indexeddb"
+    "indexeddb",
+    "query",
+    "wrapper",
+    "odm",
+    "browser"
   ],
   "author": "Santhoshkumar",
   "license": "MIT",
