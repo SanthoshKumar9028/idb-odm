@@ -24,10 +24,23 @@ describe('Query', () => {
     transaction: mockTransaction,
   };
 
-  it('should throw error is one of the query operations is not called', async () => {
-    await expect(new Query<ITestUser[]>(mockIdb, 'test')).rejects.toThrow(
-      'operations must be called'
-    );
+  it('should use find as a default operation', async () => {
+    (
+      QueryExecutorFactory.getInstance as MockedFunction<any>
+    ).mockImplementation(() => ({ find: () => [] }));
+
+    await expect(new Query<ITestUser[]>(mockIdb, 'test')).resolves.toEqual([]);
+  });
+
+  it('should throw error when executing a query more then one time', async () => {
+    (
+      QueryExecutorFactory.getInstance as MockedFunction<any>
+    ).mockImplementation(() => ({ find: () => [] }));
+
+    const prom = new Query<ITestUser[]>(mockIdb, 'test');
+
+    await expect(prom).resolves.toEqual([]);
+    await expect(prom).rejects.instanceOf(Error);
   });
 
   describe('openCursor', () => {
@@ -468,6 +481,40 @@ describe('Query', () => {
       );
 
       expect(mockTransaction).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('pre', () => {
+    it('should call pre method', async () => {
+      (
+        QueryExecutorFactory.getInstance as MockedFunction<any>
+      ).mockImplementation(() => ({
+        find: () => [],
+      }));
+      const preMiddleware = vi.fn();
+
+      const res = new Query(mockIdb, 'test')
+        .pre('find', preMiddleware)
+        .pre('exec', preMiddleware);
+
+      expect(await res).toEqual([]);
+      expect(preMiddleware).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('post', () => {
+    it('should call post method', async () => {
+      (
+        QueryExecutorFactory.getInstance as MockedFunction<any>
+      ).mockImplementation(() => ({
+        find: () => [],
+      }));
+      const postMiddleware = vi.fn();
+
+      const res = new Query(mockIdb, 'test').post('find', postMiddleware);
+
+      expect(await res).toEqual([]);
+      expect(postMiddleware).toHaveBeenCalledTimes(1);
     });
   });
 });
