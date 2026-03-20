@@ -27,9 +27,9 @@ export class NumberSchema extends BaseSchema {
     if (value === undefined || value === null) return value;
 
     if (typeof value !== 'number' || isNaN(value)) {
-      throw new Error('cant cast to a number');
+      throw new Error('value is not a number');
     }
 
-    return Number(value);
+    return value;
   }
 }

@@ -7,8 +7,7 @@ import iodm from '../../../iodm';
 import { Query } from 'iodm-query';
 import { RefSchema } from '../ref';
 
-export interface RefArraySchemaConstructorOptions
-  extends BaseSchemaConstructorOptions {
+export interface RefArraySchemaConstructorOptions extends BaseSchemaConstructorOptions {
   ref: string;
   valueSchema: BaseSchema;
 }
@@ -17,7 +16,10 @@ export class RefArraySchema extends RefSchema {
   validate(value: unknown, options: SchemaMethodOptions): boolean {
     this.validationRules.forEach((rule) => rule.validate(value, options));
 
-    if (!Array.isArray(value)) return true;
+    if (value === undefined || value === null) return true;
+    if (!Array.isArray(value)) {
+      throw new Error('cant cast to a array');
+    }
 
     return value.every((v) => super.validate(v, options));
   }
@@ -74,8 +76,11 @@ export class RefArraySchema extends RefSchema {
     return subDocIds;
   }
 
-  castFrom(value: unknown, options: SchemaMethodOptions): unknown {
-    if (!Array.isArray(value)) return undefined;
+  castFrom(value: unknown, options: SchemaMethodOptions) {
+    if (value === undefined || value === null) return value;
+    if (!Array.isArray(value)) {
+      throw new Error('cant cast to a array');
+    }
 
     return value.map((v) => super.castFrom(v, options));
   }

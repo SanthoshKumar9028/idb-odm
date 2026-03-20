@@ -1,16 +1,16 @@
 import type { SchemaOptions } from './types';
 
-const sechemaOptionsDefault: SchemaOptions = {
+const schemaOptionsDefault: SchemaOptions = {
   keyPath: '_id',
 };
 
 export const applySchemaOptionsDefaults = (
-  options: Partial<SchemaOptions> = sechemaOptionsDefault
+  options: Partial<SchemaOptions> = schemaOptionsDefault
 ): SchemaOptions => {
-  const newOptions = { ...sechemaOptionsDefault };
+  const newOptions = { ...schemaOptionsDefault };
 
   (Object.keys(newOptions) as (keyof SchemaOptions)[]).forEach((key) => {
-    newOptions[key] = options[key] ?? sechemaOptionsDefault[key];
+    newOptions[key] = options[key] ?? schemaOptionsDefault[key];
   });
 
   return newOptions;

@@ -18,6 +18,7 @@ export interface ModelInstance {
   save(options?: ModelSaveOptions): Promise<any>;
   validate(): boolean;
   createInstanceTransaction(mode?: string): IDBTransaction;
+  toJSON(): Record<string, any>;
 }
 
 export interface ModelOptions {

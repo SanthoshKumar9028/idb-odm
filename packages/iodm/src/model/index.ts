@@ -193,7 +193,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   }
 
   /**
-   * Model find method that overrieds the IQuery find method
+   * Model find method that overrides the IQuery find method
    * @returns empty array
    */
   static find(filter?: QueryRootFilter) {
