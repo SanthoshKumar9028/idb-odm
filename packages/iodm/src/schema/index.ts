@@ -20,6 +20,10 @@ import { RefSchema } from './non-primitive/ref/index.ts';
 import { NumberSchema } from './primitive/number.ts';
 import { StringSchema } from './primitive/string.ts';
 import { RefArraySchema } from './non-primitive/ref-array/index.ts';
+import { BooleanSchema } from './primitive/boolean/index.ts';
+import { DateSchema } from './non-primitive/date/index.ts';
+import { MapSchema } from './non-primitive/map/index.ts';
+import { SetSchema } from './non-primitive/set/index.ts';
 import { VirtualType } from './virtual-type/VirtualType.ts';
 import { middlewareKeys } from './constants.ts';
 import CustomMiddlewareExecutor from './custom-middleware-executor.ts';
@@ -28,9 +32,17 @@ type SchemaDefinitionValue =
   | Schema
   | typeof String
   | typeof Number
+  | typeof Boolean
+  | typeof Date
+  | typeof Map
+  | typeof Set
   | SchemaDefinitionValue[]
   | { type: typeof String; required?: boolean; ref?: string }
   | { type: typeof Number; required?: boolean; min?: number; ref?: string }
+  | { type: typeof Boolean; required?: boolean }
+  | { type: typeof Date; required?: boolean }
+  | { type: typeof Map; required?: boolean }
+  | { type: typeof Set; required?: boolean }
   | { type: SchemaDefinitionValue[]; required?: boolean };
 
 type SchemaDefinition<RawDocType> = Partial<
@@ -129,7 +141,9 @@ export class Schema<
       }
 
       return new StringSchema(schemaOptions);
-    } else if (constructor === Number) {
+    }
+
+    if (constructor === Number) {
       const numberSchemaOptions: NumberSchemaConstructorOptions = schemaOptions;
 
       if ('min' in definition) {
@@ -148,7 +162,25 @@ export class Schema<
       }
 
       return new NumberSchema(numberSchemaOptions);
-    } else if (Array.isArray(constructor)) {
+    }
+
+    if (constructor === Boolean) {
+      return new BooleanSchema(schemaOptions);
+    }
+
+    if (constructor === Date) {
+      return new DateSchema(schemaOptions);
+    }
+
+    if (constructor === Map) {
+      return new MapSchema(schemaOptions);
+    }
+
+    if (constructor === Set) {
+      return new SetSchema(schemaOptions);
+    }
+
+    if (Array.isArray(constructor)) {
       if (constructor.length === 0) {
         throw new Error(`Array type must have a value type`);
       }
@@ -168,7 +200,9 @@ export class Schema<
         valueSchema: this.parseSchemaDefinition(prop, constructor[0]),
         ...schemaOptions,
       });
-    } else if (constructor instanceof Schema) {
+    }
+
+    if (constructor instanceof Schema) {
       return constructor.clone();
     }
 

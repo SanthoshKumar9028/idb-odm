@@ -65,7 +65,7 @@ describe('Schema', () => {
   });
 
   it('should throw for unsupported type', () => {
-    expect(() => new Schema({ x: Boolean as any })).toThrow(
+    expect(() => new Schema({ x: Error as any })).toThrow(
       'Type for x is not supported'
     );
   });
