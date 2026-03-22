@@ -274,7 +274,29 @@ export class Schema<
     return virtualProp;
   }
 
-  pre<E extends MiddlewareKeys | RegExp | MiddlewareKeys[] | RegExp[]>(
+  method<K extends keyof TInstanceMethods>(
+    name: K,
+    func: InjectFunctionContext<
+      RawDocType & TInstanceMethods,
+      TInstanceMethods[K]
+    >
+  ) {
+    this.methods[name] = func;
+    return this;
+  }
+
+  static<K extends keyof TStaticMethods>(
+    name: K,
+    func: InjectFunctionContext<
+      IModel<RawDocType, TInstanceMethods>,
+      TStaticMethods[K]
+    >
+  ) {
+    this.statics[name] = func;
+    return this;
+  }
+
+  pre<E extends MiddlewareKeys | RegExp | (MiddlewareKeys | RegExp)[]>(
     name: E,
     fn: MiddlewareFn<FindMiddlewareContext<E, HydratedDoc>>
   ): Schema {
@@ -293,7 +315,7 @@ export class Schema<
     return this;
   }
 
-  post<E extends MiddlewareKeys | RegExp | MiddlewareKeys[] | RegExp[]>(
+  post<E extends MiddlewareKeys | RegExp | (MiddlewareKeys | RegExp)[]>(
     name: E,
     fn: MiddlewareFn<FindMiddlewareContext<E, HydratedDoc>>
   ): Schema {

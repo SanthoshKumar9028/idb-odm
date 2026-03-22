@@ -231,4 +231,261 @@ describe('Schema', () => {
 
     expect(schema.broadcastMiddleware).toBeDefined();
   });
+
+  describe('Instance Methods (method)', () => {
+    it('method should register an instance method', () => {
+      const schema = new Schema<{ name: string }, { getName: () => void }>({
+        name: String,
+      });
+      const methodFn = vi.fn<(this: any) => string>(function () {
+        return (this as any).name?.toUpperCase();
+      });
+
+      schema.method('getName', methodFn);
+
+      expect(schema.methods['getName']).toBe(methodFn);
+    });
+
+    it('method should store multiple instance methods', () => {
+      const schema = new Schema<
+        { firstName: string; lastName: string },
+        {
+          getFullName: () => string;
+          getInitials: () => string;
+        }
+      >({ firstName: String, lastName: String });
+
+      const getFullName = vi.fn<(this: any) => string>(function () {
+        return `${(this as any).firstName} ${(this as any).lastName}`;
+      });
+      const getInitials = vi.fn<(this: any) => string>(function () {
+        return (
+          (this as any).firstName?.charAt(0) + (this as any).lastName?.charAt(0)
+        );
+      });
+
+      schema.method('getFullName', getFullName);
+      schema.method('getInitials', getInitials);
+
+      expect(schema.methods['getFullName']).toBe(getFullName);
+      expect(schema.methods['getInitials']).toBe(getInitials);
+      expect(Object.keys(schema.methods)).toHaveLength(2);
+    });
+
+    it('method should override previous method with same name', () => {
+      const schema = new Schema<{ name: string }, { getName: () => void }>({
+        name: String,
+      });
+      const firstMethod = vi.fn();
+      const secondMethod = vi.fn();
+
+      schema.method('getName', firstMethod);
+      schema.method('getName', secondMethod);
+
+      expect(schema.methods['getName']).toBe(secondMethod);
+    });
+
+    it('method should be accessible by hydrated document instances', () => {
+      interface User {
+        name: string;
+      }
+
+      interface UserMethods {
+        getName(): string;
+        setName(name: string): void;
+      }
+
+      const schema = new Schema<User, UserMethods>({ name: String });
+
+      schema.method('getName', function () {
+        return (this as any).name;
+      });
+
+      schema.method('setName', function (newName: string) {
+        (this as any).name = newName;
+      });
+
+      expect(schema.methods['getName']).toBeDefined();
+      expect(schema.methods['setName']).toBeDefined();
+    });
+  });
+
+  describe('Static Methods (static)', () => {
+    it('static should register a static method', () => {
+      const schema = new Schema<
+        { name: string },
+        {},
+        { findByName: () => string }
+      >({ name: String });
+      const staticFn = vi.fn(() => 'static method result');
+
+      schema.static('findByName', staticFn);
+
+      expect(schema.statics['findByName']).toBe(staticFn);
+    });
+
+    it('static should store multiple static methods', () => {
+      const schema = new Schema<
+        { email: string; name: string },
+        {},
+        {
+          findByEmail: () => string;
+          findByName: () => string;
+          count: () => string;
+        }
+      >({
+        email: String,
+        name: String,
+      });
+      const findByEmail = vi.fn();
+      const findByName = vi.fn();
+      const count = vi.fn();
+
+      schema.static('findByEmail', findByEmail);
+      schema.static('findByName', findByName);
+      schema.static('count', count);
+
+      expect(schema.statics['findByEmail']).toBe(findByEmail);
+      expect(schema.statics['findByName']).toBe(findByName);
+      expect(schema.statics['count']).toBe(count);
+      expect(Object.keys(schema.statics)).toHaveLength(3);
+    });
+
+    it('static should override previous static method with same name', () => {
+      const schema = new Schema<{ name: string }, {}, { find: () => any }>({
+        name: String,
+      });
+      const firstStatic = vi.fn();
+      const secondStatic = vi.fn();
+
+      schema.static('find', firstStatic);
+      schema.static('find', secondStatic);
+
+      expect(schema.statics['find']).toBe(secondStatic);
+    });
+  });
+
+  describe('Pre Middleware with Patterns', () => {
+    it('pre should support RegExp pattern matching', () => {
+      const schema = new Schema({ name: String, age: Number });
+      const preFn = vi.fn();
+
+      schema.pre(/^validate|save$/, preFn);
+
+      expect(schema.middleware).toBeDefined();
+    });
+
+    it('pre should support array of middleware names', () => {
+      const schema = new Schema({ name: String });
+      const preFn = vi.fn();
+
+      schema.pre(['validate', 'save', 'insertOne'], preFn);
+
+      expect(schema.middleware).toBeDefined();
+    });
+
+    it('pre should support array of RegExp patterns', () => {
+      const schema = new Schema({ name: String });
+      const preFn = vi.fn();
+
+      schema.pre([/^validate/, /save$/], preFn);
+
+      expect(schema.middleware).toBeDefined();
+    });
+
+    it('pre should return Schema instance for chaining', () => {
+      const schema = new Schema({ name: String });
+      const preFn = vi.fn();
+
+      const result = schema.pre('validate', preFn);
+
+      expect(result).toBe(schema);
+    });
+
+    it('pre should support method chaining with multiple middleware', () => {
+      const schema = new Schema({ name: String });
+      const preFn1 = vi.fn();
+      const preFn2 = vi.fn();
+      const preFn3 = vi.fn();
+
+      const result = schema
+        .pre('validate', preFn1)
+        .pre('save', preFn2)
+        .pre(/^delete/, preFn3);
+
+      expect(result).toBe(schema);
+      expect(schema.middleware).toBeDefined();
+    });
+
+    it('pre with array should register multiple middleware', () => {
+      const schema = new Schema({ name: String });
+      const preFn = vi.fn();
+
+      schema.pre(['insertOne', 'updateOne', 'deleteOne'], preFn);
+
+      expect(schema.middleware).toBeDefined();
+    });
+  });
+
+  describe('Post Middleware with Patterns', () => {
+    it('post should support RegExp pattern matching', () => {
+      const schema = new Schema({ name: String });
+      const postFn = vi.fn();
+
+      schema.post(/^save|validate$/, postFn);
+
+      expect(schema.middleware).toBeDefined();
+    });
+
+    it('post should support array of middleware names', () => {
+      const schema = new Schema({ name: String });
+      const postFn = vi.fn();
+
+      schema.post(['find', 'findById'], postFn);
+
+      expect(schema.middleware).toBeDefined();
+    });
+
+    it('post should support array of RegExp patterns', () => {
+      const schema = new Schema({ name: String });
+      const postFn = vi.fn();
+
+      schema.post([/^find/, /^update/], postFn);
+
+      expect(schema.middleware).toBeDefined();
+    });
+
+    it('post should return Schema instance for chaining', () => {
+      const schema = new Schema({ name: String });
+      const postFn = vi.fn();
+
+      const result = schema.post('validate', postFn);
+
+      expect(result).toBe(schema);
+    });
+
+    it('post should support method chaining with multiple middleware', () => {
+      const schema = new Schema({ name: String });
+      const postFn1 = vi.fn();
+      const postFn2 = vi.fn();
+      const postFn3 = vi.fn();
+
+      const result = schema
+        .post('insertOne', postFn1)
+        .post('updateOne', postFn2)
+        .post(/^find/, postFn3);
+
+      expect(result).toBe(schema);
+      expect(schema.middleware).toBeDefined();
+    });
+
+    it('post with array should register multiple middleware', () => {
+      const schema = new Schema({ name: String });
+      const postFn = vi.fn();
+
+      schema.post(['save', 'validate', 'deleteOne'], postFn);
+
+      expect(schema.middleware).toBeDefined();
+    });
+  });
 });

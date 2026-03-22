@@ -57,7 +57,7 @@ interface IUser {
 
 interface InstanceMethods {
   printFullName: () => void;
-  printGreetings: (msg: string) => void;
+  printGreetings: (msg?: string) => void;
 }
 
 interface StaticsMethods {
@@ -110,9 +110,13 @@ userSchema.methods.printFullName = function () {
   console.log('fullname:', this.fullname);
 };
 
-userSchema.methods.printGreetings = function (msg = 'Hello') {
+// userSchema.methods.printGreetings = function (msg = 'Hello') {
+//   console.log(msg, this.name);
+// };
+
+userSchema.method('printGreetings', function (msg = 'Hello') {
   console.log(msg, this.name);
-};
+});
 
 userSchema.statics.getCount = async function () {
   const res = await this.find();
