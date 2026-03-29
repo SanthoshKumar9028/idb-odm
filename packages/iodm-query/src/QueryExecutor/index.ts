@@ -27,7 +27,12 @@ export class BaseQueryExecutor {
     query: QueryRootFilter,
     options: QueryExecutorOpenCursorOptions
   ): Promise<ResultType> {
-    const { storeName, transaction, throwOnError = true } = options;
+    const {
+      storeName,
+      transaction,
+      throwOnError = true,
+      Constructor,
+    } = options;
 
     return {
       async *[Symbol.asyncIterator]() {
@@ -62,7 +67,14 @@ export class BaseQueryExecutor {
               cursor.continue();
 
               if (evalFilter(query, cursor.value)) {
-                yield cursor.value;
+                const newDoc =
+                  cursor.value && Constructor
+                    ? await Constructor.preProcess(cursor.value, options)
+                    : cursor.value;
+
+                yield newDoc && Constructor
+                  ? new Constructor(newDoc, { isNew: false })
+                  : newDoc;
               }
             } else {
               break;

@@ -1,7 +1,12 @@
 import type {
   Query,
+  QueryDeleteOneOptions,
   QueryExecutorGetCommonOptions,
+  QueryFindByIdAndDeleteOptions,
   QueryFindByIdAndUpdateOptions,
+  QueryFindByIdOptions,
+  QueryFindOptions,
+  QueryOpenCursorOptions,
 } from 'iodm-query';
 import type { Schema } from '../schema';
 import type {
@@ -40,20 +45,44 @@ export interface IModel<
   getDB(): IDBDatabase;
   setDB(idb: IDBDatabase): void;
   getStoreName(): string;
+  createTransaction(mode?: IDBTransactionMode | undefined): IDBTransaction;
   preProcess(doc: any, options: QueryExecutorGetCommonOptions): Promise<any>;
   onUpgradeNeeded(idb: IDBDatabase): void;
   syncModelToSchema({ name, schema }: { name: string; schema: Schema }): void;
 
-  find(filter?: QueryRootFilter): Query<HydratedDoc[], unknown>;
-  findById(id: IDBValidKey): Query<HydratedDoc, unknown>;
+  openCursor(
+    filter?: QueryRootFilter,
+    options?: QueryOpenCursorOptions
+  ): Query<
+    {
+      [Symbol.asyncIterator](): AsyncGenerator<
+        HydratedDoc,
+        { done: boolean } | undefined,
+        unknown
+      >;
+    },
+    unknown
+  >;
+  find(
+    filter?: QueryRootFilter,
+    options?: QueryFindOptions
+  ): Query<HydratedDoc[], unknown>;
+  findById(
+    id: IDBValidKey,
+    options?: QueryFindByIdOptions
+  ): Query<HydratedDoc, unknown>;
   findByIdAndUpdate(
     id: IDBValidKey,
     payload: QueryExecutorUpdateManyUpdater<TRawDocType>,
     options?: QueryFindByIdAndUpdateOptions
   ): Query<HydratedDoc, unknown>;
-  findByIdAndDelete(id: IDBValidKey): Query<HydratedDoc, unknown>;
+  findByIdAndDelete(
+    id: IDBValidKey,
+    options?: QueryFindByIdAndDeleteOptions
+  ): Query<HydratedDoc, unknown>;
   deleteOne(
-    filter?: QueryRootFilter
+    filter?: QueryRootFilter,
+    options?: QueryDeleteOneOptions
   ): Query<QueryExecutorDeleteManyResponse, unknown>;
 }
 

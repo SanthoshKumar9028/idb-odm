@@ -1,6 +1,11 @@
 import type {
+  QueryFindOptions,
   QueryExecutorGetCommonOptions,
   QueryFindByIdAndUpdateOptions,
+  QueryOpenCursorOptions,
+  QueryDeleteOneOptions,
+  QueryFindByIdOptions,
+  QueryFindByIdAndDeleteOptions,
 } from 'iodm-query';
 import type {
   QueryExecutorUpdateManyUpdater,
@@ -82,7 +87,9 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       return queryResult;
     } catch (e) {
       if (!(e instanceof Event && e.type === 'error')) {
-        transaction.abort();
+        try {
+          transaction.abort();
+        } catch {}
       }
       throw e;
     }
@@ -144,7 +151,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     return _schema;
   }
 
-  static getDB(obj?: any) {
+  static getDB(obj?: any): IDBDatabase {
     const _db = obj ? Object.getPrototypeOf(obj).constructor.db : this.db;
 
     if (!_db) {
@@ -185,28 +192,40 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     return this.getSchema().preProcess(doc, options);
   }
 
-  private static createTransaction(mode?: IDBTransactionMode) {
+  static createTransaction(mode?: IDBTransactionMode) {
     return this.getDB().transaction(
       [this.getStoreName(), ...this.getSchema().getRefNames()],
       mode
     );
   }
 
-  /**
-   * Model find method that overrides the IQuery find method
-   * @returns empty array
-   */
-  static find(filter?: QueryRootFilter) {
+  static openCursor(
+    filter?: QueryRootFilter,
+    options?: QueryOpenCursorOptions
+  ) {
+    return new this.Query(this.getDB(), this.getStoreName()).openCursor(
+      filter,
+      {
+        Constructor: this,
+        transaction: this.createTransaction('readonly'),
+        ...options,
+      }
+    );
+  }
+
+  static find(filter?: QueryRootFilter, options?: QueryFindOptions) {
     return new this.Query(this.getDB(), this.getStoreName()).find(filter, {
       Constructor: this,
       transaction: this.createTransaction('readonly'),
+      ...options,
     });
   }
 
-  static findById(id: IDBValidKey) {
+  static findById(id: IDBValidKey, options?: QueryFindByIdOptions) {
     return new this.Query(this.getDB(), this.getStoreName()).findById(id, {
       Constructor: this,
       transaction: this.createTransaction('readonly'),
+      ...options,
     });
   }
 
@@ -226,19 +245,24 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     );
   }
 
-  static findByIdAndDelete(id: IDBValidKey) {
+  static findByIdAndDelete(
+    id: IDBValidKey,
+    options?: QueryFindByIdAndDeleteOptions
+  ) {
     return new this.Query(this.getDB(), this.getStoreName()).findByIdAndDelete(
       id,
       {
         Constructor: this,
         transaction: this.createTransaction('readwrite'),
+        ...options,
       }
     );
   }
 
-  static deleteOne(filter?: QueryRootFilter) {
+  static deleteOne(filter?: QueryRootFilter, options?: QueryDeleteOneOptions) {
     return new this.Query(this.getDB(), this.getStoreName()).deleteOne(filter, {
       transaction: this.createTransaction('readwrite'),
+      ...options,
     });
   }
 

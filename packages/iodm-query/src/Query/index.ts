@@ -709,7 +709,8 @@ export abstract class AbstractQuery<
       this.options?.type === '_find' ||
       this.options?.type === '_findById' ||
       this.options?.type === '_findByIdAndUpdate' ||
-      this.options?.type === '_findByIdAndDelete'
+      this.options?.type === '_findByIdAndDelete' ||
+      this.options?.type === '_openCursor'
     ) {
       this.options.execOptions.populateFields =
         this.options.execOptions.populateFields || {};

@@ -1,7 +1,18 @@
-import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { describe, expect, it, beforeEach, vi, afterEach } from 'vitest';
 import { AbstractModel } from './index';
 import { Schema } from '../schema';
 import iodm from '../iodm';
+
+vi.mock('iodm-query', async () => {
+  const actual = await vi.importActual('iodm-query');
+  return {
+    ...actual,
+    Query: class Query {
+      insertOne() {}
+      replaceOne() {}
+    },
+  };
+});
 
 class TestModel extends AbstractModel {}
 
@@ -15,6 +26,9 @@ const createFakeDB = () => {
 };
 
 describe('AbstractModel', () => {
+  let mockDB: IDBDatabase;
+  let mockQueryInstance: any;
+
   beforeEach(() => {
     // Reset static state
     (TestModel as any).schema = null;
@@ -22,9 +36,33 @@ describe('AbstractModel', () => {
     (TestModel as any).db = null;
     (TestModel as any).Query = undefined;
     vi.clearAllMocks();
+
+    // Setup for query methods
+    const schema = new Schema({ name: String });
+    mockDB = createFakeDB();
+    (TestModel as any).schema = schema;
+    (TestModel as any).storeName = 'testStore';
+    TestModel.setDB(mockDB);
+
+    // Mock Query class
+    mockQueryInstance = {
+      openCursor: vi.fn().mockReturnValue('openCursorResult'),
+      find: vi.fn().mockReturnValue('findResult'),
+      findById: vi.fn().mockReturnValue('findByIdResult'),
+      findByIdAndUpdate: vi.fn().mockReturnValue('findByIdAndUpdateResult'),
+      findByIdAndDelete: vi.fn().mockReturnValue('findByIdAndDeleteResult'),
+      deleteOne: vi.fn().mockReturnValue('deleteOneResult'),
+    };
+
+    const MockQuery = vi.fn().mockImplementation(() => mockQueryInstance);
+    (TestModel as any).Query = MockQuery;
   });
 
   it('should throw when schema/db/store is missing', () => {
+    (TestModel as any).schema = null;
+    (TestModel as any).db = null;
+    (TestModel as any).storeName = null;
+
     expect(() => TestModel.getSchema()).toThrow('Schema is required');
     expect(() => TestModel.getDB()).toThrow('db is required');
     expect(() => TestModel.getStoreName()).toThrow('db is required');
@@ -116,38 +154,6 @@ describe('AbstractModel', () => {
     expect(instance.toJSON()).toEqual({ _id: '1', name: 'Bob' });
   });
 
-  it('syncModelToSchema should set schema and define virtuals', () => {
-    const originalChannel = iodm.channel;
-    (iodm as any).channel = {
-      addEventListener: vi.fn(),
-      postMessage: vi.fn(),
-    } as any;
-
-    try {
-      class SyncModel extends AbstractModel {}
-
-      const schema = new Schema({ first: String, last: String });
-      schema.virtual('fullName').get(function (this: any) {
-        return `${this.first} ${this.last}`;
-      });
-
-      SyncModel.syncModelToSchema({ name: 'syncStore', schema });
-
-      expect(SyncModel.getStoreName()).toBe('syncStore');
-      expect(SyncModel.getSchema()).not.toBe(schema); // cloned
-
-      const instance = new SyncModel({ first: 'John', last: 'Doe' });
-      expect((instance as any).fullName).toBe('John Doe');
-
-      // second sync attempt should be noop
-      const newSchema = new Schema({ a: String });
-      SyncModel.syncModelToSchema({ name: 'syncStore2', schema: newSchema });
-      expect(SyncModel.getStoreName()).toBe('syncStore');
-    } finally {
-      (iodm as any).channel = originalChannel;
-    }
-  });
-
   it('createInstanceTransaction should call db.transaction with ref names', () => {
     const mockDB = createFakeDB();
     const schema = new Schema({ name: String });
@@ -162,31 +168,466 @@ describe('AbstractModel', () => {
     expect(mockDB.transaction).toHaveBeenCalledWith(['testStore'], 'readwrite');
   });
 
-  it('static query helpers should call Query methods', async () => {
-    const mockResult = { called: true };
-    const queryClass = vi.fn().mockImplementation(() => ({
-      find: vi.fn(() => mockResult),
-      findById: vi.fn(() => mockResult),
-      findByIdAndUpdate: vi.fn(() => mockResult),
-      findByIdAndDelete: vi.fn(() => mockResult),
-      deleteOne: vi.fn(() => mockResult),
-    }));
+  describe('save', () => {
+    let originalChannel: any;
 
-    const schema = new Schema({ name: String });
-    const db = createFakeDB();
-    (TestModel as any).schema = schema;
-    (TestModel as any).storeName = 'testStore';
-    TestModel.setDB(db);
-    (TestModel as any).Query = queryClass;
+    beforeEach(() => {
+      originalChannel = iodm.channel;
+      (iodm as any).channel = {
+        addEventListener: vi.fn(),
+        postMessage: vi.fn(),
+      } as any;
+    });
 
-    expect(TestModel.find({ a: 1 } as any)).toBe(mockResult);
-    expect(TestModel.findById('x')).toBe(mockResult);
-    expect(
-      TestModel.findByIdAndUpdate('x', { $set: { name: 'x' } } as any)
-    ).toBe(mockResult);
-    expect(TestModel.findByIdAndDelete('x')).toBe(mockResult);
-    expect(TestModel.deleteOne({ a: 1 } as any)).toBe(mockResult);
+    afterEach(() => {
+      (iodm as any).channel = originalChannel;
+    });
 
-    expect(queryClass).toHaveBeenCalledTimes(5);
+    it('should save new document with middleware and validation', async () => {
+      const schema = new Schema({ name: String });
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+      TestModel.setDB(mockDB);
+
+      const instance = new TestModel(
+        { _id: '1', name: 'Test' },
+        { isNew: true }
+      );
+
+      // Mock middleware
+      const mockMiddleware = {
+        execPre: vi.fn(),
+        execPost: vi.fn().mockReturnValue('postResult'),
+      };
+      (instance as any).documentMiddleware = mockMiddleware;
+
+      // Mock schema methods
+      const mockSchema = {
+        save: vi.fn().mockResolvedValue(undefined),
+        validate: vi.fn().mockReturnValue(true),
+        castFrom: vi.fn().mockReturnValue({ _id: '1', name: 'Test' }),
+        getRefNames: vi.fn().mockReturnValue([]),
+      };
+      vi.spyOn(instance as any, 'getInstanceSchema').mockReturnValue(
+        mockSchema as any
+      );
+      vi.spyOn(instance as any, 'getInstanceDB').mockReturnValue(mockDB);
+      vi.spyOn(instance as any, 'getInstanceStoreName').mockReturnValue(
+        'testStore'
+      );
+
+      const result = await instance.save();
+
+      expect(mockMiddleware.execPre).toHaveBeenCalled();
+      expect(mockMiddleware.execPost).toHaveBeenCalled();
+      expect(result).toBe('postResult');
+      expect((instance as any).$_isNew).toBe(false);
+    });
+
+    it('should save existing document', async () => {
+      const schema = new Schema({ name: String });
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+      TestModel.setDB(mockDB);
+
+      const instance = new TestModel(
+        { _id: '1', name: 'Test' },
+        { isNew: false }
+      );
+
+      // Mock middleware
+      const mockMiddleware = {
+        execPre: vi.fn(),
+        execPost: vi.fn().mockReturnValue('postResult'),
+      };
+      (instance as any).documentMiddleware = mockMiddleware;
+
+      // Mock schema methods
+
+      const mockSchema = {
+        save: vi.fn().mockResolvedValue(undefined),
+        validate: vi.fn().mockReturnValue(true),
+        castFrom: vi.fn().mockReturnValue({ _id: '1', name: 'Test' }),
+        getRefNames: vi.fn().mockReturnValue([]),
+      };
+      vi.spyOn(instance as any, 'getInstanceSchema').mockReturnValue(
+        mockSchema as any
+      );
+
+      const result = await instance.save();
+
+      expect(result).toBe('postResult');
+    });
+  });
+
+  describe('handlePreExec', () => {
+    let originalChannel: any;
+
+    beforeEach(() => {
+      originalChannel = iodm.channel;
+      (iodm as any).channel = {
+        addEventListener: vi.fn(),
+        postMessage: vi.fn(),
+      } as any;
+    });
+
+    afterEach(() => {
+      (iodm as any).channel = originalChannel;
+    });
+
+    it('should post message for pre event', () => {
+      const schema = new Schema({ name: String });
+      schema.broadcastEnabledEvents = {
+        testEvent: {
+          type: 'pre',
+          prepare: (payload: any) => ({ prepared: payload }),
+        },
+      };
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      (TestModel as any).handlePreExec('testEvent', 'testPayload');
+
+      expect(iodm.channel.postMessage).toHaveBeenCalledWith({
+        model: 'testStore',
+        type: 'pre',
+        event: 'testEvent',
+        payload: { prepared: 'testPayload' },
+      });
+    });
+
+    it('should not post message if event not enabled', () => {
+      const schema = new Schema({ name: String });
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      (TestModel as any).handlePreExec('testEvent', 'testPayload');
+
+      expect(iodm.channel.postMessage).not.toHaveBeenCalled();
+    });
+
+    it('should not post message if event type is post', () => {
+      const schema = new Schema({ name: String });
+      schema.broadcastEnabledEvents = {
+        testEvent: {
+          type: 'post',
+          prepare: (payload: any) => ({ prepared: payload }),
+        },
+      };
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      (TestModel as any).handlePreExec('testEvent', 'testPayload');
+
+      expect(iodm.channel.postMessage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('handlePostExec', () => {
+    let originalChannel: any;
+
+    beforeEach(() => {
+      originalChannel = iodm.channel;
+      (iodm as any).channel = {
+        addEventListener: vi.fn(),
+        postMessage: vi.fn(),
+      } as any;
+    });
+
+    afterEach(() => {
+      (iodm as any).channel = originalChannel;
+    });
+
+    it('should post message for post event', () => {
+      const schema = new Schema({ name: String });
+      schema.broadcastEnabledEvents = {
+        testEvent: {
+          type: 'post',
+          prepare: (payload: any) => ({ prepared: payload }),
+        },
+      };
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      (TestModel as any).handlePostExec('testEvent', 'testPayload');
+
+      expect(iodm.channel.postMessage).toHaveBeenCalledWith({
+        model: 'testStore',
+        type: 'post',
+        event: 'testEvent',
+        payload: { prepared: 'testPayload' },
+      });
+    });
+
+    it('should not post message if event not enabled', () => {
+      const schema = new Schema({ name: String });
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      (TestModel as any).handlePostExec('testEvent', 'testPayload');
+
+      expect(iodm.channel.postMessage).not.toHaveBeenCalled();
+    });
+
+    it('should not post message if event type is pre', () => {
+      const schema = new Schema({ name: String });
+      schema.broadcastEnabledEvents = {
+        testEvent: {
+          type: 'pre',
+          prepare: (payload: any) => ({ prepared: payload }),
+        },
+      };
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      (TestModel as any).handlePostExec('testEvent', 'testPayload');
+
+      expect(iodm.channel.postMessage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('syncModelToSchema', () => {
+    let originalChannel: any;
+
+    beforeEach(() => {
+      originalChannel = iodm.channel;
+      (iodm as any).channel = {
+        addEventListener: vi.fn(),
+        postMessage: vi.fn(),
+      } as any;
+    });
+
+    afterEach(() => {
+      (iodm as any).channel = originalChannel;
+    });
+
+    it('should set schema and storeName', () => {
+      class SyncModel extends AbstractModel {}
+
+      const schema = new Schema({ name: String });
+      SyncModel.syncModelToSchema({ name: 'syncStore', schema });
+
+      expect(SyncModel.getStoreName()).toBe('syncStore');
+      expect(SyncModel.getSchema()).not.toBe(schema); // cloned
+    });
+
+    it('should define virtual properties', () => {
+      class SyncModel extends AbstractModel {}
+
+      const schema = new Schema({ first: String, last: String });
+      schema.virtual('fullName').get(function (this: any) {
+        return `${this.first} ${this.last}`;
+      });
+
+      SyncModel.syncModelToSchema({ name: 'syncStore', schema });
+
+      const instance = new SyncModel({ first: 'John', last: 'Doe' });
+      expect((instance as any).fullName).toBe('John Doe');
+    });
+
+    it('should define instance methods', () => {
+      class SyncModel extends AbstractModel {}
+
+      const schema = new Schema<any, { greet: () => string }>({ name: String });
+      schema.method('greet', function (this: any) {
+        return `Hello, ${this.name}`;
+      });
+
+      SyncModel.syncModelToSchema({ name: 'syncStore', schema });
+
+      const instance = new SyncModel({ name: 'John' });
+      expect((instance as any).greet()).toBe('Hello, John');
+    });
+
+    it('should define static methods', () => {
+      class SyncModel extends AbstractModel {}
+
+      const schema = new Schema<
+        any,
+        any,
+        { findByName: (name: string) => { name: string } }
+      >({
+        name: String,
+      });
+      schema.static('findByName', function (name: string) {
+        return { name };
+      });
+
+      SyncModel.syncModelToSchema({ name: 'syncStore', schema });
+
+      expect((SyncModel as any).findByName('test')).toEqual({ name: 'test' });
+    });
+
+    it('should set document middleware on prototype', () => {
+      class SyncModel extends AbstractModel {}
+
+      const schema = new Schema({ name: String });
+      SyncModel.syncModelToSchema({ name: 'syncStore', schema });
+
+      expect((SyncModel.prototype as any).documentMiddleware).toBeDefined();
+    });
+
+    it('should set Query class', () => {
+      class SyncModel extends AbstractModel {}
+
+      const schema = new Schema({ name: String });
+      SyncModel.syncModelToSchema({ name: 'syncStore', schema });
+
+      expect((SyncModel as any).Query).toBeDefined();
+    });
+
+    it('should add event listener to channel', () => {
+      class SyncModel extends AbstractModel {}
+
+      const schema = new Schema({ name: String });
+      SyncModel.syncModelToSchema({ name: 'syncStore', schema });
+
+      expect(iodm.channel.addEventListener).toHaveBeenCalledWith(
+        'message',
+        expect.any(Function)
+      );
+    });
+
+    it('should not sync again if schema already exists', () => {
+      class SyncModel extends AbstractModel {}
+
+      const schema = new Schema({ name: String });
+      SyncModel.syncModelToSchema({ name: 'syncStore', schema });
+
+      const newSchema = new Schema({ age: Number });
+      SyncModel.syncModelToSchema({ name: 'syncStore2', schema: newSchema });
+
+      expect(SyncModel.getStoreName()).toBe('syncStore');
+      expect((SyncModel.getSchema() as any).tree.name).toBeDefined();
+      expect((SyncModel.getSchema() as any).tree.age).toBeUndefined();
+    });
+  });
+
+  describe('openCursor', () => {
+    it('should create Query and call openCursor', () => {
+      const filter = { name: 'test' };
+      const options = {};
+
+      const result = TestModel.openCursor(filter, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.openCursor).toHaveBeenCalledWith(filter, {
+        Constructor: TestModel,
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('openCursorResult');
+    });
+  });
+
+  describe('find', () => {
+    it('should create Query and call find', () => {
+      const filter = { name: 'test' };
+      const options = {};
+
+      const result = TestModel.find(filter, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.find).toHaveBeenCalledWith(filter, {
+        Constructor: TestModel,
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('findResult');
+    });
+  });
+
+  describe('findById', () => {
+    it('should create Query and call findById', () => {
+      const id = '123';
+      const options = {
+        populateFields: { field: { path: 'field' } },
+      };
+
+      const result = TestModel.findById(id, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.findById).toHaveBeenCalledWith(id, {
+        Constructor: TestModel,
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('findByIdResult');
+    });
+  });
+
+  describe('findByIdAndUpdate', () => {
+    it('should create Query and call findByIdAndUpdate', () => {
+      const id = '123';
+      const payload = { $set: { name: 'updated' } };
+      const options = { new: true };
+
+      const result = TestModel.findByIdAndUpdate(id, payload, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.findByIdAndUpdate).toHaveBeenCalledWith(
+        id,
+        payload,
+        {
+          Constructor: TestModel,
+          transaction: expect.any(Object),
+          ...options,
+        }
+      );
+      expect(result).toBe('findByIdAndUpdateResult');
+    });
+  });
+
+  describe('findByIdAndDelete', () => {
+    it('should create Query and call findByIdAndDelete', () => {
+      const id = '123';
+      const options = {
+        populateFields: { field: { path: 'field' } },
+      };
+
+      const result = TestModel.findByIdAndDelete(id, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.findByIdAndDelete).toHaveBeenCalledWith(id, {
+        Constructor: TestModel,
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('findByIdAndDeleteResult');
+    });
+  });
+
+  describe('deleteOne', () => {
+    it('should create Query and call deleteOne', () => {
+      const filter = { name: 'test' };
+      const options = {};
+
+      const result = TestModel.deleteOne(filter, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.deleteOne).toHaveBeenCalledWith(filter, {
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('deleteOneResult');
+    });
   });
 });
