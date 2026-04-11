@@ -28,6 +28,11 @@ export type {
   QueryRootSelector,
   QueryRootFilter,
   QueryExecutorGetCommonOptions,
+  QueryExecutorInsertOneResponse,
+  QueryExecutorInsertManyResponse,
+  QueryExecutorDeleteManyResponse,
+  QueryExecutorUpdateManyResponse,
+  QueryExecutorUpdateManyUpdater,
 } from './QueryExecutor/type';
 export type { Prettify } from './utils/type';
 export { queryKeys, queryInternalKeysMap } from './Query/constants';

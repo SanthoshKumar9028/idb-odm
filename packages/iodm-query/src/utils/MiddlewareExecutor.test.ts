@@ -34,16 +34,16 @@ describe('MiddlewareExecutor', () => {
 
   describe('execPre', () => {
     it('should execute pre middlewares in order', () => {
-      const fn1 = vi.fn((res) => res + 1);
-      const fn2 = vi.fn((res) => res * 2);
+      const fn1 = vi.fn((error, result) => result + 1);
+      const fn2 = vi.fn((error, result) => result * 2);
       executor.pre('test', fn1).pre('test', fn2);
 
       const ctx = {};
-      const result = executor.execPre('test', ctx, 1, 'arg1', 'arg2');
+      const result = executor.execPre('test', ctx, null, 1, 'arg1', 'arg2');
 
-      expect(fn1).toHaveBeenCalledWith(1, 'arg1', 'arg2');
+      expect(fn1).toHaveBeenCalledWith(null, 1, 'arg1', 'arg2');
       expect(fn1).toHaveBeenCalledTimes(1);
-      expect(fn2).toHaveBeenCalledWith(2, 'arg1', 'arg2'); // fn1 returned 2
+      expect(fn2).toHaveBeenCalledWith(null, 2, 'arg1', 'arg2'); // fn1 returned 2
       expect(fn2).toHaveBeenCalledTimes(1);
       expect(result).toBe(4); // 2 * 2
     });
@@ -52,28 +52,28 @@ describe('MiddlewareExecutor', () => {
       const fn = vi.fn();
       executor.pre('test', fn);
 
-      const result = executor.execPre('test', {}, 'original');
+      const result = executor.execPre('test', {}, null, 'original');
       expect(result).toBe('original');
     });
 
     it('should handle no middlewares for the event', () => {
-      const result = executor.execPre('nonexistent', {}, 'original');
+      const result = executor.execPre('nonexistent', {}, null, 'original');
       expect(result).toBe('original');
     });
   });
 
   describe('execPost', () => {
     it('should execute post middlewares in order', () => {
-      const fn1 = vi.fn((res) => res + 1);
-      const fn2 = vi.fn((res) => res * 2);
+      const fn1 = vi.fn((error, result) => result + 1);
+      const fn2 = vi.fn((error, result) => result * 2);
       executor.post('test', fn1).post('test', fn2);
 
       const ctx = {};
-      const result = executor.execPost('test', ctx, 1, 'arg1', 'arg2');
+      const result = executor.execPost('test', ctx, null, 1, 'arg1', 'arg2');
 
-      expect(fn1).toHaveBeenCalledWith(1, 'arg1', 'arg2');
+      expect(fn1).toHaveBeenCalledWith(null, 1, 'arg1', 'arg2');
       expect(fn1).toHaveBeenCalledTimes(1);
-      expect(fn2).toHaveBeenCalledWith(2, 'arg1', 'arg2');
+      expect(fn2).toHaveBeenCalledWith(null, 2, 'arg1', 'arg2');
       expect(fn2).toHaveBeenCalledTimes(1);
       expect(result).toBe(4);
     });
@@ -82,12 +82,12 @@ describe('MiddlewareExecutor', () => {
       const fn = vi.fn();
       executor.post('test', fn);
 
-      const result = executor.execPost('test', {}, 'original');
+      const result = executor.execPost('test', {}, null, 'original');
       expect(result).toBe('original');
     });
 
     it('should handle no middlewares for the event', () => {
-      const result = executor.execPost('nonexistent', {}, 'original');
+      const result = executor.execPost('nonexistent', {}, null, 'original');
       expect(result).toBe('original');
     });
   });
@@ -100,19 +100,19 @@ describe('MiddlewareExecutor', () => {
       expect(result).toBe(executor);
 
       // After removal, exec should not call the function
-      executor.execPre('test', {}, 'result');
+      executor.execPre('test', {}, null, 'result');
       expect(fn).not.toHaveBeenCalled();
     });
 
     it('should not affect other middlewares', () => {
-      const fn1 = vi.fn((res) => res + 1);
-      const fn2 = vi.fn((res) => res * 2);
+      const fn1 = vi.fn((error, result) => result + 1);
+      const fn2 = vi.fn((error, result) => result * 2);
       executor.pre('test', fn1).pre('test', fn2);
       executor.removePre('test', fn1);
 
-      const result = executor.execPre('test', {}, 1);
+      const result = executor.execPre('test', {}, null, 1);
       expect(fn1).not.toHaveBeenCalled();
-      expect(fn2).toHaveBeenCalledWith(1);
+      expect(fn2).toHaveBeenCalledWith(null, 1);
       expect(result).toBe(2);
     });
   });
@@ -124,19 +124,19 @@ describe('MiddlewareExecutor', () => {
       const result = executor.removePost('test', fn);
       expect(result).toBe(executor);
 
-      executor.execPost('test', {}, 'result');
+      executor.execPost('test', {}, null, 'result');
       expect(fn).not.toHaveBeenCalled();
     });
 
     it('should not affect other middlewares', () => {
-      const fn1 = vi.fn((res) => res + 1);
-      const fn2 = vi.fn((res) => res * 2);
+      const fn1 = vi.fn((error, result) => result + 1);
+      const fn2 = vi.fn((error, result) => result * 2);
       executor.post('test', fn1).post('test', fn2);
       executor.removePost('test', fn1);
 
-      const result = executor.execPost('test', {}, 1);
+      const result = executor.execPost('test', {}, null, 1);
       expect(fn1).not.toHaveBeenCalled();
-      expect(fn2).toHaveBeenCalledWith(1);
+      expect(fn2).toHaveBeenCalledWith(null, 1);
       expect(result).toBe(2);
     });
   });
@@ -149,8 +149,8 @@ describe('MiddlewareExecutor', () => {
       const result = executor.clear();
       expect(result).toBe(executor);
 
-      executor.execPre('test1', {}, 'result');
-      executor.execPost('test2', {}, 'result');
+      executor.execPre('test1', {}, null, 'result');
+      executor.execPost('test2', {}, null, 'result');
       expect(fn1).not.toHaveBeenCalled();
       expect(fn2).not.toHaveBeenCalled();
     });
@@ -158,7 +158,7 @@ describe('MiddlewareExecutor', () => {
 
   describe('clone', () => {
     it('should return a new MiddlewareExecutor with cloned stores', () => {
-      const fn = vi.fn((res) => res + 1);
+      const fn = vi.fn((error, result) => result + 1);
       executor.pre('test', fn);
       const cloned = executor.clone();
 
@@ -166,11 +166,11 @@ describe('MiddlewareExecutor', () => {
       expect(cloned).not.toBe(executor);
 
       // Original should still work
-      const originalResult = executor.execPre('test', {}, 1);
+      const originalResult = executor.execPre('test', {}, null, 1);
       expect(originalResult).toBe(2);
 
       // Clone should have the same middlewares
-      const clonedResult = cloned.execPre('test', {}, 1);
+      const clonedResult = cloned.execPre('test', {}, null, 1);
       expect(clonedResult).toBe(2);
     });
 
@@ -182,7 +182,7 @@ describe('MiddlewareExecutor', () => {
       cloned.removePre('test', fn);
 
       // Original should still have the middleware
-      executor.execPre('test', {}, 'result');
+      executor.execPre('test', {}, null, 'result');
       expect(fn).toHaveBeenCalledTimes(1);
     });
   });
@@ -199,10 +199,10 @@ describe('MiddlewareExecutor', () => {
       expect(filtered).not.toBe(executor);
 
       // Filtered should only have test1
-      filtered.execPre('test1', {}, 'result');
+      filtered.execPre('test1', {}, null, 'result');
       expect(fn1).toHaveBeenCalled();
 
-      filtered.execPre('test2', {}, 'result');
+      filtered.execPre('test2', {}, null, 'result');
       expect(fn2).not.toHaveBeenCalled();
     });
 
@@ -212,8 +212,108 @@ describe('MiddlewareExecutor', () => {
       const filtered = executor.filter(() => false);
 
       // Original should still have the middleware
-      executor.execPre('test', {}, 'result');
+      executor.execPre('test', {}, null, 'result');
       expect(fn).toHaveBeenCalled();
+    });
+  });
+
+  describe('getPreHooks', () => {
+    it('should return empty array if no hooks for the event', () => {
+      expect(executor.getPreHooks('test')).toEqual([]);
+    });
+
+    it('should return the hooks for the event', () => {
+      const fn = vi.fn();
+      executor.pre('test', fn);
+      const hooks = executor.getPreHooks('test');
+      expect(hooks).toHaveLength(1);
+      expect(hooks[0].fn).toBe(fn);
+    });
+
+    it('should return multiple hooks in order', () => {
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
+      executor.pre('test', fn1).pre('test', fn2);
+      const hooks = executor.getPreHooks('test');
+      expect(hooks).toHaveLength(2);
+      expect(hooks[0].fn).toBe(fn1);
+      expect(hooks[1].fn).toBe(fn2);
+    });
+  });
+
+  describe('getPostHooks', () => {
+    it('should return empty array if no hooks for the event', () => {
+      expect(executor.getPostHooks('test')).toEqual([]);
+    });
+
+    it('should return the hooks for the event', () => {
+      const fn = vi.fn();
+      executor.post('test', fn);
+      const hooks = executor.getPostHooks('test');
+      expect(hooks).toHaveLength(1);
+      expect(hooks[0].fn).toBe(fn);
+    });
+
+    it('should return multiple hooks in order', () => {
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
+      executor.post('test', fn1).post('test', fn2);
+      const hooks = executor.getPostHooks('test');
+      expect(hooks).toHaveLength(2);
+      expect(hooks[0].fn).toBe(fn1);
+      expect(hooks[1].fn).toBe(fn2);
+    });
+  });
+
+  describe('clearPreHooks', () => {
+    it('should clear pre hooks for the specified event', () => {
+      const fn = vi.fn();
+      executor.pre('test', fn);
+      expect(executor.getPreHooks('test')).toHaveLength(1);
+      executor.clearPreHooks('test');
+      expect(executor.getPreHooks('test')).toEqual([]);
+    });
+
+    it('should not affect other events', () => {
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
+      executor.pre('test1', fn1).pre('test2', fn2);
+      executor.clearPreHooks('test1');
+      expect(executor.getPreHooks('test1')).toEqual([]);
+      expect(executor.getPreHooks('test2')).toHaveLength(1);
+    });
+
+    it('should not affect post hooks', () => {
+      const fn = vi.fn();
+      executor.post('test', fn);
+      executor.clearPreHooks('test');
+      expect(executor.getPostHooks('test')).toHaveLength(1);
+    });
+  });
+
+  describe('clearPostHooks', () => {
+    it('should clear post hooks for the specified event', () => {
+      const fn = vi.fn();
+      executor.post('test', fn);
+      expect(executor.getPostHooks('test')).toHaveLength(1);
+      executor.clearPostHooks('test');
+      expect(executor.getPostHooks('test')).toEqual([]);
+    });
+
+    it('should not affect other events', () => {
+      const fn1 = vi.fn();
+      const fn2 = vi.fn();
+      executor.post('test1', fn1).post('test2', fn2);
+      executor.clearPostHooks('test1');
+      expect(executor.getPostHooks('test1')).toEqual([]);
+      expect(executor.getPostHooks('test2')).toHaveLength(1);
+    });
+
+    it('should not affect pre hooks', () => {
+      const fn = vi.fn();
+      executor.pre('test', fn);
+      executor.clearPostHooks('test');
+      expect(executor.getPreHooks('test')).toHaveLength(1);
     });
   });
 });

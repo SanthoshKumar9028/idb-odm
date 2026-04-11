@@ -785,11 +785,20 @@ export abstract class AbstractQuery<
 
     this.middleware.execPre(op, this);
 
-    let returnValue = await this[this.options.type]();
+    let returnValue;
+    let error = null;
 
-    returnValue = this.middleware.execPost(op, this, returnValue);
+    try {
+      returnValue = await this[this.options.type]();
+    } catch (err: any) {
+      error = err;
+    }
 
-    returnValue = this.middleware.execPost('exec', this, returnValue);
+    returnValue = this.middleware.execPost(op, this, error, returnValue);
+
+    returnValue = this.middleware.execPost('exec', this, error, returnValue);
+
+    if (error) throw error;
 
     return returnValue;
   }

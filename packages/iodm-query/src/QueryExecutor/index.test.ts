@@ -5,6 +5,16 @@ import {
   QueryExecutorInsertOneResponse,
 } from './type';
 
+class TestConstructor {
+  testDoc: any;
+  constructor(doc: any) {
+    this.testDoc = doc;
+  }
+  static async preProcess(doc: any) {
+    return doc;
+  }
+}
+
 describe('BaseQueryExecutor', () => {
   const queryExecutor = new BaseQueryExecutor();
 
@@ -230,19 +240,23 @@ describe('BaseQueryExecutor', () => {
   });
 
   describe('insertMany', () => {
+    const errorObj = { preventDefault() {} };
     const transaction: any = {
       objectStore() {
         return {
           add: vi
             .fn()
             .mockImplementationOnce(() => {
-              const event = { onsuccess(...params: any[]) {} };
-              setTimeout(() => event.onsuccess({}), 0);
+              const event = {
+                onsuccess(...params: any[]) {},
+                target: { result: { one: 1 } },
+              };
+              setTimeout(() => event.onsuccess(event), 0);
               return event;
             })
             .mockImplementation(() => {
               const event = { onerror(...params: any[]) {} };
-              setTimeout(() => event.onerror({ preventDefault() {} }), 0);
+              setTimeout(() => event.onerror(errorObj), 0);
               return event;
             }),
         };
@@ -251,31 +265,26 @@ describe('BaseQueryExecutor', () => {
     const mockIdb: any = { transaction };
 
     it('should return both success and error response', async () => {
-      const insertRes =
-        await queryExecutor.insertMany<QueryExecutorInsertManyResponse>(
-          [{ one: 1 }, { two: 2 }],
-          {
-            idb: mockIdb,
-            storeName: 'test',
-            transaction,
-          }
-        );
+      const insertRes = await queryExecutor.insertMany<
+        QueryExecutorInsertManyResponse<any>
+      >([{ one: 1 }, { two: 2 }], {
+        idb: mockIdb,
+        storeName: 'test',
+        transaction,
+      });
 
-      expect(insertRes.result[0].status).toBe('success');
-      expect(insertRes.result[1].status).toBe('error');
+      expect(insertRes).toEqual([{ one: 1 }, errorObj]);
     });
 
     it('should error', async () => {
-      const insertPromise =
-        queryExecutor.insertMany<QueryExecutorInsertManyResponse>(
-          [{ one: 1 }, { two: 2 }],
-          {
-            idb: mockIdb,
-            storeName: 'test',
-            transaction,
-            throwOnError: true,
-          }
-        );
+      const insertPromise = queryExecutor.insertMany<
+        QueryExecutorInsertManyResponse<any>
+      >([{ one: 1 }, { two: 2 }], {
+        idb: mockIdb,
+        storeName: 'test',
+        transaction,
+        throwOnError: true,
+      });
 
       await expect(insertPromise).rejects.toThrow();
     });
@@ -285,8 +294,11 @@ describe('BaseQueryExecutor', () => {
     const mockAdd = vi
       .fn()
       .mockImplementationOnce(() => {
-        const event = { onsuccess(...params: any[]) {} };
-        setTimeout(() => event.onsuccess({}), 0);
+        const event = {
+          onsuccess(...params: any[]) {},
+          target: { result: { one: 1 } },
+        };
+        setTimeout(() => event.onsuccess(event), 0);
         return event;
       })
       .mockImplementation(() => {
@@ -305,30 +317,32 @@ describe('BaseQueryExecutor', () => {
     const mockIdb: any = { transaction };
 
     it('should return both success and error response', async () => {
-      const insertRes =
-        await queryExecutor.insertOne<QueryExecutorInsertOneResponse>(
-          { one: 1 },
-          {
-            idb: mockIdb,
-            storeName: 'test',
-            transaction,
-          }
-        );
+      const insertRes = await queryExecutor.insertOne<
+        QueryExecutorInsertOneResponse<any>
+      >(
+        { one: 1 },
+        {
+          idb: mockIdb,
+          storeName: 'test',
+          transaction,
+        }
+      );
 
-      expect(insertRes.result.status).toBe('success');
+      expect(insertRes).toEqual({ one: 1 });
     });
 
     it('should error', async () => {
-      const insertPromise2 =
-        queryExecutor.insertOne<QueryExecutorInsertOneResponse>(
-          { one: 1 },
-          {
-            idb: mockIdb,
-            storeName: 'test',
-            transaction,
-            throwOnError: true,
-          }
-        );
+      const insertPromise2 = queryExecutor.insertOne<
+        QueryExecutorInsertOneResponse<any>
+      >(
+        { one: 1 },
+        {
+          idb: mockIdb,
+          storeName: 'test',
+          transaction,
+          throwOnError: true,
+        }
+      );
 
       await expect(insertPromise2).rejects.toThrow();
     });
@@ -850,6 +864,38 @@ describe('BaseQueryExecutor', () => {
       expect(mockDelete).toHaveBeenCalledTimes(1);
     });
 
+    it('should call the Constructor if it is passed', async () => {
+      mockGet.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () =>
+            event.onsuccess({
+              target: { result: { _id: '123', name: 'test' } },
+            }),
+          0
+        );
+        return event;
+      });
+
+      mockDelete.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(() => event.onsuccess({}), 0);
+        return event;
+      });
+
+      const doc = await queryExecutor.findByIdAndDelete('123', {
+        idb: mockIdb,
+        storeName: 'test',
+        transaction,
+        Constructor: TestConstructor,
+      });
+
+      expect(doc).toEqual({ testDoc: { _id: '123', name: 'test' } });
+      expect(doc).instanceOf(TestConstructor);
+      expect(mockGet).toHaveBeenCalledTimes(1);
+      expect(mockDelete).toHaveBeenCalledTimes(1);
+    });
+
     it('should throw if error occurs', async () => {
       mockGet.mockImplementationOnce(() => {
         const event = { onerror(...params: any[]) {} };
@@ -953,6 +999,39 @@ describe('BaseQueryExecutor', () => {
       );
 
       expect(doc).toEqual({ _id: '123', name: 'test' });
+      expect(mockGet).toHaveBeenCalledTimes(1);
+      expect(mockPut).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call the Constructor if it is passed', async () => {
+      mockGet.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () => event.onsuccess({ target: { result: { _id: '123' } } }),
+          0
+        );
+        return event;
+      });
+
+      mockPut.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(() => event.onsuccess({}), 0);
+        return event;
+      });
+
+      const doc = await queryExecutor.findByIdAndUpdate<any, { _id: string }>(
+        '123',
+        (doc) => ({ ...doc, name: 'test' }),
+        {
+          idb: mockIdb,
+          storeName: 'test',
+          transaction,
+          Constructor: TestConstructor,
+        }
+      );
+
+      expect(doc).toEqual({ testDoc: { _id: '123', name: 'test' } });
+      expect(doc).instanceOf(TestConstructor);
       expect(mockGet).toHaveBeenCalledTimes(1);
       expect(mockPut).toHaveBeenCalledTimes(1);
     });

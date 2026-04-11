@@ -10,7 +10,7 @@ function loadedAtPlugin(schema: Schema, options: any) {
       this._loadedAt = v;
     });
 
-  schema.post(['find', 'findById'], function (docs) {
+  schema.post(['find', 'findById'], function (_, docs) {
     if (!Array.isArray(docs)) {
       docs = [docs];
     }
@@ -36,23 +36,60 @@ const addressSchema = new Schema<IAddress>({
   street: String,
 });
 
+addressSchema.plugin((schema) => {
+  schema.pre('insertOne', function (err, value, options) {
+    console.log('address > plugin > pre insertOne user', {
+      err,
+      value,
+      options,
+    });
+    return { value: 'value from previous hook' };
+  });
+
+  schema.pre('insertOne', function (err, value, options) {
+    console.log('address > plugin > pre insertOne user', {
+      err,
+      value,
+      options,
+    });
+  });
+
+  schema.post('insertOne', function (err, value, options) {
+    console.log('address > plugin > post insertOne user', {
+      err,
+      value,
+      options,
+    });
+  });
+});
+
+addressSchema.pre('save', function (err, value, options) {
+  console.log('address > pre save user', { err, value, options });
+});
+
+addressSchema.post('save', function (err, doc, options) {
+  console.log('address > post save user', { err, doc, options });
+});
+
 addressSchema.enableBroadcastFor('find', {
   type: 'pre',
   prepare(p) {
     return JSON.stringify(p);
   },
 });
-addressSchema.broadcastHook((res) => {
-  console.log('addressSchema', res);
+addressSchema.broadcastHook((err, res) => {
+  console.log('addressSchema', err, res);
 });
 
 interface IUser {
   _id: number;
   name: string;
-  fullname: string;
   age: number;
   address: number | IAddress;
   // visited: IAddress[];
+}
+interface IUserVirtual {
+  fullname: string;
 }
 
 interface InstanceMethods {
@@ -64,7 +101,12 @@ interface StaticsMethods {
   getCount(): Promise<number>;
 }
 
-const userSchema = new Schema<IUser, InstanceMethods, StaticsMethods>({
+const userSchema = new Schema<
+  IUser,
+  InstanceMethods,
+  IUserVirtual,
+  StaticsMethods
+>({
   _id: {
     type: Number,
   },
@@ -81,29 +123,26 @@ const userSchema = new Schema<IUser, InstanceMethods, StaticsMethods>({
 });
 
 userSchema.plugin((schema) => {
-  schema.pre('find', function (value, options) {
-    console.log('plugin > pre find user', { value, options });
+  schema.pre('insertOne', function (err, value, options) {
+    console.log('user > plugin > pre insertOne user', { err, value, options });
     return { value: 'value from previous hook' };
   });
 
-  schema.pre('find', function (value, options) {
-    console.log('plugin > pre find user', { value, options });
+  schema.pre('insertOne', function (err, value, options) {
+    console.log('user > plugin > pre insertOne user', { err, value, options });
   });
 
-  schema.post('find', function (value, options) {
-    console.log('plugin > post find user', { value, options });
-    value.forEach((doc: IUser) => {
-      doc.name = doc.name.toUpperCase();
-    });
+  schema.post('insertOne', function (err, value, options) {
+    console.log('user > plugin > post insertOne user', { err, value, options });
   });
 });
 
-userSchema.pre('save', function (value, options) {
-  console.log('pre save user', { value, options });
+userSchema.pre('save', function (err, value, options) {
+  console.log('user > pre save user', { err, value, options });
 });
 
-userSchema.post('save', function (doc, options) {
-  console.log('post save user', { doc, options });
+userSchema.post('save', function (err, doc, options) {
+  console.log('user > post save user', { err, doc, options });
 });
 
 userSchema.methods.printFullName = function () {

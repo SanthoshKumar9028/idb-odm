@@ -14,7 +14,8 @@ vi.mock('iodm-query', async () => {
   };
 });
 
-class TestModel extends AbstractModel {}
+const schema = new Schema({ name: String });
+const TestModel = iodm.model('testStore', schema);
 
 const createFakeDB = () => {
   const transactionMock = {} as IDBTransaction;
@@ -31,17 +32,12 @@ describe('AbstractModel', () => {
 
   beforeEach(() => {
     // Reset static state
-    (TestModel as any).schema = null;
-    (TestModel as any).storeName = null;
-    (TestModel as any).db = null;
     (TestModel as any).Query = undefined;
     vi.clearAllMocks();
 
     // Setup for query methods
-    const schema = new Schema({ name: String });
+
     mockDB = createFakeDB();
-    (TestModel as any).schema = schema;
-    (TestModel as any).storeName = 'testStore';
     TestModel.setDB(mockDB);
 
     // Mock Query class
@@ -52,6 +48,9 @@ describe('AbstractModel', () => {
       findByIdAndUpdate: vi.fn().mockReturnValue('findByIdAndUpdateResult'),
       findByIdAndDelete: vi.fn().mockReturnValue('findByIdAndDeleteResult'),
       deleteOne: vi.fn().mockReturnValue('deleteOneResult'),
+      insertOne: vi.fn().mockReturnValue('insertOneResult'),
+      insertMany: vi.fn().mockResolvedValue([]),
+      replaceOne: vi.fn().mockReturnValue('replaceOneResult'),
     };
 
     const MockQuery = vi.fn().mockImplementation(() => mockQueryInstance);
@@ -445,6 +444,7 @@ describe('AbstractModel', () => {
       const schema = new Schema<
         any,
         any,
+        any,
         { findByName: (name: string) => { name: string } }
       >({
         name: String,
@@ -565,6 +565,44 @@ describe('AbstractModel', () => {
     });
   });
 
+  describe('insertOne', () => {
+    it('should create Query and call insertOne with a single document', async () => {
+      const doc = { _id: 1, name: 'testDoc', value: 42 };
+      const options = { throwOnError: true };
+
+      const result = await TestModel.insertOne(doc, options);
+
+      expect(result).toEqual('insertOneResult');
+    });
+  });
+
+  describe('insertMany', () => {
+    it('should create Query and call insertMany with an array of documents', async () => {
+      const docs = [
+        { _id: 1, name: 'doc1', value: 1 },
+        { _id: 2, name: 'doc2', value: 2 },
+        { _id: 3, name: 'doc3', value: 3 },
+      ];
+
+      mockQueryInstance.insertMany = vi.fn().mockResolvedValue(docs);
+
+      const options = { throwOnError: true };
+
+      const result = await TestModel.insertMany(docs, options);
+
+      expect(result).toEqual(docs);
+    });
+
+    it('should create Query and call insertMany with empty array', async () => {
+      const docs: any[] = [];
+      const options = {};
+
+      const result = await TestModel.insertMany(docs, options);
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('findByIdAndUpdate', () => {
     it('should create Query and call findByIdAndUpdate', () => {
       const id = '123';
@@ -628,6 +666,47 @@ describe('AbstractModel', () => {
         ...options,
       });
       expect(result).toBe('deleteOneResult');
+    });
+  });
+
+  describe('replaceOne', () => {
+    it('should create Query and call replaceOne with a document', () => {
+      const doc = { _id: '123', name: 'updatedDoc', value: 100 };
+      const options = {};
+
+      const result = TestModel.replaceOne(doc, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.replaceOne).toHaveBeenCalledWith(doc, {
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('replaceOneResult');
+    });
+
+    it('should create Query and call replaceOne with complex document', () => {
+      const doc = {
+        _id: '789',
+        name: 'complex',
+        nested: { prop: 'value' },
+        array: [1, 2, 3],
+      };
+      const options = {};
+
+      const result = TestModel.replaceOne(doc, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.replaceOne).toHaveBeenCalledWith(doc, {
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('replaceOneResult');
     });
   });
 });

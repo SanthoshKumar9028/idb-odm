@@ -6,8 +6,7 @@ import { Query } from 'iodm-query';
 import { BaseSchema } from '../../base-schema';
 import iodm from '../../../iodm';
 
-export interface RefSchemaConstructorOptions
-  extends BaseSchemaConstructorOptions {
+export interface RefSchemaConstructorOptions extends BaseSchemaConstructorOptions {
   ref: string;
   valueSchema: BaseSchema;
 }
@@ -52,8 +51,6 @@ export class RefSchema extends BaseSchema {
     const modelObj = value instanceof RefModel ? value : new RefModel(value);
 
     try {
-      modelObj.validate();
-
       return modelObj.save({ transaction: options.transaction });
     } catch (e) {
       options.transaction.abort();

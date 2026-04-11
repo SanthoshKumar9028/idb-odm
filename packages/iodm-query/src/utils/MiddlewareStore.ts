@@ -1,10 +1,11 @@
-export type MiddlewareFn<C = any, R = any> = (
+export type MiddlewareFn<C = any, R = any, E = Error> = (
   this: C,
-  res: R,
+  error: E,
+  result: R,
   ...args: any[]
 ) => any;
 
-interface MiddlewareOptions {}
+export interface MiddlewareOptions {}
 export type MiddlewareMap = Map<
   string,
   Array<{ fn: MiddlewareFn; options: MiddlewareOptions }>
@@ -39,15 +40,16 @@ export class MiddlewareStore {
   /**
    * Execute middleware for a name
    * @param name - The operation name
-   * @param result - The result from the operation
-   * @param args - Additional arguments
+   * @param error - Error if any, otherwise null
+   * @param result - The return value from the operation
+   * @param args - Additional arguments if any
    */
-  exec(name: string, ctx: any, result?: any, ...args: any[]): any {
+  exec(name: string, ctx: any, error?: any, result?: any, ...args: any[]): any {
     const middleware = this.middleware.get(name) || [];
     let currentResult = result;
 
     for (const { fn } of middleware) {
-      const hookResult = fn.call(ctx, currentResult, ...args);
+      const hookResult = fn.call(ctx, error, currentResult, ...args);
       if (hookResult !== undefined) {
         currentResult = hookResult;
       }

@@ -1,20 +1,25 @@
 import type { IQuery } from 'iodm-query';
 import type { Schema } from '.';
 import type { IfAny } from '../types';
-import type { ModelInstance } from '../model/types';
 
 export type ObtainSchemaGeneric<
   TSchema,
-  alias extends 'DocType' | 'TInstanceMethods' | 'TStaticMethods',
+  alias extends
+    | 'DocType'
+    | 'TInstanceMethods'
+    | 'TVirtualProperties'
+    | 'TStaticMethods',
 > =
   TSchema extends Schema<
     infer DocType,
     infer TInstanceMethods,
+    infer TVirtualProperties,
     infer TStaticMethods
   >
     ? {
         DocType: DocType;
         TInstanceMethods: TInstanceMethods;
+        TVirtualProperties: TVirtualProperties;
         TStaticMethods: TStaticMethods;
       }[alias]
     : unknown;
@@ -42,9 +47,7 @@ export interface SchemaOptions {
   keyPath: string;
 }
 
-export interface SchemaMethodOptions {
-  modelInstance: ModelInstance;
-}
+export interface SchemaMethodOptions {}
 
 export interface SchemaSaveMethodOptions extends SchemaMethodOptions {
   transaction: IDBTransaction;
@@ -53,10 +56,17 @@ export interface SchemaSaveMethodOptions extends SchemaMethodOptions {
 export type PluginFn<
   RawDocType,
   TInstanceMethods,
+  TVirtualProperties,
   TStaticMethods,
   HydratedDoc,
 > = (
-  schema: Schema<RawDocType, TInstanceMethods, TStaticMethods, HydratedDoc>,
+  schema: Schema<
+    RawDocType,
+    TInstanceMethods,
+    TVirtualProperties,
+    TStaticMethods,
+    HydratedDoc
+  >,
   opt?: any
 ) => void;
 

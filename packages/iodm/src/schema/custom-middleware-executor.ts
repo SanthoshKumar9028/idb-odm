@@ -10,16 +10,28 @@ class CustomMiddlewareExecutor extends MiddlewareExecutor {
     this.schema = schema;
   }
 
-  execPre(event: string, ctx: any, result?: any, ...args: any[]): any {
-    const payload = super.execPre(event, ctx, result, ...args);
+  execPre(
+    event: string,
+    ctx: any,
+    error?: any,
+    result?: any,
+    ...args: any[]
+  ): any {
+    const payload = super.execPre(event, ctx, error, result, ...args);
 
     this.schema.onExecPreResult(event, payload);
 
     return payload;
   }
 
-  execPost(event: string, ctx: any, result?: any, ...args: any[]): any {
-    const payload = super.execPost(event, ctx, result, ...args);
+  execPost(
+    event: string,
+    ctx: any,
+    error?: any,
+    result?: any,
+    ...args: any[]
+  ): any {
+    const payload = super.execPost(event, ctx, error, result, ...args);
 
     this.schema.onExecPostResult(event, payload);
 

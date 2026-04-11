@@ -182,7 +182,6 @@ describe('Schema', () => {
       { name: 'test', _id: '1' },
       {
         transaction,
-        modelInstance: {} as any,
       }
     );
 
@@ -192,9 +191,9 @@ describe('Schema', () => {
   it('save should throw if value not object', async () => {
     const schema = new Schema({ name: String });
 
-    expect(
-      schema.save(null, { transaction: {} as any, modelInstance: {} as any })
-    ).rejects.toThrow('value must be an Object');
+    await expect(schema.save(null, { transaction: {} as any })).rejects.toThrow(
+      'value must be an Object'
+    );
   });
 
   it('preProcess should process each field', async () => {
@@ -315,6 +314,7 @@ describe('Schema', () => {
       const schema = new Schema<
         { name: string },
         {},
+        {},
         { findByName: () => string }
       >({ name: String });
       const staticFn = vi.fn(() => 'static method result');
@@ -327,6 +327,7 @@ describe('Schema', () => {
     it('static should store multiple static methods', () => {
       const schema = new Schema<
         { email: string; name: string },
+        {},
         {},
         {
           findByEmail: () => string;
@@ -352,7 +353,7 @@ describe('Schema', () => {
     });
 
     it('static should override previous static method with same name', () => {
-      const schema = new Schema<{ name: string }, {}, { find: () => any }>({
+      const schema = new Schema<{ name: string }, {}, {}, { find: () => any }>({
         name: String,
       });
       const firstStatic = vi.fn();

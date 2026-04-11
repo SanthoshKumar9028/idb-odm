@@ -11,7 +11,7 @@ import { AbstractModel } from './model';
 class Iodm {
   readonly BROADCAST_CHANNEL_NAME: string = '__iodm_broadcast_channel__';
   models: Record<string, IModel>;
-  plugins: Array<{ fn: PluginFn<any, any, any, any>; opt?: any }>;
+  plugins: Array<{ fn: PluginFn<any, any, any, any, any>; opt?: any }>;
   channel: BroadcastChannel;
 
   constructor() {
@@ -20,7 +20,7 @@ class Iodm {
     this.channel = new BroadcastChannel(this.BROADCAST_CHANNEL_NAME);
   }
 
-  plugin(fn: PluginFn<any, any, any, any>, opt?: any) {
+  plugin(fn: PluginFn<any, any, any, any, any>, opt?: any) {
     this.plugins.push({ fn, opt });
   }
 
@@ -35,7 +35,8 @@ class Iodm {
     schema: TSchema
   ): IModel<
     InferSchemaType<TSchema>,
-    ObtainSchemaGeneric<TSchema, 'TInstanceMethods'>
+    ObtainSchemaGeneric<TSchema, 'TInstanceMethods'>,
+    ObtainSchemaGeneric<TSchema, 'TVirtualProperties'>
   > &
     ObtainSchemaGeneric<TSchema, 'TStaticMethods'> {
     const NewModel: IModel = class extends AbstractModel {} as IModel;

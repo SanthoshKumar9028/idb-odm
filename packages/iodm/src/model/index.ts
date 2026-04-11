@@ -6,6 +6,8 @@ import type {
   QueryDeleteOneOptions,
   QueryFindByIdOptions,
   QueryFindByIdAndDeleteOptions,
+  QueryInsertOneOptions,
+  QueryReplaceOneOptions,
 } from 'iodm-query';
 import type {
   QueryExecutorUpdateManyUpdater,
@@ -50,11 +52,18 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       : this.createInstanceTransaction('readwrite');
 
     try {
-      this.documentMiddleware.execPre('validate', this);
-      this.validate();
-      this.documentMiddleware.execPost('validate', this);
+      this.documentMiddleware.execPre('validate', this, null);
 
-      this.documentMiddleware.execPre('save', this);
+      try {
+        this.validate();
+      } catch (err) {
+        this.documentMiddleware.execPost('validate', this, err);
+        throw err;
+      }
+
+      this.documentMiddleware.execPost('validate', this, null);
+
+      this.documentMiddleware.execPre('save', this, null);
 
       await this.getInstanceSchema().save(this, {
         transaction,
@@ -62,9 +71,10 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       });
 
       let queryResult: unknown;
+      const QueryClass = AbstractModelTemp.getQueryClass(this);
 
       if (this.$_isNew) {
-        queryResult = await new Query(
+        queryResult = await new QueryClass(
           this.getInstanceDB(),
           this.getInstanceStoreName()
         ).insertOne(this.toJSON(), {
@@ -74,7 +84,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
         this.$_isNew = false;
       } else {
-        queryResult = await new Query(
+        queryResult = await new QueryClass(
           this.getInstanceDB(),
           this.getInstanceStoreName()
         ).replaceOne(this.toJSON(), {
@@ -82,16 +92,22 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
         });
       }
 
-      queryResult = this.documentMiddleware.execPost('save', this, queryResult);
+      queryResult = this.documentMiddleware.execPost(
+        'save',
+        this,
+        null,
+        queryResult
+      );
 
       return queryResult;
-    } catch (e) {
-      if (!(e instanceof Event && e.type === 'error')) {
+    } catch (err) {
+      if (!(err instanceof Event && err.type === 'error')) {
         try {
           transaction.abort();
         } catch {}
       }
-      throw e;
+      this.documentMiddleware.execPost('save', this, err);
+      throw err;
     }
   }
 
@@ -129,9 +145,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   }
 
   getSchemaMethodOptions() {
-    return {
-      modelInstance: this,
-    };
+    return {};
   }
 
   // static properties and methods
@@ -172,6 +186,16 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       throw new Error('db is required');
     }
     return _storeName;
+  }
+
+  static getQueryClass(obj?: any): typeof Query {
+    const thisPrototype = obj ? Object.getPrototypeOf(obj).constructor : this;
+    const QueryClass: typeof Query | undefined = thisPrototype.Query;
+
+    if (!QueryClass) {
+      throw new Error('Query is required');
+    }
+    return QueryClass;
   }
 
   static init(idb: IDBDatabase) {
@@ -225,6 +249,57 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     return new this.Query(this.getDB(), this.getStoreName()).findById(id, {
       Constructor: this,
       transaction: this.createTransaction('readonly'),
+      ...options,
+    });
+  }
+
+  static async insertOne(doc: any, options?: ModelSaveOptions) {
+    const obj = new this(doc);
+    return obj.save(options);
+  }
+
+  static async insertMany(docs: any[], options?: QueryInsertOneOptions) {
+    const schema = this.getSchema();
+    const validationErrors: any[] = [];
+    const validationErrorsIndex = new Map<number, any>();
+
+    const validDocs: any[] = [];
+    const validDocsIndex = new Map<number, number>();
+
+    docs.forEach((doc, i) => {
+      try {
+        schema.validate(doc, {});
+        validDocsIndex.set(i, validDocs.length);
+        validDocs.push(doc);
+      } catch (err) {
+        validationErrors.push(err);
+        validationErrorsIndex.set(i, err);
+      }
+    });
+
+    if (validDocs.length === 0) {
+      return validationErrors;
+    }
+
+    return new this.Query(this.getDB(), this.getStoreName())
+      .insertMany(validDocs, {
+        transaction: this.createTransaction('readwrite'),
+        ...options,
+      })
+      .then((res) => {
+        return docs.map((_, i) => {
+          if (validationErrorsIndex.has(i)) {
+            return validationErrorsIndex.get(i);
+          }
+
+          return res[validDocsIndex.get(i)!];
+        });
+      });
+  }
+
+  static replaceOne(docs: any, options?: QueryReplaceOneOptions) {
+    return new this.Query(this.getDB(), this.getStoreName()).replaceOne(docs, {
+      transaction: this.createTransaction('readwrite'),
       ...options,
     });
   }
@@ -300,7 +375,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       isPostMessage(message) &&
       message.model === this.storeName
     ) {
-      this.schema.execBroadcastHooks(this, ev);
+      this.schema.execBroadcastHooks(this, null, ev);
     }
   }
 
@@ -315,13 +390,10 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     Object.entries(newSchema.virtuals).forEach(([key, virtualType]) => {
       Object.defineProperty(this.prototype, key, {
         get() {
-          return virtualType.applyGetters(this, {
-            modelInstance: this,
-          });
+          return virtualType.applyGetters(this, {});
         },
         set(value) {
           return virtualType.applySetters(this, {
-            modelInstance: this,
             value,
           });
         },

@@ -16,40 +16,50 @@ function App() {
       <div>
         <button
           onClick={async () => {
-            UserModel.find()
-              // .populate('address')
-              // .populate('visited')
-              .then(async (res) => {
-                console.log('res', res);
-                console.log('fullname', res[0].fullname);
+            UserModel.insertOne({
+              _id: 3,
+              address: {
+                _id: 103,
+                no: 11,
+                street: 'asdf',
+              },
+              age: 2,
+              name: 'asdf',
+            });
+            // UserModel.find()
+            //   // .populate('address')
+            //   // .populate('visited')
+            //   .then(async (res) => {
+            //     console.log('res', res);
+            //     console.log('fullname', res[0].fullname);
 
-                // res[0].fullname = '30 Batman';
+            //     // res[0].fullname = '30 Batman';
 
-                // res[0].save();
+            //     // res[0].save();
 
-                // res[0].address.street = "Old Old Anna Street";
-                // if (typeof res[0].address === 'number') {
-                // }
-                // res[0].visited = [
-                //   { _id: 1, no: 10, street: 'visited street 1' },
-                //   { _id: 2, no: 20, street: 'visited street 2' },
-                //   { _id: 3, no: 30, street: 'visited street 3' },
-                // ];
+            //     // res[0].address.street = "Old Old Anna Street";
+            //     // if (typeof res[0].address === 'number') {
+            //     // }
+            //     // res[0].visited = [
+            //     //   { _id: 1, no: 10, street: 'visited street 1' },
+            //     //   { _id: 2, no: 20, street: 'visited street 2' },
+            //     //   { _id: 3, no: 30, street: 'visited street 3' },
+            //     // ];
 
-                // res[0].visited.push({
-                //   _id: 4,
-                //   no: 40,
-                //   street: 'something',
-                // });
+            //     // res[0].visited.push({
+            //     //   _id: 4,
+            //     //   no: 40,
+            //     //   street: 'something',
+            //     // });
 
-                // res[0].save();
+            //     // res[0].save();
 
-                // if (res[0].address instanceof AddressModel) {
-                //   res[0].address.save();
-                // } else {
-                //   console.error('res[0].address is not a AddressModel instance');
-                // }
-              });
+            //     // if (res[0].address instanceof AddressModel) {
+            //     //   res[0].address.save();
+            //     // } else {
+            //     //   console.error('res[0].address is not a AddressModel instance');
+            //     // }
+            //   });
 
             // const user = new UserModel({
             //   _id: 1,

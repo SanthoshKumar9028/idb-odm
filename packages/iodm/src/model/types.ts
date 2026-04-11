@@ -6,14 +6,15 @@ import type {
   QueryFindByIdAndUpdateOptions,
   QueryFindByIdOptions,
   QueryFindOptions,
+  QueryInsertManyOptions,
+  QueryInsertOneOptions,
   QueryOpenCursorOptions,
-} from 'iodm-query';
-import type { Schema } from '../schema';
-import type {
   QueryExecutorDeleteManyResponse,
   QueryExecutorUpdateManyUpdater,
   QueryRootFilter,
-} from 'iodm-query/dist/QueryExecutor/type';
+  QueryReplaceOneOptions,
+} from 'iodm-query';
+import type { Schema } from '../schema';
 
 export interface ModelSaveOptions {
   transaction?: IDBTransaction;
@@ -33,7 +34,11 @@ export interface ModelOptions {
 export interface IModel<
   TRawDocType = {},
   TInstanceMethods = {},
-  HydratedDoc = TRawDocType & TInstanceMethods & ModelInstance,
+  TVirtualProperties = {},
+  HydratedDoc = TRawDocType &
+    TInstanceMethods &
+    ModelInstance &
+    TVirtualProperties,
 > {
   new <DocType = Partial<TRawDocType>>(
     doc?: DocType,
@@ -71,6 +76,18 @@ export interface IModel<
     id: IDBValidKey,
     options?: QueryFindByIdOptions
   ): Query<HydratedDoc, unknown>;
+  insertOne(
+    doc: TRawDocType,
+    options?: QueryInsertOneOptions
+  ): Promise<unknown>;
+  insertMany(
+    doc: TRawDocType[],
+    options?: QueryInsertManyOptions
+  ): Promise<HydratedDoc[]>;
+  replaceOne(
+    doc: TRawDocType,
+    options?: QueryReplaceOneOptions
+  ): Query<IModel<TRawDocType, TInstanceMethods, HydratedDoc>, unknown>;
   findByIdAndUpdate(
     id: IDBValidKey,
     payload: QueryExecutorUpdateManyUpdater<TRawDocType>,

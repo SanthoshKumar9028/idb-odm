@@ -52,8 +52,9 @@ type SchemaDefinition<RawDocType> = Partial<
 export class Schema<
   RawDocType = any,
   TInstanceMethods = {},
+  TVirtualProperties = {},
   TStaticMethods = {},
-  HydratedDoc = RawDocType & TInstanceMethods,
+  HydratedDoc = RawDocType & TVirtualProperties & TInstanceMethods,
 > extends BaseSchema {
   private refNames: Set<string>;
   private tree: Record<string, BaseSchema>;
@@ -61,19 +62,25 @@ export class Schema<
   virtuals: Record<string, VirtualType<RawDocType>>;
   methods: {
     [K in keyof TInstanceMethods]?: InjectFunctionContext<
-      RawDocType & TInstanceMethods,
+      RawDocType & TVirtualProperties & TInstanceMethods,
       TInstanceMethods[K]
     >;
   };
   statics: {
     [K in keyof TStaticMethods]?: InjectFunctionContext<
-      IModel<RawDocType, TInstanceMethods>,
+      IModel<RawDocType, TInstanceMethods, TVirtualProperties>,
       TStaticMethods[K]
     >;
   };
   middleware: CustomMiddlewareExecutor;
   plugins: Array<{
-    fn: PluginFn<RawDocType, TInstanceMethods, TStaticMethods, HydratedDoc>;
+    fn: PluginFn<
+      RawDocType,
+      TInstanceMethods,
+      TVirtualProperties,
+      TStaticMethods,
+      HydratedDoc
+    >;
     opt?: any;
   }>;
   broadcastEnabledEvents: Record<string, BroadcastEnabledEventsOptions>;
@@ -214,10 +221,12 @@ export class Schema<
   }
 
   clone() {
-    const newSchema = new Schema<RawDocType, TInstanceMethods, TStaticMethods>(
-      this.rawDefinition,
-      this.schemaOptions
-    );
+    const newSchema = new Schema<
+      RawDocType,
+      TInstanceMethods,
+      TVirtualProperties,
+      TStaticMethods
+    >(this.rawDefinition, this.schemaOptions);
 
     newSchema.virtuals = Object.entries(this.virtuals).reduce(
       (acc, [key, value]) => {
@@ -311,7 +320,7 @@ export class Schema<
   method<K extends keyof TInstanceMethods>(
     name: K,
     func: InjectFunctionContext<
-      RawDocType & TInstanceMethods,
+      RawDocType & TVirtualProperties & TInstanceMethods,
       TInstanceMethods[K]
     >
   ) {
@@ -378,7 +387,13 @@ export class Schema<
   }
 
   plugin(
-    fn: PluginFn<RawDocType, TInstanceMethods, TStaticMethods, HydratedDoc>,
+    fn: PluginFn<
+      RawDocType,
+      TInstanceMethods,
+      TVirtualProperties,
+      TStaticMethods,
+      HydratedDoc
+    >,
     opt?: any
   ) {
     this.plugins.push({ fn, opt });
@@ -398,7 +413,7 @@ export class Schema<
     this.broadcastMiddleware.hook('broadcast', fn);
   }
 
-  execBroadcastHooks(ctx: any, result?: any, ...args: any[]) {
-    this.broadcastMiddleware.exec('broadcast', ctx, result, ...args);
+  execBroadcastHooks(ctx: any, error?: any, result?: any, ...args: any[]) {
+    this.broadcastMiddleware.exec('broadcast', ctx, error, result, ...args);
   }
 }

@@ -2,7 +2,6 @@ import { isFunction } from '../utils/type-guards';
 import { applyUpdates, evalFilter } from './evals';
 import type {
   QueryExecutorInsertOptions,
-  InsertSuccess,
   InsertError,
   QueryExecutorInsertManyResponse,
   QueryExecutorReplaceOneOptions,
@@ -167,37 +166,50 @@ export class BaseQueryExecutor {
     });
   }
 
-  async insertMany<ResultType>(
+  async insertMany<ResultType, DocumentType = unknown>(
     payload: unknown[],
     options: QueryExecutorInsertOptions
   ): Promise<ResultType> {
-    const { storeName, transaction, throwOnError } = options;
+    const { storeName, transaction, throwOnError, Constructor } = options;
 
     const objectStore = transaction.objectStore(storeName);
-    const insertRes: QueryExecutorInsertManyResponse = {
-      result: [],
-    };
+    const insertRes: QueryExecutorInsertManyResponse<DocumentType> = [];
 
     for (let i = 0; i < payload.length; ++i) {
-      const addRes = await new Promise<InsertSuccess | InsertError>(
+      const addRes = await new Promise<DocumentType | InsertError>(
         (res, rej) => {
           const addReq = objectStore.add(payload[i]);
 
-          addReq.onsuccess = (event) => {
-            res({ status: 'success', event });
+          addReq.onsuccess = async (event) => {
+            let result = undefined as DocumentType;
+
+            if (event.target && 'result' in event.target) {
+              const newDoc =
+                event.target.result && Constructor
+                  ? await Constructor.preProcess(event.target.result, options)
+                  : event.target.result;
+
+              result = (
+                newDoc && Constructor
+                  ? new Constructor(newDoc, { isNew: false })
+                  : newDoc
+              ) as DocumentType;
+            }
+
+            res(result);
           };
           addReq.onerror = (event) => {
             if (throwOnError) {
               rej(event);
             } else {
               event.preventDefault();
-              res({ status: 'error', event });
+              res(event);
             }
           };
         }
       );
 
-      insertRes.result.push(addRes);
+      insertRes.push(addRes);
     }
 
     return insertRes as ResultType;
@@ -207,19 +219,18 @@ export class BaseQueryExecutor {
     payload: unknown,
     options: QueryExecutorInsertOptions
   ): Promise<ResultType> {
-    const insertRes = await this.insertMany<QueryExecutorInsertManyResponse>(
-      [payload],
-      options
-    );
+    const insertRes = await this.insertMany<
+      QueryExecutorInsertManyResponse<DocumentType>
+    >([payload], options);
 
-    return { result: insertRes.result[0] } as ResultType;
+    return insertRes[0] as ResultType;
   }
 
   async replaceOne<ResultType, DocumentType = unknown>(
     payload: DocumentType,
     options: QueryExecutorReplaceOneOptions
   ): Promise<ResultType> {
-    const { storeName, transaction } = options;
+    const { storeName, transaction, Constructor } = options;
 
     return new Promise((res, rej) => {
       let objectStore = options.objectStore;
@@ -230,12 +241,22 @@ export class BaseQueryExecutor {
 
       const getReq = objectStore.put(payload);
 
-      getReq.onsuccess = (event) => {
+      getReq.onsuccess = async (event) => {
         let result = undefined as ResultType;
 
         if (event.target && 'result' in event.target) {
-          result = event.target.result as ResultType;
+          const newDoc =
+            event.target.result && Constructor
+              ? await Constructor.preProcess(event.target.result, options)
+              : event.target.result;
+
+          result = (
+            newDoc && Constructor
+              ? new Constructor(newDoc, { isNew: false })
+              : newDoc
+          ) as ResultType;
         }
+
         res(result);
       };
       getReq.onerror = (event) => {

@@ -23,12 +23,24 @@ export class MiddlewareExecutor {
     return this;
   }
 
-  execPre(event: string, ctx: any, result?: any, ...args: any[]): any {
-    return this.store.pre.exec(event, ctx, result, ...args);
+  execPre(
+    event: string,
+    ctx: any,
+    error?: any,
+    result?: any,
+    ...args: any[]
+  ): any {
+    return this.store.pre.exec(event, ctx, error, result, ...args);
   }
 
-  execPost(event: string, ctx: any, result?: any, ...args: any[]): any {
-    return this.store.post.exec(event, ctx, result, ...args);
+  execPost(
+    event: string,
+    ctx: any,
+    error?: any,
+    result?: any,
+    ...args: any[]
+  ): any {
+    return this.store.post.exec(event, ctx, error, result, ...args);
   }
 
   removePre(event: string, fn: MiddlewareFn): MiddlewareExecutor {
@@ -41,9 +53,27 @@ export class MiddlewareExecutor {
     return this;
   }
 
+  getPreHooks(name: string) {
+    return this.store.pre.getHooks(name);
+  }
+
+  getPostHooks(name: string) {
+    return this.store.post.getHooks(name);
+  }
+
+  clearPreHooks(name: string) {
+    this.store.pre.clearHooks(name);
+    return this;
+  }
+
+  clearPostHooks(name: string) {
+    this.store.post.clearHooks(name);
+    return this;
+  }
+
   clear(): MiddlewareExecutor {
-    this.store.pre = new MiddlewareStore();
-    this.store.post = new MiddlewareStore();
+    this.store.pre.clearHooks();
+    this.store.post.clearHooks();
     return this;
   }
 

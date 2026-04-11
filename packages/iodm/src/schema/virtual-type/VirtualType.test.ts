@@ -30,10 +30,7 @@ describe('VirtualType', () => {
       return (this.a ?? 0) + value;
     });
 
-    const result = virtual.applyGetters(
-      { a: 10 },
-      { value: 5, modelInstance: {} as any }
-    );
+    const result = virtual.applyGetters({ a: 10 }, { value: 5 });
 
     // 5 + 1 = 6; then 10 + 6 = 16
     expect(result).toBe(16);
@@ -48,10 +45,7 @@ describe('VirtualType', () => {
       return (this.b ?? 0) + value;
     });
 
-    const result = virtual.applySetters(
-      { b: 5 },
-      { value: 3, modelInstance: {} as any }
-    );
+    const result = virtual.applySetters({ b: 5 }, { value: 3 });
 
     // 3*2 = 6; then 5+6 =11
     expect(result).toBe(11);
@@ -67,17 +61,11 @@ describe('VirtualType', () => {
     expect(copy).not.toBe(virtual);
     expect(copy.name).toBe(virtual.name);
     expect(copy.getIsVirtual()).toBe(true);
-    expect(copy.applyGetters({}, { value: 1, modelInstance: {} as any })).toBe(
-      'x'
-    );
-    expect(copy.applySetters({}, { value: 1, modelInstance: {} as any })).toBe(
-      'y'
-    );
+    expect(copy.applyGetters({}, { value: 1 })).toBe('x');
+    expect(copy.applySetters({}, { value: 1 })).toBe('y');
 
     // Ensure original not mutated by adding additional hooks to clone
     copy.get(() => 'z');
-    expect(
-      virtual.applyGetters({}, { value: 1, modelInstance: {} as any })
-    ).toBe('x');
+    expect(virtual.applyGetters({}, { value: 1 })).toBe('x');
   });
 });

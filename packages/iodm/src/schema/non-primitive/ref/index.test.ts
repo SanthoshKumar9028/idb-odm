@@ -138,10 +138,8 @@ describe('RefSchema', () => {
 
   it('save should instantiate RefModel and call save', async () => {
     const mockSave = vi.fn(() => Promise.resolve({ id: 1 }));
-    const mockValidate = vi.fn();
     const mockRefModelInstance = {
       save: mockSave,
-      validate: mockValidate,
     };
 
     const mockRefModelConstructor = vi.fn(() => mockRefModelInstance);
@@ -170,7 +168,6 @@ describe('RefSchema', () => {
     await refSchema.save({ _id: 1, name: 'John' }, { transaction: mockTransaction as any } as any);
 
     expect(mockRefModelConstructor).toHaveBeenCalledWith({ _id: 1, name: 'John' });
-    expect(mockValidate).toHaveBeenCalled();
     expect(mockSave).toHaveBeenCalledWith({ transaction: mockTransaction });
   });
 
@@ -193,8 +190,7 @@ describe('RefSchema', () => {
   it('save should abort transaction on validation error', async () => {
     const mockValidateError = new Error('validation failed');
     const mockRefModelInstance = {
-      save: vi.fn(),
-      validate: vi.fn(() => {
+      save: vi.fn(() => {
         throw mockValidateError;
       }),
     };

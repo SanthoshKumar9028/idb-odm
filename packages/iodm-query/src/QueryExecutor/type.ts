@@ -66,30 +66,26 @@ export interface QueryExecutorOpenCursorOptions
     QueryExecutorCommonOptionsThrownOnError,
     QueryExecutorGetCommonOptions {}
 
-export interface QueryExecutorInsertOptions extends QueryExecutorCommonOptionsThrownOnError {}
+export interface QueryExecutorInsertOptions
+  extends
+    QueryExecutorCommonOptionsThrownOnError,
+    QueryExecutorGetCommonOptions {}
 
-export interface InsertSuccess {
-  status: 'success';
-  event: Event;
-}
-export interface InsertError {
-  status: 'error';
-  event: Event;
-}
+export type InsertError = Event;
 
-export interface QueryExecutorInsertManyResponse {
-  result: Array<InsertSuccess | InsertError>;
-}
+export type QueryExecutorInsertManyResponse<DocumentType> = Array<
+  DocumentType | InsertError
+>;
 
-export interface QueryExecutorInsertOneResponse {
-  result: InsertSuccess | InsertError;
-}
+export type QueryExecutorInsertOneResponse<DocumentType> =
+  | DocumentType
+  | InsertError;
 
 export interface QueryExecutorReplaceOneQuery {
   $key: IDBValidKey;
 }
 
-export interface QueryExecutorReplaceOneOptions extends QueryExecutorCommonOptions {
+export interface QueryExecutorReplaceOneOptions extends QueryExecutorGetCommonOptions {
   objectStore?: IDBObjectStore;
 }
 
