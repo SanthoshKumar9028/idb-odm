@@ -180,21 +180,16 @@ export class BaseQueryExecutor {
         (res, rej) => {
           const addReq = objectStore.add(payload[i]);
 
-          addReq.onsuccess = async (event) => {
-            let result = undefined as DocumentType;
+          addReq.onsuccess = async () => {
+            const newDoc = Constructor
+              ? await Constructor.preProcess(payload[i], options)
+              : payload[i];
 
-            if (event.target && 'result' in event.target) {
-              const newDoc =
-                event.target.result && Constructor
-                  ? await Constructor.preProcess(event.target.result, options)
-                  : event.target.result;
-
-              result = (
-                newDoc && Constructor
-                  ? new Constructor(newDoc, { isNew: false })
-                  : newDoc
-              ) as DocumentType;
-            }
+            let result = (
+              newDoc && Constructor
+                ? new Constructor(newDoc, { isNew: false })
+                : newDoc
+            ) as DocumentType;
 
             res(result);
           };
@@ -241,21 +236,16 @@ export class BaseQueryExecutor {
 
       const getReq = objectStore.put(payload);
 
-      getReq.onsuccess = async (event) => {
-        let result = undefined as ResultType;
+      getReq.onsuccess = async () => {
+        const newDoc = Constructor
+          ? await Constructor.preProcess(payload, options)
+          : payload;
 
-        if (event.target && 'result' in event.target) {
-          const newDoc =
-            event.target.result && Constructor
-              ? await Constructor.preProcess(event.target.result, options)
-              : event.target.result;
-
-          result = (
-            newDoc && Constructor
-              ? new Constructor(newDoc, { isNew: false })
-              : newDoc
-          ) as ResultType;
-        }
+        let result = (
+          newDoc && Constructor
+            ? new Constructor(newDoc, { isNew: false })
+            : newDoc
+        ) as ResultType;
 
         res(result);
       };

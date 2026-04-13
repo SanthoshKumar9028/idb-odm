@@ -383,7 +383,10 @@ describe('BaseQueryExecutor', () => {
         { idb: mockIdb, storeName: 'test', transaction }
       );
 
-      expect(replaceRes1).toBe('123');
+      expect(replaceRes1).toEqual({
+        _id: '123',
+        test: 'value',
+      });
 
       const replaceRes2 = queryExecutor.replaceOne<
         string | undefined,

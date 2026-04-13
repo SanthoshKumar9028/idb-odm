@@ -114,6 +114,7 @@ const userSchema = new Schema<
   age: {
     type: Number,
     required: true,
+    min: 18,
   },
   address: {
     type: Number,

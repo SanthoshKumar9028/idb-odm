@@ -78,8 +78,9 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
           this.getInstanceDB(),
           this.getInstanceStoreName()
         ).insertOne(this.toJSON(), {
-          transaction,
           throwOnError: true,
+          ...options,
+          transaction,
         });
 
         this.$_isNew = false;
@@ -88,6 +89,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
           this.getInstanceDB(),
           this.getInstanceStoreName()
         ).replaceOne(this.toJSON(), {
+          ...options,
           transaction,
         });
       }
@@ -253,15 +255,23 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     });
   }
 
+  /**
+   * nested schema values will be saved
+   */
   static async insertOne(doc: any, options?: ModelSaveOptions) {
     const obj = new this(doc);
     return obj.save(options);
   }
 
+  /**
+   * nested schema values will not be saved
+   */
   static async insertMany(docs: any[], options?: QueryInsertOneOptions) {
+    const transaction =
+      options?.transaction ?? this.createTransaction('readwrite');
     const schema = this.getSchema();
     const validationErrors: any[] = [];
-    const validationErrorsIndex = new Map<number, any>();
+    const validationErrorsMap = new Map<number, any>();
 
     const validDocs: any[] = [];
     const validDocsIndex = new Map<number, number>();
@@ -273,9 +283,19 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
         validDocs.push(doc);
       } catch (err) {
         validationErrors.push(err);
-        validationErrorsIndex.set(i, err);
+        validationErrorsMap.set(i, err);
       }
     });
+
+    if (options?.throwOnError && validationErrors.length) {
+      try {
+        transaction.abort();
+      } catch {}
+
+      throw docs.map((_, i) => {
+        return validationErrorsMap.get(i);
+      });
+    }
 
     if (validDocs.length === 0) {
       return validationErrors;
@@ -283,13 +303,14 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
     return new this.Query(this.getDB(), this.getStoreName())
       .insertMany(validDocs, {
-        transaction: this.createTransaction('readwrite'),
+        Constructor: this,
         ...options,
+        transaction,
       })
       .then((res) => {
         return docs.map((_, i) => {
-          if (validationErrorsIndex.has(i)) {
-            return validationErrorsIndex.get(i);
+          if (validationErrorsMap.has(i)) {
+            return validationErrorsMap.get(i);
           }
 
           return res[validDocsIndex.get(i)!];
@@ -297,11 +318,12 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       });
   }
 
-  static replaceOne(docs: any, options?: QueryReplaceOneOptions) {
-    return new this.Query(this.getDB(), this.getStoreName()).replaceOne(docs, {
-      transaction: this.createTransaction('readwrite'),
-      ...options,
-    });
+  /**
+   * nested schema values will be saved
+   */
+  static replaceOne(doc: any, options?: QueryReplaceOneOptions) {
+    const obj = new this(doc, { isNew: false });
+    return obj.save(options);
   }
 
   static findByIdAndUpdate(

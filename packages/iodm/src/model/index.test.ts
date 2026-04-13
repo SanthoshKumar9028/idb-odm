@@ -670,43 +670,42 @@ describe('AbstractModel', () => {
   });
 
   describe('replaceOne', () => {
-    it('should create Query and call replaceOne with a document', () => {
+    it('should instantiate model with isNew false and call save with options', async () => {
       const doc = { _id: '123', name: 'updatedDoc', value: 100 };
       const options = {};
+      const saveSpy = vi
+        .spyOn(TestModel.prototype as any, 'save')
+        .mockImplementation(function (this: any, receivedOptions: any) {
+          expect(this.$_isNew).toBe(false);
+          expect(receivedOptions).toBe(options);
+          return Promise.resolve('saveResult');
+        });
 
-      const result = TestModel.replaceOne(doc, options);
+      const result = await TestModel.replaceOne(doc, options);
 
-      expect((TestModel as any).Query).toHaveBeenCalledWith(
-        mockDB,
-        'testStore'
-      );
-      expect(mockQueryInstance.replaceOne).toHaveBeenCalledWith(doc, {
-        transaction: expect.any(Object),
-        ...options,
-      });
-      expect(result).toBe('replaceOneResult');
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      expect(result).toBe('saveResult');
     });
 
-    it('should create Query and call replaceOne with complex document', () => {
+    it('should instantiate model with isNew false and call save without options', async () => {
       const doc = {
         _id: '789',
         name: 'complex',
         nested: { prop: 'value' },
         array: [1, 2, 3],
       };
-      const options = {};
+      const saveSpy = vi
+        .spyOn(TestModel.prototype as any, 'save')
+        .mockImplementation(function (this: any, receivedOptions: any) {
+          expect(this.$_isNew).toBe(false);
+          expect(receivedOptions).toBeUndefined();
+          return Promise.resolve('saveResult');
+        });
 
-      const result = TestModel.replaceOne(doc, options);
+      const result = await TestModel.replaceOne(doc);
 
-      expect((TestModel as any).Query).toHaveBeenCalledWith(
-        mockDB,
-        'testStore'
-      );
-      expect(mockQueryInstance.replaceOne).toHaveBeenCalledWith(doc, {
-        transaction: expect.any(Object),
-        ...options,
-      });
-      expect(result).toBe('replaceOneResult');
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      expect(result).toBe('saveResult');
     });
   });
 });

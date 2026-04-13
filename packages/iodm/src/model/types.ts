@@ -87,7 +87,7 @@ export interface IModel<
   replaceOne(
     doc: TRawDocType,
     options?: QueryReplaceOneOptions
-  ): Query<IModel<TRawDocType, TInstanceMethods, HydratedDoc>, unknown>;
+  ): Promise<unknown>;
   findByIdAndUpdate(
     id: IDBValidKey,
     payload: QueryExecutorUpdateManyUpdater<TRawDocType>,
