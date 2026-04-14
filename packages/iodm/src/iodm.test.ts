@@ -30,22 +30,23 @@ describe('Iodm', () => {
     expect(Model.getSchema()).toBeDefined();
   });
 
-//   it('should apply plugin when model is created', () => {
-//     const pluginFn = vi.fn((schema: any) => {
-//       schema.method('hello', function () {
-//         return 'hello';
-//       });
-//     });
+  it('should apply plugin when model is created', () => {
+    const pluginFn = vi.fn((schema: any) => {
+      schema.method('hello', function () {
+        return 'hello';
+      });
+    });
 
-//     iodm.plugin(pluginFn);
+    iodm.plugin(pluginFn);
 
-//     const schema = new Schema({ name: String });
-//     const Model = iodm.model('Author', schema);
+    const schema = new Schema({ name: String });
 
-//     expect(pluginFn).toHaveBeenCalledTimes(1);
-//     expect((Model.prototype as any).hello).toBeInstanceOf(Function);
-//     expect((new Model({ name: 'name' }) as any).hello()).toBe('hello');
-//   });
+    const Model = iodm.model('Author', schema);
+
+    expect(pluginFn).toHaveBeenCalledTimes(1);
+    expect((Model.prototype as any).hello).toBeInstanceOf(Function);
+    expect((new Model({ name: 'name' }) as any).hello()).toBe('hello');
+  });
 
   it('should allow calling model multiple times with different names', () => {
     const schemaA = new Schema({ a: Number });

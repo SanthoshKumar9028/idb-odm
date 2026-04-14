@@ -8,6 +8,10 @@ import type {
   QueryFindByIdAndDeleteOptions,
   QueryInsertOneOptions,
   QueryReplaceOneOptions,
+  QueryUpdateManyOptions,
+  QueryUpdateOneOptions,
+  QueryDeleteManyOptions,
+  QueryCountDocumentsOptions,
 } from 'iodm-query';
 import type {
   QueryExecutorUpdateManyUpdater,
@@ -326,20 +330,54 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     return obj.save(options);
   }
 
-  static findByIdAndUpdate(
-    id: IDBValidKey,
-    payload: QueryExecutorUpdateManyUpdater<any>,
-    options?: QueryFindByIdAndUpdateOptions
+  static updateMany(
+    filter: QueryRootFilter,
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    options?: QueryUpdateManyOptions
   ) {
-    return new this.Query(this.getDB(), this.getStoreName()).findByIdAndUpdate(
-      id,
+    return new this.Query(this.getDB(), this.getStoreName()).updateMany(
+      filter,
       payload,
       {
-        Constructor: this,
         transaction: this.createTransaction('readwrite'),
         ...options,
       }
     );
+  }
+
+  static updateOne(
+    filter: QueryRootFilter,
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    options?: QueryUpdateOneOptions
+  ) {
+    return new this.Query(this.getDB(), this.getStoreName()).updateOne(
+      filter,
+      payload,
+      {
+        transaction: this.createTransaction('readwrite'),
+        ...options,
+      }
+    );
+  }
+
+  static deleteMany(
+    filter?: QueryRootFilter,
+    options?: QueryDeleteManyOptions
+  ) {
+    return new this.Query(this.getDB(), this.getStoreName()).deleteMany(
+      filter,
+      {
+        transaction: this.createTransaction('readwrite'),
+        ...options,
+      }
+    );
+  }
+
+  static deleteOne(filter?: QueryRootFilter, options?: QueryDeleteOneOptions) {
+    return new this.Query(this.getDB(), this.getStoreName()).deleteOne(filter, {
+      transaction: this.createTransaction('readwrite'),
+      ...options,
+    });
   }
 
   static findByIdAndDelete(
@@ -356,11 +394,33 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     );
   }
 
-  static deleteOne(filter?: QueryRootFilter, options?: QueryDeleteOneOptions) {
-    return new this.Query(this.getDB(), this.getStoreName()).deleteOne(filter, {
-      transaction: this.createTransaction('readwrite'),
-      ...options,
-    });
+  static findByIdAndUpdate(
+    id: IDBValidKey,
+    payload: QueryExecutorUpdateManyUpdater<any>,
+    options?: QueryFindByIdAndUpdateOptions
+  ) {
+    return new this.Query(this.getDB(), this.getStoreName()).findByIdAndUpdate(
+      id,
+      payload,
+      {
+        Constructor: this,
+        transaction: this.createTransaction('readwrite'),
+        ...options,
+      }
+    );
+  }
+
+  static countDocuments(
+    filter?: QueryRootFilter,
+    options?: QueryCountDocumentsOptions
+  ) {
+    return new this.Query(this.getDB(), this.getStoreName()).countDocuments(
+      filter,
+      {
+        transaction: this.createTransaction('readonly'),
+        ...options,
+      }
+    );
   }
 
   static handlePreExec(event: string, payload: any) {

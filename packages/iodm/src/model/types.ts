@@ -13,6 +13,11 @@ import type {
   QueryExecutorUpdateManyUpdater,
   QueryRootFilter,
   QueryReplaceOneOptions,
+  QueryUpdateManyOptions,
+  QueryExecutorUpdateManyResponse,
+  QueryDeleteManyOptions,
+  QueryCountDocumentsOptions,
+  QueryUpdateOneOptions,
 } from 'iodm-query';
 import type { Schema } from '../schema';
 
@@ -88,19 +93,37 @@ export interface IModel<
     doc: TRawDocType,
     options?: QueryReplaceOneOptions
   ): Promise<unknown>;
+  updateMany(
+    filter: QueryRootFilter,
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    options?: QueryUpdateManyOptions
+  ): Query<QueryExecutorUpdateManyResponse, DocumentType>;
+  updateOne(
+    filter: QueryRootFilter,
+    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    options?: QueryUpdateOneOptions
+  ): Query<QueryExecutorUpdateManyResponse, DocumentType>;
+  deleteMany(
+    filter?: QueryRootFilter,
+    options?: QueryDeleteManyOptions
+  ): Query<QueryExecutorDeleteManyResponse, DocumentType>;
+  deleteOne(
+    filter?: QueryRootFilter,
+    options?: QueryDeleteOneOptions
+  ): Query<QueryExecutorDeleteManyResponse, DocumentType>;
+  findByIdAndDelete(
+    id: IDBValidKey,
+    options?: QueryFindByIdAndDeleteOptions
+  ): Query<HydratedDoc, DocumentType>;
   findByIdAndUpdate(
     id: IDBValidKey,
     payload: QueryExecutorUpdateManyUpdater<TRawDocType>,
     options?: QueryFindByIdAndUpdateOptions
-  ): Query<HydratedDoc, unknown>;
-  findByIdAndDelete(
-    id: IDBValidKey,
-    options?: QueryFindByIdAndDeleteOptions
-  ): Query<HydratedDoc, unknown>;
-  deleteOne(
+  ): Query<HydratedDoc, DocumentType>;
+  countDocuments(
     filter?: QueryRootFilter,
-    options?: QueryDeleteOneOptions
-  ): Query<QueryExecutorDeleteManyResponse, unknown>;
+    options?: QueryCountDocumentsOptions
+  ): Query<number, DocumentType>;
 }
 
 export interface PostMessage {

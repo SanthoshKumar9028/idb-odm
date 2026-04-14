@@ -24,9 +24,9 @@ class Iodm {
     this.plugins.push({ fn, opt });
   }
 
-  private applyPlugins(newModel: IModel) {
+  private applyPlugins(newSchema: Schema) {
     this.plugins.forEach((plugin) => {
-      newModel.getSchema().plugin(plugin.fn, plugin.opt);
+      newSchema.plugin(plugin.fn, plugin.opt);
     });
   }
 
@@ -41,9 +41,11 @@ class Iodm {
     ObtainSchemaGeneric<TSchema, 'TStaticMethods'> {
     const NewModel: IModel = class extends AbstractModel {} as IModel;
 
-    NewModel.syncModelToSchema({ name, schema });
+    const newSchema = schema.clone();
 
-    this.applyPlugins(NewModel);
+    this.applyPlugins(newSchema);
+
+    NewModel.syncModelToSchema({ name, schema: newSchema });
 
     return (this.models[name] = NewModel as any);
   }

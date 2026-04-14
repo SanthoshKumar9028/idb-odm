@@ -48,6 +48,10 @@ describe('AbstractModel', () => {
       findByIdAndUpdate: vi.fn().mockReturnValue('findByIdAndUpdateResult'),
       findByIdAndDelete: vi.fn().mockReturnValue('findByIdAndDeleteResult'),
       deleteOne: vi.fn().mockReturnValue('deleteOneResult'),
+      deleteMany: vi.fn().mockReturnValue('deleteManyResult'),
+      updateMany: vi.fn().mockReturnValue('updateManyResult'),
+      updateOne: vi.fn().mockReturnValue('updateOneResult'),
+      countDocuments: vi.fn().mockReturnValue('countDocumentsResult'),
       insertOne: vi.fn().mockReturnValue('insertOneResult'),
       insertMany: vi.fn().mockResolvedValue([]),
       replaceOne: vi.fn().mockReturnValue('replaceOneResult'),
@@ -666,6 +670,116 @@ describe('AbstractModel', () => {
         ...options,
       });
       expect(result).toBe('deleteOneResult');
+    });
+  });
+
+  describe('deleteMany', () => {
+    it('should create Query and call deleteMany', () => {
+      const filter = { active: false };
+      const options = {};
+
+      const result = TestModel.deleteMany(filter, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.deleteMany).toHaveBeenCalledWith(filter, {
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('deleteManyResult');
+    });
+
+    it('should create Query and call deleteMany without filter', () => {
+      const options = {};
+
+      const result = TestModel.deleteMany(undefined, options);
+
+      expect(mockQueryInstance.deleteMany).toHaveBeenCalledWith(undefined, {
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('deleteManyResult');
+    });
+  });
+
+  describe('updateMany', () => {
+    it('should create Query and call updateMany', () => {
+      const filter = { status: 'pending' };
+      const payload = { $set: { status: 'complete' } };
+      const options = {};
+
+      const result = TestModel.updateMany(filter, payload, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.updateMany).toHaveBeenCalledWith(
+        filter,
+        payload,
+        {
+          transaction: expect.any(Object),
+          ...options,
+        }
+      );
+      expect(result).toBe('updateManyResult');
+    });
+  });
+
+  describe('updateOne', () => {
+    it('should create Query and call updateOne', () => {
+      const filter = { status: 'pending' };
+      const payload = { $set: { status: 'complete' } };
+      const options = {};
+
+      const result = TestModel.updateOne(filter, payload, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.updateOne).toHaveBeenCalledWith(
+        filter,
+        payload,
+        {
+          transaction: expect.any(Object),
+          ...options,
+        }
+      );
+      expect(result).toBe('updateOneResult');
+    });
+  });
+
+  describe('countDocuments', () => {
+    it('should create Query and call countDocuments', () => {
+      const filter = { archived: true };
+      const options = {};
+
+      const result = TestModel.countDocuments(filter, options);
+
+      expect((TestModel as any).Query).toHaveBeenCalledWith(
+        mockDB,
+        'testStore'
+      );
+      expect(mockQueryInstance.countDocuments).toHaveBeenCalledWith(filter, {
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('countDocumentsResult');
+    });
+
+    it('should create Query and call countDocuments without filter', () => {
+      const options = {};
+
+      const result = TestModel.countDocuments(undefined, options);
+
+      expect(mockQueryInstance.countDocuments).toHaveBeenCalledWith(undefined, {
+        transaction: expect.any(Object),
+        ...options,
+      });
+      expect(result).toBe('countDocumentsResult');
     });
   });
 
