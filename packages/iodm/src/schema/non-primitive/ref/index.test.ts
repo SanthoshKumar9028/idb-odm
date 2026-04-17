@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { RefSchema } from './index';
-import { NumberSchema } from '../../primitive/number.ts/index';
+import { NumberSchema } from '../../primitive/number';
 import iodm from '../../../iodm';
 
 vi.mock('../../../iodm', () => ({

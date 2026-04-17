@@ -1,19 +1,24 @@
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
-import type { ValidationRule } from './validation-rule/type';
+import type { ValidationRuleOptions } from './validation-rule/validate';
 import type {
   SchemaMethodOptions,
   SchemaOptions,
   SchemaSaveMethodOptions,
 } from './types';
 
+import { ValidationRule } from './validation-rule/validate';
 import { RequiredValidationRule } from './validation-rule/required';
 import { applySchemaOptionsDefaults } from './helpers';
 
-export interface BaseSchemaConstructorOptions {
+export interface BaseSchemaValidateOptions {
+  required?: boolean;
+  validate?: Required<ValidationRuleOptions>;
+}
+
+export interface BaseSchemaConstructorOptions extends BaseSchemaValidateOptions {
   name?: string;
   isVirtual?: boolean;
   validationRules?: Array<ValidationRule>;
-  required?: boolean;
 }
 
 export abstract class BaseSchema {
@@ -28,6 +33,7 @@ export abstract class BaseSchema {
       isVirtual = false,
       validationRules = [],
       required,
+      validate,
     }: BaseSchemaConstructorOptions = {},
     options?: Partial<SchemaOptions>
   ) {
@@ -35,6 +41,10 @@ export abstract class BaseSchema {
     this.isVirtual = isVirtual;
     this.validationRules = validationRules;
     this.schemaOptions = applySchemaOptionsDefaults(options);
+
+    if (validate) {
+      this.validationRules.push(new ValidationRule(validate));
+    }
 
     if (required) {
       this.validationRules.push(

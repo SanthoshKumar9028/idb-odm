@@ -1,6 +1,31 @@
 import type { IQuery } from 'iodm-query';
 import type { Schema } from '.';
 import type { IfAny } from '../types';
+import type { NumberSchemaValidationOptions } from './primitive/number';
+import type { BaseSchema } from './base-schema';
+
+export type SchemaDefinitionNumberValue =
+  | typeof Number
+  | ({
+      type: typeof Number;
+      ref?: string;
+    } & NumberSchemaValidationOptions);
+
+export type SchemaDefinitionValue =
+  | BaseSchema
+  | typeof String
+  | SchemaDefinitionNumberValue
+  | typeof Boolean
+  | typeof Date
+  | typeof Map
+  | typeof Set
+  | SchemaDefinitionValue[]
+  | { type: typeof String; required?: boolean; ref?: string }
+  | { type: typeof Boolean; required?: boolean }
+  | { type: typeof Date; required?: boolean }
+  | { type: typeof Map; required?: boolean }
+  | { type: typeof Set; required?: boolean }
+  | { type: SchemaDefinitionValue[]; required?: boolean };
 
 export type ObtainSchemaGeneric<
   TSchema,

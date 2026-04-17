@@ -56,6 +56,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       : this.createInstanceTransaction('readwrite');
 
     try {
+      this.documentMiddleware.execPre('save', this, null);
       this.documentMiddleware.execPre('validate', this, null);
 
       try {
@@ -66,8 +67,6 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       }
 
       this.documentMiddleware.execPost('validate', this, null);
-
-      this.documentMiddleware.execPre('save', this, null);
 
       await this.getInstanceSchema().save(this, {
         transaction,

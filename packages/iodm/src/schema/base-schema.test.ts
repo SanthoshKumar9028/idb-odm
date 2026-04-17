@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BaseSchema } from './base-schema';
-import { ValidationRule } from './validation-rule/type';
+import { ValidationRule } from './validation-rule/validate';
 import { RequiredValidationRule } from './validation-rule/required';
 
 class TestSchema extends BaseSchema {

@@ -4,12 +4,13 @@ import type {
   FindMiddlewareContext,
   InjectFunctionContext,
   PluginFn,
+  SchemaDefinitionValue,
   SchemaMethodOptions,
   SchemaOptions,
   SchemaSaveMethodOptions,
 } from './types.ts';
 import type { BaseSchemaConstructorOptions } from './base-schema';
-import type { NumberSchemaConstructorOptions } from './primitive/number.ts';
+import type { NumberSchemaConstructorOptions } from './primitive/number/index.ts';
 import type { IModel } from '../model/types.ts';
 import type { MiddlewareKeys } from './constants.ts';
 
@@ -17,8 +18,8 @@ import { MiddlewareStore } from 'iodm-query';
 import { BaseSchema } from './base-schema';
 import { ArraySchema } from './non-primitive/array/index.ts';
 import { RefSchema } from './non-primitive/ref/index.ts';
-import { NumberSchema } from './primitive/number.ts';
-import { StringSchema } from './primitive/string.ts';
+import { NumberSchema } from './primitive/number/index.ts';
+import { StringSchema } from './primitive/string/index.ts';
 import { RefArraySchema } from './non-primitive/ref-array/index.ts';
 import { BooleanSchema } from './primitive/boolean/index.ts';
 import { DateSchema } from './non-primitive/date/index.ts';
@@ -27,23 +28,6 @@ import { SetSchema } from './non-primitive/set/index.ts';
 import { VirtualType } from './virtual-type/VirtualType.ts';
 import { middlewareKeys } from './constants.ts';
 import CustomMiddlewareExecutor from './custom-middleware-executor.ts';
-
-type SchemaDefinitionValue =
-  | Schema
-  | typeof String
-  | typeof Number
-  | typeof Boolean
-  | typeof Date
-  | typeof Map
-  | typeof Set
-  | SchemaDefinitionValue[]
-  | { type: typeof String; required?: boolean; ref?: string }
-  | { type: typeof Number; required?: boolean; min?: number; ref?: string }
-  | { type: typeof Boolean; required?: boolean }
-  | { type: typeof Date; required?: boolean }
-  | { type: typeof Map; required?: boolean }
-  | { type: typeof Set; required?: boolean }
-  | { type: SchemaDefinitionValue[]; required?: boolean };
 
 type SchemaDefinition<RawDocType> = Partial<
   Record<keyof RawDocType, SchemaDefinitionValue>
@@ -133,6 +117,9 @@ export class Schema<
 
     if ('type' in definition) {
       schemaOptions.required = definition.required;
+      if ('validate' in definition) {
+        schemaOptions.validate = definition.validate;
+      }
     }
 
     if (constructor === String) {
@@ -155,6 +142,12 @@ export class Schema<
 
       if ('min' in definition) {
         numberSchemaOptions.min = definition.min;
+      }
+      if ('max' in definition) {
+        numberSchemaOptions.max = definition.max;
+      }
+      if ('enum' in definition) {
+        numberSchemaOptions.enum = definition.enum;
       }
 
       if ('ref' in definition && definition['ref']) {

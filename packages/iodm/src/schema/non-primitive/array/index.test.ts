@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ArraySchema } from './index';
-import { NumberSchema } from '../../primitive/number.ts/index';
+import { NumberSchema } from '../../primitive/number';
 
 describe('ArraySchema', () => {
   it('should cast arrays using value schema', () => {

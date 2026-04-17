@@ -1,5 +1,5 @@
-import type { ValidationRuleOptions } from './type';
-import { ValidationRule } from './type';
+import type { ValidationRuleOptions } from '../validate';
+import { ValidationRule } from '../validate';
 
 interface MinValidationRuleOptions extends ValidationRuleOptions {
   min: number;
@@ -15,7 +15,7 @@ export class MinValidationRule extends ValidationRule {
 
   validate(value: unknown): boolean {
     if (typeof value === 'number' && value < this.min) {
-      throw new Error(this.message);
+      this.throwMessage({ value });
     }
 
     return true;

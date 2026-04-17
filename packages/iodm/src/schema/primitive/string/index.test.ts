@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { StringSchema } from './index';
-import { MinValidationRule } from '../../validation-rule/min';
 
 describe('StringSchema', () => {
   it('should return null and undefined as-is', () => {

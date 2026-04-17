@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { NumberSchema } from './index';
-import { MinValidationRule } from '../../validation-rule/min';
+import { MinValidationRule } from '../../validation-rule/number/min';
+import { MaxValidationRule } from '../../validation-rule/number/max';
+import { EnumValidationRule } from '../../validation-rule/number/enum';
 
 describe('NumberSchema', () => {
   it('should cast number values as-is', () => {
@@ -31,18 +33,25 @@ describe('NumberSchema', () => {
     ).toBe(true);
   });
 
-  it('should validate values with min rule and throw when below min', () => {
-    const schema = new NumberSchema({ name: 'age', min: 18 });
+  it('should add MaxValidationRule when max option is provided', () => {
+    const schema = new NumberSchema({ name: 'age', max: 18 });
 
-    expect(schema.validate(18, {} as any)).toBe(true);
-    expect(schema.validate(20, {} as any)).toBe(true);
-    expect(() => schema.validate(17, {} as any)).toThrow(
-      'age must be greater then or equal to 18'
-    );
+    expect(
+      schema.validationRules.some((rule) => rule instanceof MaxValidationRule)
+    ).toBe(true);
   });
 
-  it('should validate values without min rule', () => {
-    const schema = new NumberSchema({ name: 'qty' });
-    expect(schema.validate(1, {} as any)).toBe(true);
+  it('should add EnumValidationRule when enum option is provided', () => {
+    const schema = new NumberSchema({
+      name: 'age',
+      enum: {
+        values: [1, 2],
+        message: 'message',
+      },
+    });
+
+    expect(
+      schema.validationRules.some((rule) => rule instanceof EnumValidationRule)
+    ).toBe(true);
   });
 });

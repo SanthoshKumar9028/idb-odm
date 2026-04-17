@@ -10,7 +10,7 @@ if (typeof globalThis.BroadcastChannel === 'undefined') {
   (globalThis as any).BroadcastChannel = FakeBroadcastChannel;
 }
 
-import iodm from './iodm';
+import iodm from './index';
 import { Schema } from './schema';
 
 describe('Iodm', () => {
