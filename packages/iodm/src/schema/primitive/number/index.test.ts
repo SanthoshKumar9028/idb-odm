@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { NumberSchema } from './index';
 import { MinValidationRule } from '../../validation-rule/number/min';
 import { MaxValidationRule } from '../../validation-rule/number/max';
-import { EnumValidationRule } from '../../validation-rule/number/enum';
+import { EnumValidationRule } from '../../validation-rule/enum';
 
 describe('NumberSchema', () => {
   it('should cast number values as-is', () => {

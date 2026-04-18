@@ -7,7 +7,7 @@ import type {
 import { BaseSchema } from '../../base-schema';
 import { MaxValidationRule } from '../../validation-rule/number/max';
 import { MinValidationRule } from '../../validation-rule/number/min';
-import { EnumValidationRule } from '../../validation-rule/number/enum';
+import { EnumValidationRule } from '../../validation-rule/enum';
 
 export interface NumberSchemaValidationOptions extends BaseSchemaValidateOptions {
   min?: number | [number, string];

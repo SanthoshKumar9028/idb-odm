@@ -3,6 +3,7 @@ import type { Schema } from '.';
 import type { IfAny } from '../types';
 import type { NumberSchemaValidationOptions } from './primitive/number';
 import type { BaseSchema } from './base-schema';
+import type { StringSchemaValidationOptions } from './primitive/string';
 
 export type SchemaDefinitionNumberValue =
   | typeof Number
@@ -11,16 +12,22 @@ export type SchemaDefinitionNumberValue =
       ref?: string;
     } & NumberSchemaValidationOptions);
 
+export type SchemaDefinitionStringValue =
+  | typeof String
+  | ({
+      type: typeof String;
+      ref?: string;
+    } & StringSchemaValidationOptions);
+
 export type SchemaDefinitionValue =
   | BaseSchema
-  | typeof String
+  | SchemaDefinitionStringValue
   | SchemaDefinitionNumberValue
   | typeof Boolean
   | typeof Date
   | typeof Map
   | typeof Set
   | SchemaDefinitionValue[]
-  | { type: typeof String; required?: boolean; ref?: string }
   | { type: typeof Boolean; required?: boolean }
   | { type: typeof Date; required?: boolean }
   | { type: typeof Map; required?: boolean }

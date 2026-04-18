@@ -78,4 +78,99 @@ describe('Schema validation', () => {
       );
     });
   });
+
+  describe('String', () => {
+    it('should validate values with minLength rule and throw when below minLength', () => {
+      const schema = new Schema({ name: { type: String, minLength: 4 } });
+
+      expect(schema.validate({ _id: 1, name: 'test123' }, {} as any)).toBe(
+        true
+      );
+      expect(schema.validate({ _id: 1, name: 'test123678' }, {} as any)).toBe(
+        true
+      );
+      expect(() => schema.validate({ _id: 1, name: 'tes' }, {} as any)).toThrow(
+        'name length must be greater then or equal to 4'
+      );
+    });
+
+    it('should validate values with minLength rule using array syntax and throw when below minLength', () => {
+      const schema = new Schema({
+        name: { type: String, minLength: [4, 'invalid length'] },
+      });
+
+      expect(schema.validate({ _id: 1, name: 'test123' }, {} as any)).toBe(
+        true
+      );
+      expect(schema.validate({ _id: 1, name: 'test123678' }, {} as any)).toBe(
+        true
+      );
+      expect(() => schema.validate({ _id: 1, name: 'tes' }, {} as any)).toThrow(
+        'invalid length'
+      );
+    });
+
+    it('should validate values with maxLength rule and throw when above maxLength', () => {
+      const schema = new Schema({ name: { type: String, maxLength: 4 } });
+
+      expect(schema.validate({ _id: 1, name: 'te' }, {} as any)).toBe(true);
+      expect(() =>
+        schema.validate({ _id: 1, name: 'test1234' }, {} as any)
+      ).toThrow('name length must be less then or equal to 4');
+    });
+
+    it('should validate values with maxLength rule using array syntax and throw when above maxLength', () => {
+      const schema = new Schema({
+        name: { type: String, maxLength: [4, 'invalid name'] },
+      });
+
+      expect(schema.validate({ _id: 1, name: 'te' }, {} as any)).toBe(true);
+      expect(() =>
+        schema.validate({ _id: 1, name: 'test1234' }, {} as any)
+      ).toThrow('invalid name');
+    });
+
+    it('should validate values with enum rule', () => {
+      const schema = new Schema({
+        name: {
+          type: String,
+          enum: {
+            values: ['one', 'two'],
+            message(props) {
+              return `should be one of (one, two) but got ${props.value}`;
+            },
+          },
+        },
+      });
+
+      expect(schema.validate({ _id: 1, name: 'one' }, {} as any)).toBe(true);
+      expect(() =>
+        schema.validate({ _id: 1, name: 'test1234' }, {} as any)
+      ).toThrow('should be one of (one, two) but got test1234');
+    });
+
+    it('should validate values with match rule', () => {
+      const schema = new Schema({ name: { type: String, match: /abc/i } });
+
+      expect(schema.validate({ _id: 1, name: '1234abce' }, {} as any)).toBe(
+        true
+      );
+      expect(() =>
+        schema.validate({ _id: 1, name: 'test1234' }, {} as any)
+      ).toThrow('name is failed to match the RegExp');
+    });
+
+    it('should validate values with match rule using array syntax', () => {
+      const schema = new Schema({
+        name: { type: String, match: [/abc/i, 'invalid name'] },
+      });
+
+      expect(schema.validate({ _id: 1, name: '1234abce' }, {} as any)).toBe(
+        true
+      );
+      expect(() =>
+        schema.validate({ _id: 1, name: 'test1234' }, {} as any)
+      ).toThrow('invalid name');
+    });
+  });
 });

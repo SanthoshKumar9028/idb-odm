@@ -13,6 +13,7 @@ import type { BaseSchemaConstructorOptions } from './base-schema';
 import type { NumberSchemaConstructorOptions } from './primitive/number/index.ts';
 import type { IModel } from '../model/types.ts';
 import type { MiddlewareKeys } from './constants.ts';
+import type { StringSchemaConstructorOptions } from './primitive/string/index.ts';
 
 import { MiddlewareStore } from 'iodm-query';
 import { BaseSchema } from './base-schema';
@@ -123,18 +124,33 @@ export class Schema<
     }
 
     if (constructor === String) {
+      const stringSchemaOptions: StringSchemaConstructorOptions = schemaOptions;
+
+      if ('minLength' in definition) {
+        stringSchemaOptions.minLength = definition.minLength;
+      }
+      if ('maxLength' in definition) {
+        stringSchemaOptions.maxLength = definition.maxLength;
+      }
+      if ('enum' in definition) {
+        stringSchemaOptions.enum = definition.enum as any;
+      }
+      if ('match' in definition) {
+        stringSchemaOptions.match = definition.match;
+      }
+
       if ('ref' in definition && definition['ref']) {
         this.refNames.add(definition.ref);
 
         return new RefSchema({
           name: prop,
           ref: definition.ref,
-          valueSchema: new StringSchema(schemaOptions),
+          valueSchema: new StringSchema(stringSchemaOptions),
           required: definition.required,
         });
       }
 
-      return new StringSchema(schemaOptions);
+      return new StringSchema(stringSchemaOptions);
     }
 
     if (constructor === Number) {
@@ -147,7 +163,7 @@ export class Schema<
         numberSchemaOptions.max = definition.max;
       }
       if ('enum' in definition) {
-        numberSchemaOptions.enum = definition.enum;
+        numberSchemaOptions.enum = definition.enum as any;
       }
 
       if ('ref' in definition && definition['ref']) {
