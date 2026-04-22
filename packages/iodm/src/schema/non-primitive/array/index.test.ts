@@ -59,4 +59,22 @@ describe('ArraySchema', () => {
       'numbers is required!'
     );
   });
+
+  it('should return default value for undefined or null value', () => {
+    const schema = new ArraySchema({
+      valueSchema: new NumberSchema({ name: 'item', default: 2 }),
+      default: [1, undefined],
+    });
+    expect(schema.castFrom(undefined, {})).toEqual([1, 2]);
+    expect(schema.castFrom(null, {})).toEqual([1, 2]);
+  });
+
+  it('should execute and return default value for undefined or null value when function is given', () => {
+    const schema = new ArraySchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      default: () => [1, 2],
+    });
+    expect(schema.castFrom(undefined, {})).toEqual([1, 2]);
+    expect(schema.castFrom(null, {})).toEqual([1, 2]);
+  });
 });

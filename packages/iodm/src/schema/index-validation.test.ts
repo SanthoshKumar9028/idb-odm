@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Schema } from '.';
+import { DateSchema } from './non-primitive/date';
 
 describe('Schema validation', () => {
   it('should validate values with custom validate rule', () => {
@@ -171,6 +172,54 @@ describe('Schema validation', () => {
       expect(() =>
         schema.validate({ _id: 1, name: 'test1234' }, {} as any)
       ).toThrow('invalid name');
+    });
+  });
+
+  describe('Date', () => {
+    it('should validate values with min rule and throw when below min', () => {
+      const schema = new Schema({
+        dob: {
+          type: Date,
+          required: true,
+          min: [
+            new Date(2026, 6, 6),
+            'dob must be greater then or equal to 2026-6-6',
+          ],
+        },
+      });
+
+      expect(
+        schema.validate({ _id: 1, dob: new Date(2026, 6, 6) }, {} as any)
+      ).toBe(true);
+      expect(
+        schema.validate({ _id: 1, dob: new Date(2028, 6, 6) }, {} as any)
+      ).toBe(true);
+      expect(() =>
+        schema.validate({ _id: 1, dob: new Date(2020, 6, 6) }, {} as any)
+      ).toThrow('dob must be greater then or equal to 2026-6-6');
+    });
+
+    it('should validate values with max rule and throw when above max', () => {
+      const schema = new Schema({
+        dob: {
+          type: Date,
+          required: true,
+          max: [
+            new Date(2026, 6, 6),
+            'dob must be less then or equal to 2026-6-6',
+          ],
+        },
+      });
+
+      expect(
+        schema.validate({ _id: 1, dob: new Date(2026, 6, 6) }, {} as any)
+      ).toBe(true);
+      expect(
+        schema.validate({ _id: 1, dob: new Date(2020, 6, 6) }, {} as any)
+      ).toBe(true);
+      expect(() =>
+        schema.validate({ _id: 1, dob: new Date(2028, 6, 6) }, {} as any)
+      ).toThrow('dob must be less then or equal to 2026-6-6');
     });
   });
 });

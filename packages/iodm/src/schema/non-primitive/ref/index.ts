@@ -86,14 +86,15 @@ export class RefSchema extends BaseSchema {
 
   castFrom(value: unknown, options: SchemaMethodOptions): unknown {
     const keyPath = this.getRefModel().getSchema().getSchemaOptions().keyPath;
+    let val = this.getFinalValue(value);
 
-    if (value && typeof value === 'object') {
+    if (val && typeof val === 'object') {
       return this.valueSchema.castFrom(
-        value[keyPath as keyof typeof value],
+        val[keyPath as keyof typeof val],
         options
       );
     }
 
-    return this.valueSchema.castFrom(value, options);
+    return this.valueSchema.castFrom(val, options);
   }
 }

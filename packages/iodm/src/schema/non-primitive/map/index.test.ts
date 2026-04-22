@@ -20,7 +20,10 @@ describe('MapSchema', () => {
     });
 
     it('should return the Map when value is a valid Map instance', () => {
-      const map = new Map([['key1', 'value1'], ['key2', 'value2']]);
+      const map = new Map([
+        ['key1', 'value1'],
+        ['key2', 'value2'],
+      ]);
       const result = schema.castFrom(map);
       expect(result).toBe(map);
     });
@@ -32,6 +35,22 @@ describe('MapSchema', () => {
       expect(() => schema.castFrom(123)).toThrow('value is not a map');
       expect(() => schema.castFrom(true)).toThrow('value is not a map');
       expect(() => schema.castFrom(new Date())).toThrow('value is not a map');
+    });
+
+    it('should return default value for undefined or null value', () => {
+      const schema = new MapSchema({
+        default: new Map([[1, 2]]),
+      });
+      expect(schema.castFrom(undefined)).toEqual(new Map([[1, 2]]));
+      expect(schema.castFrom(null)).toEqual(new Map([[1, 2]]));
+    });
+
+    it('should execute and return default value for undefined or null value when function is given', () => {
+      const schema = new MapSchema({
+        default: () => new Map([[1, 2]]),
+      });
+      expect(schema.castFrom(undefined)).toEqual(new Map([[1, 2]]));
+      expect(schema.castFrom(null)).toEqual(new Map([[1, 2]]));
     });
   });
 });

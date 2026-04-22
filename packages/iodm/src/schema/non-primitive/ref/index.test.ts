@@ -36,7 +36,9 @@ describe('RefSchema', () => {
       valueSchema,
     });
 
-    expect(() => refSchema.getRefModel()).toThrow('Ref User model is not created');
+    expect(() => refSchema.getRefModel()).toThrow(
+      'Ref User model is not created'
+    );
   });
 
   it('getRefModel should return model if found', () => {
@@ -115,7 +117,9 @@ describe('RefSchema', () => {
     });
 
     expect(refSchema.validate({ _id: 5, name: 'John' }, {} as any)).toBe(true);
-    expect(() => refSchema.validate({ _id: -1, name: 'John' }, {} as any)).toThrow();
+    expect(() =>
+      refSchema.validate({ _id: -1, name: 'John' }, {} as any)
+    ).toThrow();
   });
 
   it('validate should pass through primitive values', () => {
@@ -159,15 +163,22 @@ describe('RefSchema', () => {
       valueSchema,
     });
 
-    vi.spyOn(refSchema, 'getRefModel').mockReturnValue(mockRefModelConstructor as any);
+    vi.spyOn(refSchema, 'getRefModel').mockReturnValue(
+      mockRefModelConstructor as any
+    );
 
     const mockTransaction = {
       abort: vi.fn(),
     };
 
-    await refSchema.save({ _id: 1, name: 'John' }, { transaction: mockTransaction as any } as any);
+    await refSchema.save({ _id: 1, name: 'John' }, {
+      transaction: mockTransaction as any,
+    } as any);
 
-    expect(mockRefModelConstructor).toHaveBeenCalledWith({ _id: 1, name: 'John' });
+    expect(mockRefModelConstructor).toHaveBeenCalledWith({
+      _id: 1,
+      name: 'John',
+    });
     expect(mockSave).toHaveBeenCalledWith({ transaction: mockTransaction });
   });
 
@@ -182,7 +193,9 @@ describe('RefSchema', () => {
       abort: vi.fn(),
     };
 
-    const result = await refSchema.save(null, { transaction: mockTransaction as any } as any);
+    const result = await refSchema.save(null, {
+      transaction: mockTransaction as any,
+    } as any);
 
     expect(result).toBeUndefined();
   });
@@ -203,14 +216,18 @@ describe('RefSchema', () => {
       valueSchema,
     });
 
-    vi.spyOn(refSchema, 'getRefModel').mockReturnValue(mockRefModelConstructor as any);
+    vi.spyOn(refSchema, 'getRefModel').mockReturnValue(
+      mockRefModelConstructor as any
+    );
 
     const mockTransaction = {
       abort: vi.fn(),
     };
 
     try {
-      await refSchema.save({ _id: 1 }, { transaction: mockTransaction as any } as any);
+      await refSchema.save({ _id: 1 }, {
+        transaction: mockTransaction as any,
+      } as any);
       expect.fail('should have thrown');
     } catch (e) {
       expect(e).toBe(mockValidateError);
@@ -237,14 +254,11 @@ describe('RefSchema', () => {
 
     vi.spyOn(refSchema, 'getRefModel').mockReturnValue(mockRefModel as any);
 
-    const result = await refSchema.preProcess(
-      { author: 1, title: 'Post' },
-      {
-        idb: {} as any,
-        populateFields: { author: true },
-        transaction: {} as any,
-      } as any
-    );
+    const result = await refSchema.preProcess({ author: 1, title: 'Post' }, {
+      idb: {} as any,
+      populateFields: { author: true },
+      transaction: {} as any,
+    } as any);
 
     expect(result).toEqual({ _id: 1, name: 'John' });
     expect(mockQueryInstance.findById).toHaveBeenCalledWith(1, {
@@ -269,13 +283,10 @@ describe('RefSchema', () => {
       name: 'author',
     });
 
-    const result = await refSchema.preProcess(
-      { author: 1, title: 'Post' },
-      {
-        idb: {} as any,
-        transaction: {} as any,
-      } as any
-    );
+    const result = await refSchema.preProcess({ author: 1, title: 'Post' }, {
+      idb: {} as any,
+      transaction: {} as any,
+    } as any);
 
     expect(result).toBe(1);
   });
@@ -296,14 +307,61 @@ describe('RefSchema', () => {
     });
 
     const doc = { author: 1, title: 'Post' };
-    const result = await refSchema.preProcess(
-      doc,
-      {
-        idb: {} as any,
-        transaction: {} as any,
-      } as any
-    );
+    const result = await refSchema.preProcess(doc, {
+      idb: {} as any,
+      transaction: {} as any,
+    } as any);
 
     expect(result).toBe(doc);
+  });
+
+  it('should return default value for undefined or null value', () => {
+    const mockModel = {
+      getSchema: vi.fn(() => ({
+        getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+      })),
+    };
+
+    iodm.models['User'] = mockModel as any;
+    const schema = new RefSchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      default: 1,
+      ref: 'User',
+    });
+    expect(schema.castFrom(undefined, {})).toBe(1);
+    expect(schema.castFrom(null, {})).toBe(1);
+
+    const schema2 = new RefSchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      default: { _id: 2 },
+      ref: 'User',
+    });
+    expect(schema2.castFrom(undefined, {})).toBe(2);
+    expect(schema2.castFrom(null, {})).toBe(2);
+  });
+
+  it('should execute and return default value for undefined or null value when function is given', () => {
+    const mockModel = {
+      getSchema: vi.fn(() => ({
+        getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+      })),
+    };
+
+    iodm.models['User'] = mockModel as any;
+    const schema = new RefSchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      default: () => 1,
+      ref: 'User',
+    });
+    expect(schema.castFrom(undefined, {})).toBe(1);
+    expect(schema.castFrom(null, {})).toBe(1);
+
+    const schema2 = new RefSchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      default: () => ({ _id: 2 }),
+      ref: 'User',
+    });
+    expect(schema2.castFrom(undefined, {})).toBe(2);
+    expect(schema2.castFrom(null, {})).toBe(2);
   });
 });

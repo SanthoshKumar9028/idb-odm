@@ -68,12 +68,13 @@ export class NumberSchema extends BaseSchema {
   }
 
   castFrom(value: unknown) {
-    if (value === undefined || value === null) return value;
+    let val = this.getFinalValue(value);
+    if (val === undefined || val === null) return val;
 
-    if (typeof value !== 'number' || isNaN(value)) {
+    if (typeof val !== 'number' || isNaN(val)) {
       throw new Error('value is not a number');
     }
 
-    return value;
+    return val;
   }
 }

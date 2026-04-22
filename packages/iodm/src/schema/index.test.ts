@@ -1,7 +1,23 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { Schema } from './index';
+import iodm from '../iodm';
+import { afterEach } from 'node:test';
 
 describe('Schema', () => {
+  beforeEach(() => {
+    const mockModel = {
+      getSchema: vi.fn(() => ({
+        getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+      })),
+    };
+
+    iodm.models['Address'] = mockModel as any;
+  });
+
+  afterEach(() => {
+    iodm.models = {};
+  });
+
   it('should create schema with definition', () => {
     const schema = new Schema({ name: String, age: Number });
 
@@ -11,6 +27,66 @@ describe('Schema', () => {
     ).toEqual({
       name: 'Alice',
       age: 30,
+      _id: '1',
+    });
+  });
+
+  it('should create schema with default values', () => {
+    const schema = new Schema({
+      name: { type: String, default: 'Alice' },
+      age: { type: Number, default: 30 },
+    });
+
+    expect(schema).toBeDefined();
+    expect(schema.castFrom({ _id: '1' }, {} as any)).toEqual({
+      name: 'Alice',
+      age: 30,
+      _id: '1',
+    });
+  });
+
+  it('should create schema with default values for ref type', () => {
+    const schema = new Schema({
+      name: { type: String, default: 'Alice' },
+      address: { type: Number, ref: 'Address', default: 123 },
+    });
+
+    expect(schema).toBeDefined();
+    expect(schema.castFrom({ _id: '1' }, {} as any)).toEqual({
+      name: 'Alice',
+      address: 123,
+      _id: '1',
+    });
+  });
+
+  it('should create schema with default values for array ref type', () => {
+    const schema = new Schema({
+      name: { type: String, default: 'Alice' },
+      address: [{ type: Number, ref: 'Address', default: [0, 123] }],
+    });
+
+    expect(schema).toBeDefined();
+    expect(schema.castFrom({ _id: '1' }, {} as any)).toEqual({
+      name: 'Alice',
+      address: [0, 123],
+      _id: '1',
+    });
+  });
+
+  it('should create schema with default values for array ref type with nested default value', () => {
+    const schema = new Schema({
+      name: { type: String, default: 'Alice' },
+      address: {
+        type: [{ type: Number, default: 0 }],
+        ref: 'Address',
+        default: [0, 123, undefined, null],
+      },
+    });
+
+    expect(schema).toBeDefined();
+    expect(schema.castFrom({ _id: '1' }, {} as any)).toEqual({
+      name: 'Alice',
+      address: [0, 123, 0, 0],
       _id: '1',
     });
   });
@@ -45,7 +121,7 @@ describe('Schema', () => {
   });
 
   it('should throw for empty array type', () => {
-    expect(() => new Schema({ items: [] })).toThrow(
+    expect(() => new Schema({ items: [] as any })).toThrow(
       'Array type must have a value type'
     );
   });

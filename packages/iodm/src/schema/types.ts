@@ -4,6 +4,7 @@ import type { IfAny } from '../types';
 import type { NumberSchemaValidationOptions } from './primitive/number';
 import type { BaseSchema } from './base-schema';
 import type { StringSchemaValidationOptions } from './primitive/string';
+import type { DateSchemaValidationOptions } from './non-primitive/date';
 
 export type SchemaDefinitionNumberValue =
   | typeof Number
@@ -19,20 +20,26 @@ export type SchemaDefinitionStringValue =
       ref?: string;
     } & StringSchemaValidationOptions);
 
+export type SchemaDefinitionDateValue =
+  | typeof Date
+  | ({
+      type: typeof Date;
+    } & DateSchemaValidationOptions);
+
 export type SchemaDefinitionValue =
   | BaseSchema
   | SchemaDefinitionStringValue
   | SchemaDefinitionNumberValue
   | typeof Boolean
-  | typeof Date
+  | SchemaDefinitionDateValue
   | typeof Map
   | typeof Set
-  | SchemaDefinitionValue[]
-  | { type: typeof Boolean; required?: boolean }
-  | { type: typeof Date; required?: boolean }
-  | { type: typeof Map; required?: boolean }
-  | { type: typeof Set; required?: boolean }
-  | { type: SchemaDefinitionValue[]; required?: boolean };
+  | [SchemaDefinitionValue]
+  | { type: typeof Boolean; required?: boolean; default?: any }
+  | { type: typeof Date; required?: boolean; default?: any }
+  | { type: typeof Map; required?: boolean; default?: any }
+  | { type: typeof Set; required?: boolean; default?: any }
+  | { type: [SchemaDefinitionValue]; required?: boolean; default?: any };
 
 export type ObtainSchemaGeneric<
   TSchema,

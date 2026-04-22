@@ -400,4 +400,56 @@ describe('RefArraySchema', () => {
       expect(e.message).toContain('Ref User model is not created');
     }
   });
+
+  it('should return default value for undefined or null value', () => {
+    const mockModel = {
+      getSchema: vi.fn(() => ({
+        getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+      })),
+    };
+
+    iodm.models['User'] = mockModel as any;
+
+    const schema = new RefArraySchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      default: [1],
+      ref: 'User',
+    });
+    expect(schema.castFrom(undefined, {})).toEqual([1]);
+    expect(schema.castFrom(null, {})).toEqual([1]);
+
+    const schema2 = new RefArraySchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      default: [{ _id: 2 }],
+      ref: 'User',
+    });
+    expect(schema2.castFrom(undefined, {})).toEqual([2]);
+    expect(schema2.castFrom(null, {})).toEqual([2]);
+  });
+
+  it('should execute and return default value for undefined or null value when function is given', () => {
+    const mockModel = {
+      getSchema: vi.fn(() => ({
+        getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+      })),
+    };
+
+    iodm.models['User'] = mockModel as any;
+
+    const schema = new RefArraySchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      default: () => [1],
+      ref: 'User',
+    });
+    expect(schema.castFrom(undefined, {})).toEqual([1]);
+    expect(schema.castFrom(null, {})).toEqual([1]);
+
+    const schema2 = new RefArraySchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      default: () => [{ _id: 2 }],
+      ref: 'User',
+    });
+    expect(schema2.castFrom(undefined, {})).toEqual([2]);
+    expect(schema2.castFrom(null, {})).toEqual([2]);
+  });
 });

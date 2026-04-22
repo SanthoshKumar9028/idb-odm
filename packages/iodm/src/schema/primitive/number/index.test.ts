@@ -54,4 +54,20 @@ describe('NumberSchema', () => {
       schema.validationRules.some((rule) => rule instanceof EnumValidationRule)
     ).toBe(true);
   });
+
+  it('should return default value for undefined or null value', () => {
+    const schema = new NumberSchema({
+      default: 100,
+    });
+    expect(schema.castFrom(undefined)).toBe(100);
+    expect(schema.castFrom(null)).toBe(100);
+  });
+
+  it('should execute and return default value for undefined or null value when function is given', () => {
+    const schema = new NumberSchema({
+      default: () => 100,
+    });
+    expect(schema.castFrom(undefined)).toBe(100);
+    expect(schema.castFrom(null)).toBe(100);
+  });
 });

@@ -3,8 +3,7 @@ import type { SchemaMethodOptions } from '../../types';
 
 import { BaseSchema } from '../../base-schema';
 
-export interface ArraySchemaConstructorOptions
-  extends BaseSchemaConstructorOptions {
+export interface ArraySchemaConstructorOptions extends BaseSchemaConstructorOptions {
   valueSchema: BaseSchema;
 }
 
@@ -32,11 +31,12 @@ export class ArraySchema extends BaseSchema {
   }
 
   castFrom(value: unknown, options: SchemaMethodOptions) {
-    if (value === undefined || value === null) return value;
-    if (!Array.isArray(value)) {
+    let val: unknown = this.getFinalValue(value);
+    if (val === undefined || val === null) return val;
+    if (!Array.isArray(val)) {
       throw new Error('cant cast to a array');
     }
 
-    return value.map((v) => this.valueSchema.castFrom(v, options));
+    return val.map((v) => this.valueSchema.castFrom(v, options));
   }
 }

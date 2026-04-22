@@ -72,4 +72,20 @@ describe('StringSchema', () => {
       schema.validationRules.some((rule) => rule instanceof MatchValidationRule)
     ).toBe(true);
   });
+
+  it('should return default value for undefined or null value', () => {
+    const schema = new StringSchema({
+      default: 'test123',
+    });
+    expect(schema.castFrom(undefined)).toBe('test123');
+    expect(schema.castFrom(null)).toBe('test123');
+  });
+
+  it('should execute and return default value for undefined or null value when function is given', () => {
+    const schema = new StringSchema({
+      default: () => 'test123',
+    });
+    expect(schema.castFrom(undefined)).toBe('test123');
+    expect(schema.castFrom(null)).toBe('test123');
+  });
 });

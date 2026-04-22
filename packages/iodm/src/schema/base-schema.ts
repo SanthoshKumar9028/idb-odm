@@ -12,6 +12,7 @@ import { applySchemaOptionsDefaults } from './helpers';
 
 export interface BaseSchemaValidateOptions {
   required?: boolean;
+  default?: any;
   validate?: Required<ValidationRuleOptions>;
 }
 
@@ -24,6 +25,7 @@ export interface BaseSchemaConstructorOptions extends BaseSchemaValidateOptions 
 export abstract class BaseSchema {
   name?: string;
   isVirtual: boolean;
+  defVal: any;
   validationRules: Array<ValidationRule>;
   protected schemaOptions: SchemaOptions;
 
@@ -34,11 +36,13 @@ export abstract class BaseSchema {
       validationRules = [],
       required,
       validate,
+      default: dft,
     }: BaseSchemaConstructorOptions = {},
     options?: Partial<SchemaOptions>
   ) {
     this.name = name;
     this.isVirtual = isVirtual;
+    this.defVal = dft;
     this.validationRules = validationRules;
     this.schemaOptions = applySchemaOptionsDefaults(options);
 
@@ -81,6 +85,18 @@ export abstract class BaseSchema {
     const castedValue = this.castFrom(value, options);
     this.validationRules.forEach((rule) => rule.validate(castedValue, options));
     return true;
+  }
+
+  protected getDefaultValue() {
+    return typeof this.defVal === 'function' ? this.defVal() : this.defVal;
+  }
+
+  protected getFinalValue(value: unknown) {
+    if (value === undefined || value === null) {
+      const defaultValue = this.getDefaultValue();
+      return defaultValue === undefined ? value : defaultValue;
+    }
+    return value;
   }
 
   abstract castFrom(value: unknown, options: SchemaMethodOptions): unknown;

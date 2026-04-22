@@ -34,5 +34,21 @@ describe('SetSchema', () => {
       expect(() => schema.castFrom(new Date())).toThrow('value is not a set');
       expect(() => schema.castFrom(new Map())).toThrow('value is not a set');
     });
+
+    it('should return default value for undefined or null value', () => {
+      const schema = new SetSchema({
+        default: new Set([1, 2]),
+      });
+      expect(schema.castFrom(undefined)).toEqual(new Set([1, 2]));
+      expect(schema.castFrom(null)).toEqual(new Set([1, 2]));
+    });
+
+    it('should execute and return default value for undefined or null value when function is given', () => {
+      const schema = new SetSchema({
+        default: () => new Set([1, 2]),
+      });
+      expect(schema.castFrom(undefined)).toEqual(new Set([1, 2]));
+      expect(schema.castFrom(null)).toEqual(new Set([1, 2]));
+    });
   });
 });

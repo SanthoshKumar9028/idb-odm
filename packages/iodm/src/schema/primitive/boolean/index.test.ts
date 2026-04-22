@@ -37,5 +37,21 @@ describe('BooleanSchema', () => {
       expect(schema.castFrom('')).toBe(false);
       expect(schema.castFrom(NaN)).toBe(false);
     });
+
+    it('should return default value for undefined or null value', () => {
+      const boolSchema = new BooleanSchema({
+        default: false,
+      });
+      expect(boolSchema.castFrom(undefined)).toBe(false);
+      expect(boolSchema.castFrom(null)).toBe(false);
+    });
+
+    it('should execute and return default value for undefined or null value when function is given', () => {
+      const boolSchema = new BooleanSchema({
+        default: () => false,
+      });
+      expect(boolSchema.castFrom(undefined)).toBe(false);
+      expect(boolSchema.castFrom(null)).toBe(false);
+    });
   });
 });

@@ -14,6 +14,7 @@ import type { NumberSchemaConstructorOptions } from './primitive/number/index.ts
 import type { IModel } from '../model/types.ts';
 import type { MiddlewareKeys } from './constants.ts';
 import type { StringSchemaConstructorOptions } from './primitive/string/index.ts';
+import type { DateSchemaConstructorOptions } from './non-primitive/date/index.ts';
 
 import { MiddlewareStore } from 'iodm-query';
 import { BaseSchema } from './base-schema';
@@ -115,11 +116,15 @@ export class Schema<
       name: prop,
       required: undefined,
     };
+    const typeDefinition = Array.isArray(definition)
+      ? definition[0]
+      : definition;
 
-    if ('type' in definition) {
-      schemaOptions.required = definition.required;
-      if ('validate' in definition) {
-        schemaOptions.validate = definition.validate;
+    if (typeDefinition && 'type' in typeDefinition) {
+      schemaOptions.required = typeDefinition.required;
+      schemaOptions.default = typeDefinition.default;
+      if ('validate' in typeDefinition) {
+        schemaOptions.validate = typeDefinition.validate;
       }
     }
 
@@ -157,10 +162,10 @@ export class Schema<
       const numberSchemaOptions: NumberSchemaConstructorOptions = schemaOptions;
 
       if ('min' in definition) {
-        numberSchemaOptions.min = definition.min;
+        numberSchemaOptions.min = definition.min as any;
       }
       if ('max' in definition) {
-        numberSchemaOptions.max = definition.max;
+        numberSchemaOptions.max = definition.max as any;
       }
       if ('enum' in definition) {
         numberSchemaOptions.enum = definition.enum as any;
@@ -185,7 +190,15 @@ export class Schema<
     }
 
     if (constructor === Date) {
-      return new DateSchema(schemaOptions);
+      const dateSchemaOptions: DateSchemaConstructorOptions = schemaOptions;
+
+      if ('min' in definition) {
+        dateSchemaOptions.min = definition.min as any;
+      }
+      if ('max' in definition) {
+        dateSchemaOptions.max = definition.max as any;
+      }
+      return new DateSchema(dateSchemaOptions);
     }
 
     if (constructor === Map) {
@@ -197,7 +210,7 @@ export class Schema<
     }
 
     if (Array.isArray(constructor)) {
-      if (constructor.length === 0) {
+      if (constructor.length !== 1) {
         throw new Error(`Array type must have a value type`);
       }
 
@@ -205,10 +218,9 @@ export class Schema<
         this.refNames.add(constructor[0].ref);
 
         return new RefArraySchema({
-          name: prop,
           ref: constructor[0].ref,
-          valueSchema: this.parseSchemaDefinition(prop, constructor[0].type),
-          required: constructor[0].required,
+          valueSchema: this.parseSchemaDefinition(prop, constructor[0]),
+          ...schemaOptions,
         });
       }
 
@@ -293,7 +305,8 @@ export class Schema<
   }
 
   castFrom(value: unknown, options: SchemaMethodOptions) {
-    if (!value || typeof value !== 'object') {
+    let val = this.getFinalValue(value);
+    if (!val || typeof val !== 'object') {
       throw new Error('Cant cast value to object schema');
     }
 
@@ -302,10 +315,7 @@ export class Schema<
     for (const key in this.tree) {
       if (this.tree[key].isVirtual) continue;
 
-      obj[key] = this.tree[key].castFrom(
-        value[key as keyof typeof value],
-        options
-      );
+      obj[key] = this.tree[key].castFrom(val[key as keyof typeof val], options);
     }
 
     return obj;

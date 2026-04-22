@@ -77,11 +77,12 @@ export class RefArraySchema extends RefSchema {
   }
 
   castFrom(value: unknown, options: SchemaMethodOptions) {
-    if (value === undefined || value === null) return value;
-    if (!Array.isArray(value)) {
+    let val: unknown = this.getFinalValue(value);
+    if (val === undefined || val === null) return val;
+    if (!Array.isArray(val)) {
       throw new Error('cant cast to a array');
     }
 
-    return value.map((v) => super.castFrom(v, options));
+    return val.map((v) => super.castFrom(v, options));
   }
 }
