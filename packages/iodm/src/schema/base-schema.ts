@@ -16,7 +16,14 @@ export interface BaseSchemaValidateOptions {
   validate?: Required<ValidationRuleOptions>;
 }
 
-export interface BaseSchemaConstructorOptions extends BaseSchemaValidateOptions {
+export interface BaseSchemaIndexOptions {
+  index?: boolean;
+  unique?: boolean;
+  multiEntry?: boolean;
+}
+
+export interface BaseSchemaConstructorOptions
+  extends BaseSchemaValidateOptions, BaseSchemaIndexOptions {
   name?: string;
   isVirtual?: boolean;
   validationRules?: Array<ValidationRule>;
@@ -26,6 +33,9 @@ export abstract class BaseSchema {
   name?: string;
   isVirtual: boolean;
   defVal: any;
+  index?: boolean;
+  unique?: boolean;
+  multiEntry?: boolean;
   validationRules: Array<ValidationRule>;
   protected schemaOptions: SchemaOptions;
 
@@ -36,6 +46,9 @@ export abstract class BaseSchema {
       validationRules = [],
       required,
       validate,
+      index,
+      unique,
+      multiEntry,
       default: dft,
     }: BaseSchemaConstructorOptions = {},
     options?: Partial<SchemaOptions>
@@ -43,6 +56,9 @@ export abstract class BaseSchema {
     this.name = name;
     this.isVirtual = isVirtual;
     this.defVal = dft;
+    this.index = index;
+    this.unique = unique;
+    this.multiEntry = multiEntry;
     this.validationRules = validationRules;
     this.schemaOptions = applySchemaOptionsDefaults(options);
 

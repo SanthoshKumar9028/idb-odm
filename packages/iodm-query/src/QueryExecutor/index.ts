@@ -19,25 +19,27 @@ import type {
   QueryExecutorUpdateManyUpdater,
   QueryExecutorFindOptions,
   QueryExecutorFindByIdOptions,
+  GetObjectStoreOption,
 } from './type';
 
 export class BaseQueryExecutor {
+  getObjectStore({ index, storeName, transaction }: GetObjectStoreOption) {
+    if (index) {
+      return transaction.objectStore(storeName).index(index);
+    }
+    return transaction.objectStore(storeName);
+  }
+
   async openCursor<ResultType>(
     query: QueryRootFilter,
     options: QueryExecutorOpenCursorOptions
   ): Promise<ResultType> {
-    const {
-      storeName,
-      transaction,
-      throwOnError = true,
-      Constructor,
-    } = options;
+    const { throwOnError = true, Constructor } = options;
+    const _this = this;
 
     return {
       async *[Symbol.asyncIterator]() {
-        const cursorReq = transaction
-          .objectStore(storeName)
-          .openCursor(query.$key);
+        const cursorReq = _this.getObjectStore(options).openCursor(query.$key);
 
         const initReq = () =>
           new Promise<IDBCursorWithValue | null>((res, rej) => {
@@ -95,12 +97,10 @@ export class BaseQueryExecutor {
     options: QueryExecutorFindOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
-      const { storeName, transaction, Constructor } = options;
+      const { Constructor } = options;
 
       const result: unknown[] = [];
-      const cursorReq = transaction
-        .objectStore(storeName)
-        .openCursor(query.$key);
+      const cursorReq = this.getObjectStore(options).openCursor(query.$key);
 
       cursorReq.onsuccess = async function () {
         const cursor = this.result;
@@ -136,9 +136,9 @@ export class BaseQueryExecutor {
     options: QueryExecutorFindByIdOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
-      const { storeName, transaction, Constructor } = options;
+      const { Constructor } = options;
 
-      const objectStore = transaction.objectStore(storeName);
+      const objectStore = this.getObjectStore(options);
 
       const getReq = objectStore.get(id);
 
@@ -260,7 +260,7 @@ export class BaseQueryExecutor {
     updater: QueryExecutorUpdateManyUpdater<DocumentType>,
     options: QueryExecutorUpdateManyOptions
   ): Promise<ResultType> {
-    const { storeName, transaction, updateLimit, throwOnError } = options;
+    const { transaction, updateLimit, throwOnError } = options;
 
     const updateRes: QueryExecutorUpdateManyResponse = {
       modifiedCount: 0,
@@ -268,9 +268,7 @@ export class BaseQueryExecutor {
     };
 
     return new Promise((res, rej) => {
-      const cursorReq = transaction
-        .objectStore(storeName)
-        .openCursor(query.$key);
+      const cursorReq = this.getObjectStore(options).openCursor(query.$key);
 
       cursorReq.onsuccess = (event) => {
         if (
@@ -353,7 +351,7 @@ export class BaseQueryExecutor {
     query: QueryRootFilter,
     options: QueryExecutorDeleteManyOptions
   ) {
-    const { storeName, transaction, deleteLimit, throwOnError } = options;
+    const { transaction, deleteLimit, throwOnError } = options;
 
     const deleteRes: QueryExecutorDeleteManyResponse = {
       deletedCount: 0,
@@ -361,9 +359,7 @@ export class BaseQueryExecutor {
     };
 
     return new Promise<ResultType>((res, rej) => {
-      const cursorReq = transaction
-        .objectStore(storeName)
-        .openCursor(query.$key);
+      const cursorReq = this.getObjectStore(options).openCursor(query.$key);
 
       cursorReq.onsuccess = (event) => {
         if (
@@ -444,10 +440,8 @@ export class BaseQueryExecutor {
       Constructor,
       throwOnError = true,
     } = options;
-    const objectStore = transaction.objectStore(storeName);
-
     return new Promise((res, rej) => {
-      const getReq = objectStore.get(id);
+      const getReq = this.getObjectStore(options).get(id);
 
       getReq.onsuccess = async (event) => {
         let doc = undefined;
@@ -468,7 +462,7 @@ export class BaseQueryExecutor {
         ) as ResultType;
 
         try {
-          const putReq = objectStore.delete(id);
+          const putReq = transaction.objectStore(storeName).delete(id);
 
           putReq.onsuccess = () => {
             res(doc as ResultType);
@@ -516,10 +510,9 @@ export class BaseQueryExecutor {
       throwOnError = true,
       new: returnNewDoc = true,
     } = options;
-    const objectStore = transaction.objectStore(storeName);
 
     return new Promise((res, rej) => {
-      const getReq = objectStore.get(id);
+      const getReq = this.getObjectStore(options).get(id);
 
       getReq.onsuccess = (event) => {
         let doc: DocumentType | undefined = undefined;
@@ -538,7 +531,7 @@ export class BaseQueryExecutor {
             ? updater(doc)
             : applyUpdates(doc, updater);
 
-          const putReq = objectStore.put(newDoc);
+          const putReq = transaction.objectStore(storeName).put(newDoc);
 
           putReq.onsuccess = async () => {
             let docToReturn = doc as ResultType;
@@ -593,12 +586,10 @@ export class BaseQueryExecutor {
     options: QueryExecutorCountDocumentsOptions
   ) {
     return new Promise<ResultType>((res, rej) => {
-      const { storeName, transaction, throwOnError } = options;
+      const { throwOnError } = options;
 
       let count = 0;
-      const cursorReq = transaction
-        .objectStore(storeName)
-        .openCursor(query.$key);
+      const cursorReq = this.getObjectStore(options).openCursor(query.$key);
 
       cursorReq.onsuccess = function () {
         const cursor = this.result;

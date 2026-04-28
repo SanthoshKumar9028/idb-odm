@@ -44,15 +44,22 @@ describe('BaseQueryExecutor', () => {
       return event;
     });
 
+    const mockIndexFn = vi.fn();
+
     const transaction: any = {
       objectStore() {
-        return {
+        const store = {
           openCursor: mockOpenCursor,
+          index: mockIndexFn.mockImplementation(() => store),
         };
+        return store;
       },
     };
 
-    afterEach(() => mockOpenCursor.mockClear());
+    afterEach(() => {
+      mockOpenCursor.mockClear();
+      mockIndexFn.mockClear();
+    });
 
     const mockIdb: any = {
       transaction,
@@ -74,6 +81,28 @@ describe('BaseQueryExecutor', () => {
       }
 
       expect(openCursorDocs).toEqual(testDocs);
+      expect(mockIndexFn).toHaveBeenCalledTimes(0);
+    });
+
+    it('should work with custom index in for await of loop', async () => {
+      const itr = await queryExecutor.openCursor<any>(
+        {},
+        {
+          idb: mockIdb,
+          storeName: 'test',
+          transaction,
+          index: 'test',
+        }
+      );
+
+      const openCursorDocs: any[] = [];
+      for await (const doc of itr) {
+        openCursorDocs.push(doc);
+      }
+
+      expect(openCursorDocs).toEqual(testDocs);
+      expect(mockIndexFn).toHaveBeenCalledTimes(1);
+      expect(mockIndexFn).toHaveBeenCalledWith('test');
     });
 
     it('should handle error', async () => {
@@ -120,15 +149,22 @@ describe('BaseQueryExecutor', () => {
       return event;
     });
 
+    const mockIndexFn = vi.fn();
+
     const transaction: any = {
       objectStore() {
-        return {
+        const store = {
           openCursor: mockOpenCursor,
+          index: mockIndexFn.mockImplementation(() => store),
         };
+        return store;
       },
     };
 
-    afterEach(() => mockOpenCursor.mockClear());
+    afterEach(() => {
+      mockOpenCursor.mockClear();
+      mockIndexFn.mockClear();
+    });
 
     const mockIdb: any = {
       transaction,
@@ -140,6 +176,17 @@ describe('BaseQueryExecutor', () => {
         { idb: mockIdb, storeName: 'test', transaction }
       );
       expect(data).toEqual(testDocs);
+      expect(mockIndexFn).toHaveBeenCalledTimes(0);
+    });
+
+    it('should work with custom index', async () => {
+      const data = await queryExecutor.find(
+        { $key: '' },
+        { idb: mockIdb, storeName: 'test', transaction, index: 'index' }
+      );
+      expect(data).toEqual(testDocs);
+      expect(mockIndexFn).toHaveBeenCalledTimes(1);
+      expect(mockIndexFn).toHaveBeenCalledWith('index');
     });
 
     it('should work with $and operator', async () => {

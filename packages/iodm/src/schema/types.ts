@@ -2,7 +2,11 @@ import type { IQuery } from 'iodm-query';
 import type { Schema } from '.';
 import type { IfAny } from '../types';
 import type { NumberSchemaValidationOptions } from './primitive/number';
-import type { BaseSchema } from './base-schema';
+import type {
+  BaseSchema,
+  BaseSchemaIndexOptions,
+  BaseSchemaValidateOptions,
+} from './base-schema';
 import type { StringSchemaValidationOptions } from './primitive/string';
 import type { DateSchemaValidationOptions } from './non-primitive/date';
 
@@ -11,20 +15,23 @@ export type SchemaDefinitionNumberValue =
   | ({
       type: typeof Number;
       ref?: string;
-    } & NumberSchemaValidationOptions);
+    } & NumberSchemaValidationOptions &
+      BaseSchemaIndexOptions);
 
 export type SchemaDefinitionStringValue =
   | typeof String
   | ({
       type: typeof String;
       ref?: string;
-    } & StringSchemaValidationOptions);
+    } & StringSchemaValidationOptions &
+      BaseSchemaIndexOptions);
 
 export type SchemaDefinitionDateValue =
   | typeof Date
   | ({
       type: typeof Date;
-    } & DateSchemaValidationOptions);
+    } & DateSchemaValidationOptions &
+      BaseSchemaIndexOptions);
 
 export type SchemaDefinitionValue =
   | BaseSchema
@@ -35,11 +42,13 @@ export type SchemaDefinitionValue =
   | typeof Map
   | typeof Set
   | [SchemaDefinitionValue]
-  | { type: typeof Boolean; required?: boolean; default?: any }
-  | { type: typeof Date; required?: boolean; default?: any }
-  | { type: typeof Map; required?: boolean; default?: any }
-  | { type: typeof Set; required?: boolean; default?: any }
-  | { type: [SchemaDefinitionValue]; required?: boolean; default?: any };
+  | ({ type: typeof Boolean } & BaseSchemaValidateOptions &
+      BaseSchemaIndexOptions)
+  | ({ type: typeof Date } & BaseSchemaValidateOptions & BaseSchemaIndexOptions)
+  | ({ type: typeof Map } & BaseSchemaValidateOptions & BaseSchemaIndexOptions)
+  | ({ type: typeof Set } & BaseSchemaValidateOptions & BaseSchemaIndexOptions)
+  | ({ type: [SchemaDefinitionValue] } & BaseSchemaValidateOptions &
+      BaseSchemaIndexOptions);
 
 export type ObtainSchemaGeneric<
   TSchema,

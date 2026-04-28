@@ -114,7 +114,6 @@ export class Schema<
 
     const schemaOptions: BaseSchemaConstructorOptions = {
       name: prop,
-      required: undefined,
     };
     const typeDefinition = Array.isArray(definition)
       ? definition[0]
@@ -123,9 +122,10 @@ export class Schema<
     if (typeDefinition && 'type' in typeDefinition) {
       schemaOptions.required = typeDefinition.required;
       schemaOptions.default = typeDefinition.default;
-      if ('validate' in typeDefinition) {
-        schemaOptions.validate = typeDefinition.validate;
-      }
+      schemaOptions.validate = typeDefinition.validate;
+      schemaOptions.index = typeDefinition.index;
+      schemaOptions.unique = typeDefinition.unique;
+      schemaOptions.multiEntry = typeDefinition.multiEntry;
     }
 
     if (constructor === String) {
@@ -434,5 +434,15 @@ export class Schema<
 
   execBroadcastHooks(ctx: any, error?: any, result?: any, ...args: any[]) {
     this.broadcastMiddleware.exec('broadcast', ctx, error, result, ...args);
+  }
+
+  treeEntries(
+    callbackfn: (
+      value: [string, BaseSchema],
+      index: number,
+      array: [string, BaseSchema][]
+    ) => void
+  ) {
+    return Object.entries(this.tree).forEach(callbackfn);
   }
 }

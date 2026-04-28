@@ -41,6 +41,12 @@ export interface QueryExecutorCommonOptions {
   transaction: IDBTransaction;
 }
 
+export interface GetObjectStoreOption {
+  index?: string;
+  storeName: string;
+  transaction: IDBTransaction;
+}
+
 export interface QueryExecutorCommonOptionsThrownOnError extends QueryExecutorCommonOptions {
   throwOnError?: boolean;
 }
@@ -49,7 +55,12 @@ export interface PopulateField {
   path: string;
 }
 
-export interface QueryExecutorGetCommonOptions extends QueryExecutorCommonOptions {
+export interface QueryExecutorIndexOptions {
+  index?: string;
+}
+
+export interface QueryExecutorGetCommonOptions
+  extends QueryExecutorCommonOptions, QueryExecutorIndexOptions {
   populateFields?: Record<string, PopulateField>;
   Constructor?: {
     new (obj: any, options: { isNew: boolean }): any;
@@ -100,7 +111,8 @@ export type QueryExecutorUpdateManyUpdater<DocumentType> =
   | UpdaterOptions
   | ((param: DocumentType) => DocumentType);
 
-export interface QueryExecutorUpdateManyOptions extends QueryExecutorCommonOptionsThrownOnError {
+export interface QueryExecutorUpdateManyOptions
+  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {
   updateLimit?: number;
 }
 
@@ -109,13 +121,16 @@ export interface QueryExecutorUpdateManyResponse {
   matchedCount: number;
 }
 
-export interface QueryExecutorUpdateOneOptions extends QueryExecutorCommonOptionsThrownOnError {}
+export interface QueryExecutorUpdateOneOptions
+  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {}
 
-export interface QueryExecutorDeleteManyOptions extends QueryExecutorCommonOptionsThrownOnError {
+export interface QueryExecutorDeleteManyOptions
+  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {
   deleteLimit?: number;
 }
 
-export interface QueryExecutorDeleteOneOptions extends QueryExecutorCommonOptionsThrownOnError {}
+export interface QueryExecutorDeleteOneOptions
+  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {}
 
 export interface QueryExecutorDeleteManyResponse {
   deletedCount: number;
@@ -134,4 +149,5 @@ export interface QueryExecutorFindByIdAndUpdateOptions
   new?: boolean;
 }
 
-export interface QueryExecutorCountDocumentsOptions extends QueryExecutorCommonOptionsThrownOnError {}
+export interface QueryExecutorCountDocumentsOptions
+  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {}

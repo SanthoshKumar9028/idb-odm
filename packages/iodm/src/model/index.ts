@@ -208,11 +208,36 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   }
 
   static onUpgradeNeeded(idb: IDBDatabase) {
-    if (this.storeName && !idb.objectStoreNames.contains(this.storeName)) {
-      idb.createObjectStore(this.storeName, {
-        keyPath: this.getSchema().getSchemaOptions().keyPath,
-      });
+    if (!this.storeName || idb.objectStoreNames.contains(this.storeName)) {
+      return;
     }
+
+    const objectStore = idb.createObjectStore(this.storeName, {
+      keyPath: this.getSchema().getSchemaOptions().keyPath,
+    });
+
+    const createIndexFor: {
+      name: string;
+      unique?: boolean;
+      multiEntry?: boolean;
+    }[] = [];
+
+    this.getSchema().treeEntries(([key, value]) => {
+      if (value.index || value.unique) {
+        createIndexFor.push({
+          name: key,
+          unique: value.unique,
+          multiEntry: value.multiEntry,
+        });
+      }
+    });
+
+    createIndexFor.forEach(({ name, multiEntry, unique }) => {
+      objectStore.createIndex(name, name, {
+        multiEntry,
+        unique,
+      });
+    });
   }
 
   static async preProcess(doc: any, options: QueryExecutorGetCommonOptions) {

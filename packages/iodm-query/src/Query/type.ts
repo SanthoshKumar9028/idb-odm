@@ -208,6 +208,7 @@ export type QueryInternalKeysMap = {
 export interface IQuery<ResultType, DocumentType>
   extends IBaseQuery<ResultType, DocumentType> {
   populate(path: string): IQuery<ResultType, DocumentType>;
+  index(idx: string): IQuery<ResultType, DocumentType>;
   pre(name: string, fn: MiddlewareFn): IQuery<ResultType, DocumentType>;
   post(name: string, fn: MiddlewareFn): IQuery<ResultType, DocumentType>;
   exec(): Promise<ResultType>;

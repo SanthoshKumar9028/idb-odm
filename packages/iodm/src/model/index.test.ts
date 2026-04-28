@@ -18,7 +18,16 @@ const schema = new Schema({ name: String });
 const TestModel = iodm.model('testStore', schema);
 
 const createFakeDB = () => {
-  const transactionMock = {} as IDBTransaction;
+  const transactionMock = {
+    objectStore: () => ({
+      indexNames: {
+        contains: () => false,
+        length: 0,
+      },
+      deleteIndex: () => {},
+      createIndex: () => {},
+    }),
+  } as any;
   return {
     objectStoreNames: { contains: vi.fn(() => false) } as any,
     createObjectStore: vi.fn(),
@@ -88,34 +97,6 @@ describe('AbstractModel', () => {
     const db = createFakeDB();
     TestModel.init(db);
     expect(TestModel.getDB()).toBe(db);
-  });
-
-  it('onUpgradeNeeded should create object store when missing', () => {
-    const db = createFakeDB();
-    db.objectStoreNames.contains = vi.fn(() => false);
-
-    const schema = new Schema({ name: String });
-    (TestModel as any).schema = schema;
-    (TestModel as any).storeName = 'testStore';
-
-    TestModel.onUpgradeNeeded(db);
-
-    expect(db.createObjectStore).toHaveBeenCalledWith('testStore', {
-      keyPath: '_id',
-    });
-  });
-
-  it('onUpgradeNeeded should not create object store when already exists', () => {
-    const db = createFakeDB();
-    db.objectStoreNames.contains = vi.fn(() => true);
-
-    const schema = new Schema({ name: String });
-    (TestModel as any).schema = schema;
-    (TestModel as any).storeName = 'testStore';
-
-    TestModel.onUpgradeNeeded(db);
-
-    expect(db.createObjectStore).not.toHaveBeenCalled();
   });
 
   it('preProcess should return doc from schema preProcess', async () => {
@@ -820,6 +801,104 @@ describe('AbstractModel', () => {
 
       expect(saveSpy).toHaveBeenCalledTimes(1);
       expect(result).toBe('saveResult');
+    });
+  });
+
+  describe('onUpgradeNeeded', () => {
+    it('should create object store when missing', () => {
+      const db = createFakeDB();
+      db.objectStoreNames.contains = vi.fn(() => false);
+
+      const schema = new Schema({ name: String });
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      TestModel.onUpgradeNeeded(db);
+
+      expect(db.createObjectStore).toHaveBeenCalledWith('testStore', {
+        keyPath: '_id',
+      });
+    });
+
+    it('should not create object store when already exists', () => {
+      const db = createFakeDB();
+      db.objectStoreNames.contains = vi.fn(() => true);
+
+      const schema = new Schema({ name: String });
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      TestModel.onUpgradeNeeded(db);
+
+      expect(db.createObjectStore).not.toHaveBeenCalled();
+    });
+
+    it('should create index if objectStore is not present', () => {
+      const db = createFakeDB();
+      db.objectStoreNames.contains = vi.fn(() => false);
+      const createIndexMock = vi.fn();
+      db.createObjectStore = vi.fn(
+        () =>
+          ({
+            createIndex: createIndexMock,
+          }) as any
+      );
+
+      const schema = new Schema({
+        name: { type: String, index: true },
+        age: { type: Number, unique: true },
+        items: { type: Number, multiEntry: true },
+      });
+
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      TestModel.onUpgradeNeeded(db);
+
+      expect(createIndexMock).toHaveBeenCalledTimes(2);
+      expect(createIndexMock.mock.calls).toEqual([
+        [
+          'name',
+          'name',
+          {
+            unique: undefined,
+            multiEntry: undefined,
+          },
+        ],
+        [
+          'age',
+          'age',
+          {
+            unique: true,
+            multiEntry: undefined,
+          },
+        ],
+      ]);
+    });
+
+    it('should not create index if objectStore is present', () => {
+      const db = createFakeDB();
+      db.objectStoreNames.contains = vi.fn(() => true);
+      const createIndexMock = vi.fn();
+      db.createObjectStore = vi.fn(
+        () =>
+          ({
+            createIndex: createIndexMock,
+          }) as any
+      );
+
+      const schema = new Schema({
+        name: { type: String, index: true },
+        age: { type: Number, unique: true },
+        items: { type: Number, multiEntry: true },
+      });
+
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      TestModel.onUpgradeNeeded(db);
+
+      expect(createIndexMock).toHaveBeenCalledTimes(0);
     });
   });
 });

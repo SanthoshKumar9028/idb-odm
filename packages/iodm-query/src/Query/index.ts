@@ -726,6 +726,23 @@ export abstract class AbstractQuery<
   }
 
   /**
+   * Specified index will be used when performing query related operations
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * const data = await query.find({}).index('custom_index').exec();
+   * ```
+   *
+   * @param idx index name
+   * @returns
+   */
+  index(idx: string) {
+    this.options.execOptions.index = idx;
+    return this;
+  }
+
+  /**
    * Adds a new pre middleware function
    *
    * @remarks

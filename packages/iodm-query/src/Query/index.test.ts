@@ -517,4 +517,20 @@ describe('Query', () => {
       expect(postMiddleware).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('index', () => {
+    it('should call index method', async () => {
+      const findMockFn = vi.fn();
+
+      (
+        QueryExecutorFactory.getInstance as MockedFunction<any>
+      ).mockImplementation(() => ({
+        find: findMockFn,
+      }));
+
+      const res = await new Query(mockIdb, 'test').index('index').exec();
+      expect(findMockFn).toHaveBeenCalledTimes(1);
+      expect(findMockFn.mock?.lastCall?.[1].index).toBe('index');
+    });
+  });
 });
