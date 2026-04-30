@@ -241,6 +241,10 @@ export class Schema<
     return [...this.refNames.values()];
   }
 
+  getSchemaFor(key: string) {
+    return this.tree[key];
+  }
+
   clone() {
     const newSchema = new Schema<
       RawDocType,

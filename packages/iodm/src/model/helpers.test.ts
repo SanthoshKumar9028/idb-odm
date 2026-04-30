@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isPostMessage } from './helpers';
+import { generateNumberId, generateStringId, isPostMessage } from './helpers';
 
 describe('isPostMessage', () => {
   it('should return true for a valid PostMessage object', () => {
@@ -105,5 +105,21 @@ describe('isPostMessage', () => {
       event: 'save',
     };
     expect(isPostMessage(messageWithoutPayload)).toBe(true);
+  });
+});
+
+describe('generateNumberId', () => {
+  it('should generate a increasing number', () => {
+    const id1 = generateNumberId();
+    const id2 = generateNumberId();
+    expect(id2).greaterThan(id1);
+  });
+});
+
+describe('generateStringId', () => {
+  it('should generate unique string', () => {
+    const id1 = generateStringId();
+    const id2 = generateStringId();
+    expect(id2).not.eq(id1);
   });
 });

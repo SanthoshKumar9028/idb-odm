@@ -32,7 +32,9 @@ import {
   queryMiddlewareKeys,
 } from '../schema/constants';
 import iodm from '../iodm';
-import { isPostMessage } from './helpers';
+import { generateNumberId, generateStringId, isPostMessage } from './helpers';
+import { StringSchema } from '../schema/primitive/string';
+import { NumberSchema } from '../schema/primitive/number';
 
 const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   // instance properties and methods
@@ -58,6 +60,10 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     try {
       this.documentMiddleware.execPre('save', this, null);
       this.documentMiddleware.execPre('validate', this, null);
+
+      if (this.$_isNew) {
+        AbstractModelTemp.insertUniqueKeyIfNotExist(this, this);
+      }
 
       try {
         this.validate();
@@ -159,6 +165,20 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   private static storeName: string | null;
   private static db: IDBDatabase | null;
   private static Query: typeof Query<any, any>;
+
+  private static insertUniqueKeyIfNotExist(ctx: any, obj?: any) {
+    if (!obj || typeof obj !== 'object') return;
+    const keyPath = this.getSchema(ctx).getSchemaOptions().keyPath;
+    const keySchema = this.getSchema(ctx).getSchemaFor(keyPath);
+
+    if (obj[keyPath]) return;
+
+    if (keySchema instanceof StringSchema) {
+      obj[keyPath] = generateStringId();
+    } else if (keySchema instanceof NumberSchema) {
+      obj[keyPath] = generateNumberId();
+    }
+  }
 
   static getSchema(obj?: any) {
     const thisPrototype = obj ? Object.getPrototypeOf(obj).constructor : this;
@@ -287,7 +307,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
    * nested schema values will be saved
    */
   static async insertOne(doc: any, options?: ModelSaveOptions) {
-    const obj = new this(doc);
+    const obj = new this(doc, { isNew: true });
     return obj.save(options);
   }
 
@@ -306,6 +326,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
 
     docs.forEach((doc, i) => {
       try {
+        this.insertUniqueKeyIfNotExist(null, doc);
         schema.validate(doc, {});
         validDocsIndex.set(i, validDocs.length);
         validDocs.push(doc);
