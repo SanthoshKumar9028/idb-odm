@@ -22,17 +22,16 @@ import type {
   QueryOpenCursorOptions,
 } from './type';
 import { MiddlewareExecutor } from '../utils/MiddlewareExecutor';
-import { queryInternalKeysMap } from './constants';
 
 export abstract class AbstractQuery<
   ResultType = unknown,
   DocumentType = unknown,
 > implements IQuery<ResultType, DocumentType> {
-  private idb: IDBDatabase;
-  private storeName: string;
-  private options: QueryOptions<DocumentType>;
   private execCount: number = 0;
   abstract middleware: MiddlewareExecutor;
+  idb: IDBDatabase;
+  storeName: string;
+  options: QueryOptions<DocumentType>;
 
   /**
    *
@@ -43,7 +42,7 @@ export abstract class AbstractQuery<
     this.idb = idb;
     this.storeName = storeName;
     this.options = {
-      type: '_find',
+      type: 'find',
       query: { $key: null },
       execOptions: {},
     };
@@ -70,12 +69,12 @@ export abstract class AbstractQuery<
     query: QueryRootFilter = { $key: null },
     options: QueryOpenCursorOptions = {}
   ) {
-    this.options = { type: '_openCursor', query, execOptions: options };
+    this.options = { type: 'openCursor', query, execOptions: options };
     return this;
   }
 
   private _openCursor() {
-    if (this.options?.type !== '_openCursor') {
+    if (this.options?.type !== 'openCursor') {
       throw new Error('Invalid openCursor method options');
     }
 
@@ -113,12 +112,12 @@ export abstract class AbstractQuery<
     query: QueryRootFilter = { $key: null },
     options: QueryFindOptions = {}
   ) {
-    this.options = { type: '_find', query, execOptions: options };
+    this.options = { type: 'find', query, execOptions: options };
     return this;
   }
 
   private async _find(): Promise<ResultType> {
-    if (this.options?.type !== '_find') {
+    if (this.options?.type !== 'find') {
       throw new Error('Invalid find method options');
     }
 
@@ -153,7 +152,7 @@ export abstract class AbstractQuery<
    */
   findById(id: IDBValidKey, options: QueryFindByIdOptions = {}) {
     this.options = {
-      type: '_findById',
+      type: 'findById',
       query: { $key: id },
       execOptions: options,
     };
@@ -161,7 +160,7 @@ export abstract class AbstractQuery<
   }
 
   private async _findById(): Promise<ResultType> {
-    if (this.options?.type !== '_findById') {
+    if (this.options?.type !== 'findById') {
       throw new Error('Invalid findById method options');
     }
 
@@ -200,7 +199,7 @@ export abstract class AbstractQuery<
    */
   insertOne(payload: DocumentType, options: QueryInsertOneOptions = {}) {
     this.options = {
-      type: '_insertOne',
+      type: 'insertOne',
       insertList: [payload],
       execOptions: options,
     };
@@ -208,7 +207,7 @@ export abstract class AbstractQuery<
   }
 
   private async _insertOne(): Promise<ResultType> {
-    if (this.options?.type !== '_insertOne') {
+    if (this.options?.type !== 'insertOne') {
       throw new Error('Invalid insertOne method options');
     }
 
@@ -256,7 +255,7 @@ export abstract class AbstractQuery<
    */
   insertMany(payload: DocumentType[], options: QueryInsertManyOptions = {}) {
     this.options = {
-      type: '_insertMany',
+      type: 'insertMany',
       insertList: payload,
       execOptions: options,
     };
@@ -264,7 +263,7 @@ export abstract class AbstractQuery<
   }
 
   private async _insertMany(): Promise<ResultType> {
-    if (this.options?.type !== '_insertMany') {
+    if (this.options?.type !== 'insertMany') {
       throw new Error('Invalid insertMany method options');
     }
 
@@ -301,7 +300,7 @@ export abstract class AbstractQuery<
    */
   replaceOne(payload: DocumentType, options: QueryReplaceOneOptions = {}) {
     this.options = {
-      type: '_replaceOne',
+      type: 'replaceOne',
       payload: payload,
       execOptions: {
         ...options,
@@ -311,7 +310,7 @@ export abstract class AbstractQuery<
   }
 
   private async _replaceOne() {
-    if (this.options?.type !== '_replaceOne') {
+    if (this.options?.type !== 'replaceOne') {
       throw new Error('Invalid replaceOne method options');
     }
 
@@ -354,7 +353,7 @@ export abstract class AbstractQuery<
     options: QueryUpdateManyOptions = {}
   ) {
     this.options = {
-      type: '_updateMany',
+      type: 'updateMany',
       query,
       payload,
       execOptions: options,
@@ -363,7 +362,7 @@ export abstract class AbstractQuery<
   }
 
   private async _updateMany() {
-    if (this.options?.type !== '_updateMany') {
+    if (this.options?.type !== 'updateMany') {
       throw new Error('Invalid updateMany method options');
     }
 
@@ -406,7 +405,7 @@ export abstract class AbstractQuery<
     options: QueryUpdateManyOptions = {}
   ) {
     this.options = {
-      type: '_updateOne',
+      type: 'updateOne',
       query,
       payload,
       execOptions: options,
@@ -415,7 +414,7 @@ export abstract class AbstractQuery<
   }
 
   private async _updateOne() {
-    if (this.options?.type !== '_updateOne') {
+    if (this.options?.type !== 'updateOne') {
       throw new Error('Invalid updateOne method options');
     }
 
@@ -456,7 +455,7 @@ export abstract class AbstractQuery<
     options: QueryDeleteManyOptions = {}
   ) {
     this.options = {
-      type: '_deleteMany',
+      type: 'deleteMany',
       query,
       execOptions: options,
     };
@@ -464,7 +463,7 @@ export abstract class AbstractQuery<
   }
 
   private async _deleteMany() {
-    if (this.options?.type !== '_deleteMany') {
+    if (this.options?.type !== 'deleteMany') {
       throw new Error('Invalid deleteMany method options');
     }
 
@@ -505,7 +504,7 @@ export abstract class AbstractQuery<
     options: QueryDeleteOneOptions = {}
   ) {
     this.options = {
-      type: '_deleteOne',
+      type: 'deleteOne',
       query,
       execOptions: options,
     };
@@ -513,7 +512,7 @@ export abstract class AbstractQuery<
   }
 
   private async _deleteOne() {
-    if (this.options?.type !== '_deleteOne') {
+    if (this.options?.type !== 'deleteOne') {
       throw new Error('Invalid deleteOne method options');
     }
 
@@ -552,7 +551,7 @@ export abstract class AbstractQuery<
     options: QueryFindByIdAndDeleteOptions = {}
   ) {
     this.options = {
-      type: '_findByIdAndDelete',
+      type: 'findByIdAndDelete',
       id,
       execOptions: options,
     };
@@ -560,7 +559,7 @@ export abstract class AbstractQuery<
   }
 
   private async _findByIdAndDelete() {
-    if (this.options?.type !== '_findByIdAndDelete') {
+    if (this.options?.type !== 'findByIdAndDelete') {
       throw new Error('Invalid findByIdAndDelete method options');
     }
 
@@ -608,7 +607,7 @@ export abstract class AbstractQuery<
     options: QueryFindByIdAndUpdateOptions = {}
   ) {
     this.options = {
-      type: '_findByIdAndUpdate',
+      type: 'findByIdAndUpdate',
       id,
       payload,
       execOptions: options,
@@ -617,7 +616,7 @@ export abstract class AbstractQuery<
   }
 
   private async _findByIdAndUpdate() {
-    if (this.options?.type !== '_findByIdAndUpdate') {
+    if (this.options?.type !== 'findByIdAndUpdate') {
       throw new Error('Invalid findByIdAndUpdate method options');
     }
 
@@ -661,7 +660,7 @@ export abstract class AbstractQuery<
     options: QueryCountDocumentsOptions = {}
   ) {
     this.options = {
-      type: '_countDocuments',
+      type: 'countDocuments',
       query,
       execOptions: options,
     };
@@ -669,7 +668,7 @@ export abstract class AbstractQuery<
   }
 
   private async _countDocuments() {
-    if (this.options?.type !== '_countDocuments') {
+    if (this.options?.type !== 'countDocuments') {
       throw new Error('Invalid countDocuments method options');
     }
 
@@ -706,11 +705,11 @@ export abstract class AbstractQuery<
    */
   populate(path: string | PopulateField) {
     if (
-      this.options?.type === '_find' ||
-      this.options?.type === '_findById' ||
-      this.options?.type === '_findByIdAndUpdate' ||
-      this.options?.type === '_findByIdAndDelete' ||
-      this.options?.type === '_openCursor'
+      this.options?.type === 'find' ||
+      this.options?.type === 'findById' ||
+      this.options?.type === 'findByIdAndUpdate' ||
+      this.options?.type === 'findByIdAndDelete' ||
+      this.options?.type === 'openCursor'
     ) {
       this.options.execOptions.populateFields =
         this.options.execOptions.populateFields || {};
@@ -796,22 +795,25 @@ export abstract class AbstractQuery<
 
     this.execCount += 1;
 
-    const op = queryInternalKeysMap[this.options.type];
-
     this.middleware.execPre('exec', this);
 
-    this.middleware.execPre(op, this);
+    this.middleware.execPre(this.options.type, this);
 
     let returnValue;
     let error = null;
 
     try {
-      returnValue = await this[this.options.type]();
+      returnValue = await this[`_${this.options.type}`]();
     } catch (err: any) {
       error = err;
     }
 
-    returnValue = this.middleware.execPost(op, this, error, returnValue);
+    returnValue = this.middleware.execPost(
+      this.options.type,
+      this,
+      error,
+      returnValue
+    );
 
     returnValue = this.middleware.execPost('exec', this, error, returnValue);
 
@@ -840,7 +842,7 @@ export abstract class AbstractQuery<
    * @returns String
    */
   toString() {
-    return `Query<${this.storeName}>.${queryInternalKeysMap[this.options.type]}()`;
+    return `Query<${this.storeName}>.${this.options.type}()`;
   }
 }
 

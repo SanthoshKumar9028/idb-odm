@@ -10,4 +10,8 @@ export class SetSchema extends BaseSchema {
 
     return val;
   }
+
+  clone(): SetSchema {
+    return new SetSchema(this.constructorOptions);
+  }
 }

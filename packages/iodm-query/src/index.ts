@@ -36,4 +36,4 @@ export type {
   QueryExecutorUpdateManyUpdater,
 } from './QueryExecutor/type';
 export type { Prettify } from './utils/type';
-export { queryKeys, queryInternalKeysMap } from './Query/constants';
+export { queryKeys } from './Query/constants';

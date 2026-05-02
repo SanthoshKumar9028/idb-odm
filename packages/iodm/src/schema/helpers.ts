@@ -9,9 +9,7 @@ export const applySchemaOptionsDefaults = (
 ): SchemaOptions => {
   const newOptions = { ...schemaOptionsDefault };
 
-  (Object.keys(newOptions) as (keyof SchemaOptions)[]).forEach((key) => {
-    newOptions[key] = options[key] ?? schemaOptionsDefault[key];
-  });
+  newOptions.keyPath = options.keyPath ?? schemaOptionsDefault.keyPath;
 
   return newOptions;
 };

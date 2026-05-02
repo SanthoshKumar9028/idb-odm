@@ -77,4 +77,11 @@ describe('ArraySchema', () => {
     expect(schema.castFrom(undefined, {})).toEqual([1, 2]);
     expect(schema.castFrom(null, {})).toEqual([1, 2]);
   });
+
+  it('clone should returns cloned schema', () => {
+    const schema = new ArraySchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+    });
+    expect(schema.clone()).toBeInstanceOf(ArraySchema);
+  });
 });

@@ -364,4 +364,12 @@ describe('RefSchema', () => {
     expect(schema2.castFrom(undefined, {})).toBe(2);
     expect(schema2.castFrom(null, {})).toBe(2);
   });
+
+  it('clone should returns cloned schema', () => {
+    const schema = new RefSchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      ref: 'User',
+    });
+    expect(schema.clone()).toBeInstanceOf(RefSchema);
+  });
 });

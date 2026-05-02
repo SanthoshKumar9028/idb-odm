@@ -51,4 +51,11 @@ describe('SetSchema', () => {
       expect(schema.castFrom(null)).toEqual(new Set([1, 2]));
     });
   });
+
+  describe('clone', () => {
+    it('clone should returns cloned schema', () => {
+      const schema = new SetSchema({ name: 'test' });
+      expect(schema.clone()).toBeInstanceOf(SetSchema);
+    });
+  });
 });

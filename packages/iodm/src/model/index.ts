@@ -510,6 +510,8 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     if (this.schema) return;
 
     const newSchema = schema.clone();
+    newSchema.applyPlugins();
+
     this.schema = newSchema;
     this.storeName = name;
 

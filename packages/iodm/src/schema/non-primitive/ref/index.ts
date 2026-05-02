@@ -11,7 +11,7 @@ export interface RefSchemaConstructorOptions extends BaseSchemaConstructorOption
   valueSchema: BaseSchema;
 }
 
-export class RefSchema extends BaseSchema {
+export class RefSchema extends BaseSchema<RefSchemaConstructorOptions> {
   protected ref: string;
   protected valueSchema: BaseSchema;
 
@@ -96,5 +96,9 @@ export class RefSchema extends BaseSchema {
     }
 
     return this.valueSchema.castFrom(val, options);
+  }
+
+  clone(): RefSchema {
+    return new RefSchema(this.constructorOptions);
   }
 }

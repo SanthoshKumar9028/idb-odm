@@ -53,4 +53,11 @@ describe('MapSchema', () => {
       expect(schema.castFrom(null)).toEqual(new Map([[1, 2]]));
     });
   });
+
+  describe('clone', () => {
+    it('clone should returns cloned schema', () => {
+      const schema = new MapSchema({ name: 'test' });
+      expect(schema.clone()).toBeInstanceOf(MapSchema);
+    });
+  });
 });

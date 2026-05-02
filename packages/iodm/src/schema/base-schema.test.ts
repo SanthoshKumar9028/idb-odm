@@ -9,6 +9,10 @@ class TestSchema extends BaseSchema {
     return value;
   }
 
+  clone(): BaseSchema {
+    return new TestSchema(this.constructorOptions);
+  }
+
   async save(value: unknown) {
     return value;
   }
@@ -85,8 +89,8 @@ describe('BaseSchema', () => {
     expect(schema.validate('value', {} as any)).toBe(true);
   });
 
-  it('clone default implementation returns null', () => {
+  it('clone should returns cloned schema', () => {
     const schema = new TestSchema();
-    expect(schema.clone()).toBeNull();
+    expect(schema.clone()).toBeInstanceOf(TestSchema);
   });
 });

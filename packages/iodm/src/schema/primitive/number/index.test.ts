@@ -70,4 +70,9 @@ describe('NumberSchema', () => {
     expect(schema.castFrom(undefined)).toBe(100);
     expect(schema.castFrom(null)).toBe(100);
   });
+
+  it('clone should returns cloned schema', () => {
+    const schema = new NumberSchema({ name: 'test' });
+    expect(schema.clone()).toBeInstanceOf(NumberSchema);
+  });
 });

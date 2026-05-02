@@ -54,4 +54,11 @@ describe('BooleanSchema', () => {
       expect(boolSchema.castFrom(null)).toBe(false);
     });
   });
+
+  describe('clone', () => {
+    it('clone should returns cloned schema', () => {
+      const schema = new BooleanSchema({ name: 'test' });
+      expect(schema.clone()).toBeInstanceOf(BooleanSchema);
+    });
+  });
 });

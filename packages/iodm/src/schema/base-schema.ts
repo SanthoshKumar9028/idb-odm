@@ -29,7 +29,10 @@ export interface BaseSchemaConstructorOptions
   validationRules?: Array<ValidationRule>;
 }
 
-export abstract class BaseSchema {
+export abstract class BaseSchema<
+  ConstructorOptions extends BaseSchemaConstructorOptions =
+    BaseSchemaConstructorOptions,
+> {
   name?: string;
   isVirtual: boolean;
   defVal: any;
@@ -37,10 +40,14 @@ export abstract class BaseSchema {
   unique?: boolean;
   multiEntry?: boolean;
   validationRules: Array<ValidationRule>;
+  protected constructorOptions: ConstructorOptions;
   protected schemaOptions: SchemaOptions;
 
   constructor(
-    {
+    constructorOptions: ConstructorOptions = {} as ConstructorOptions,
+    options?: Partial<SchemaOptions>
+  ) {
+    const {
       name,
       isVirtual = false,
       validationRules = [],
@@ -50,9 +57,8 @@ export abstract class BaseSchema {
       unique,
       multiEntry,
       default: dft,
-    }: BaseSchemaConstructorOptions = {},
-    options?: Partial<SchemaOptions>
-  ) {
+    } = constructorOptions;
+
     this.name = name;
     this.isVirtual = isVirtual;
     this.defVal = dft;
@@ -61,6 +67,7 @@ export abstract class BaseSchema {
     this.multiEntry = multiEntry;
     this.validationRules = validationRules;
     this.schemaOptions = applySchemaOptionsDefaults(options);
+    this.constructorOptions = { ...constructorOptions };
 
     if (validate) {
       this.validationRules.push(new ValidationRule(validate));
@@ -71,10 +78,6 @@ export abstract class BaseSchema {
         new RequiredValidationRule({ message: `${name} is required!` })
       );
     }
-  }
-
-  clone(): unknown {
-    return null;
   }
 
   getIsVirtual() {
@@ -115,5 +118,6 @@ export abstract class BaseSchema {
     return value;
   }
 
+  abstract clone(): BaseSchema;
   abstract castFrom(value: unknown, options: SchemaMethodOptions): unknown;
 }

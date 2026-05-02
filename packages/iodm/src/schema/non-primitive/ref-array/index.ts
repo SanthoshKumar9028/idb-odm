@@ -1,16 +1,12 @@
-import type { BaseSchemaConstructorOptions } from '../../base-schema';
 import type { SchemaMethodOptions, SchemaSaveMethodOptions } from '../../types';
 import type { QueryExecutorGetCommonOptions } from 'iodm-query';
+import type { RefSchemaConstructorOptions } from '../ref';
 
-import { BaseSchema } from '../../base-schema';
 import iodm from '../../../iodm';
 import { Query } from 'iodm-query';
 import { RefSchema } from '../ref';
 
-export interface RefArraySchemaConstructorOptions extends BaseSchemaConstructorOptions {
-  ref: string;
-  valueSchema: BaseSchema;
-}
+export interface RefArraySchemaConstructorOptions extends RefSchemaConstructorOptions {}
 
 export class RefArraySchema extends RefSchema {
   validate(value: unknown, options: SchemaMethodOptions): boolean {
@@ -84,5 +80,9 @@ export class RefArraySchema extends RefSchema {
     }
 
     return val.map((v) => super.castFrom(v, options));
+  }
+
+  clone(): RefArraySchema {
+    return new RefArraySchema(this.constructorOptions);
   }
 }

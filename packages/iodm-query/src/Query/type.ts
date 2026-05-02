@@ -16,6 +16,7 @@ import type {
   QueryExecutorFindOptions,
   QueryExecutorFindByIdOptions,
 } from '../QueryExecutor/type';
+import type MiddlewareExecutor from '../utils/MiddlewareExecutor';
 import type { MiddlewareFn } from '../utils/MiddlewareStore';
 import type { Prettify } from '../utils/type';
 
@@ -69,70 +70,70 @@ export type QueryCountDocumentsOptions =
 
 export type QueryOptions<DocumentType = unknown> =
   | {
-      type: '_openCursor';
+      type: 'openCursor';
       query: QueryRootFilter;
       execOptions: QueryOpenCursorOptions;
     }
   | {
-      type: '_find';
+      type: 'find';
       query: Partial<QueryRootFilter>;
       execOptions: QueryFindOptions;
     }
   | {
-      type: '_findById';
+      type: 'findById';
       query: { $key: IDBValidKey };
       execOptions: QueryFindByIdOptions;
     }
   | {
-      type: '_insertOne';
+      type: 'insertOne';
       insertList: DocumentType[];
       execOptions: QueryInsertOneOptions;
     }
   | {
-      type: '_insertMany';
+      type: 'insertMany';
       insertList: DocumentType[];
       execOptions: QueryInsertManyOptions;
     }
   | {
-      type: '_replaceOne';
+      type: 'replaceOne';
       payload: DocumentType;
       execOptions: QueryReplaceOneOptions;
     }
   | {
-      type: '_updateMany';
+      type: 'updateMany';
       query: QueryRootFilter;
       payload: QueryExecutorUpdateManyUpdater<DocumentType>;
       execOptions: QueryUpdateManyOptions;
     }
   | {
-      type: '_updateOne';
+      type: 'updateOne';
       query: QueryRootFilter;
       payload: QueryExecutorUpdateManyUpdater<DocumentType>;
       execOptions: QueryUpdateOneOptions;
     }
   | {
-      type: '_deleteMany';
+      type: 'deleteMany';
       query: QueryRootFilter;
       execOptions: QueryDeleteManyOptions;
     }
   | {
-      type: '_deleteOne';
+      type: 'deleteOne';
       query: QueryRootFilter;
       execOptions: QueryDeleteOneOptions;
     }
   | {
-      type: '_findByIdAndDelete';
+      type: 'findByIdAndDelete';
       id: IDBValidKey;
       execOptions: QueryFindByIdAndDeleteOptions;
     }
   | {
-      type: '_findByIdAndUpdate';
+      type: 'findByIdAndUpdate';
       id: IDBValidKey;
       payload: QueryExecutorUpdateManyUpdater<DocumentType>;
       execOptions: QueryFindByIdAndUpdateOptions;
     }
   | {
-      type: '_countDocuments';
+      type: 'countDocuments';
       query: QueryRootFilter;
       execOptions: QueryCountDocumentsOptions;
     };
@@ -198,15 +199,17 @@ export interface IBaseQuery<ResultType, DocumentType> {
 export type QueryKeys = keyof IBaseQuery<unknown, unknown> & {};
 
 export type QueryInternalKeys = keyof {
-  [K in QueryKeys as `_${K}`]: unknown;
+  [K in QueryKeys]: unknown;
 };
 
-export type QueryInternalKeysMap = {
-  [K in QueryKeys as `_${K}`]: K;
-};
-
-export interface IQuery<ResultType, DocumentType>
-  extends IBaseQuery<ResultType, DocumentType> {
+export interface IQuery<ResultType, DocumentType> extends IBaseQuery<
+  ResultType,
+  DocumentType
+> {
+  idb: IDBDatabase;
+  storeName: string;
+  options: QueryOptions<DocumentType>;
+  middleware: MiddlewareExecutor;
   populate(path: string): IQuery<ResultType, DocumentType>;
   index(idx: string): IQuery<ResultType, DocumentType>;
   pre(name: string, fn: MiddlewareFn): IQuery<ResultType, DocumentType>;

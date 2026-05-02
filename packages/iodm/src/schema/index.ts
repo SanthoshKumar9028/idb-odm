@@ -30,6 +30,7 @@ import { SetSchema } from './non-primitive/set/index.ts';
 import { VirtualType } from './virtual-type/VirtualType.ts';
 import { middlewareKeys } from './constants.ts';
 import CustomMiddlewareExecutor from './custom-middleware-executor.ts';
+import { timestampsPlugin } from '../plugins/timestamps-plugin.ts';
 
 type SchemaDefinition<RawDocType> = Partial<
   Record<keyof RawDocType, SchemaDefinitionValue>
@@ -103,6 +104,10 @@ export class Schema<
 
     if (!this.tree[this.schemaOptions.keyPath]) {
       this.tree['_id'] = new StringSchema({ name: '_id', required: true });
+    }
+
+    if (options?.timestamps) {
+      this.plugin(timestampsPlugin, options.timestamps);
     }
   }
 
@@ -245,6 +250,12 @@ export class Schema<
     return this.tree[key];
   }
 
+  setSchemaFor(keySchema: BaseSchema) {
+    if (keySchema.name) {
+      this.tree[keySchema.name] = keySchema;
+    }
+  }
+
   clone() {
     const newSchema = new Schema<
       RawDocType,
@@ -260,7 +271,6 @@ export class Schema<
       },
       {} as typeof this.virtuals
     );
-
     newSchema.methods = { ...this.methods };
     newSchema.statics = { ...this.statics };
     newSchema.middleware = this.middleware.clone();
@@ -420,7 +430,12 @@ export class Schema<
     opt?: any
   ) {
     this.plugins.push({ fn, opt });
-    fn(this, opt);
+  }
+
+  applyPlugins() {
+    this.plugins.forEach(({ fn, opt }) => {
+      fn(this, opt);
+    });
   }
 
   enableBroadcastFor(

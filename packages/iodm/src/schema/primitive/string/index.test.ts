@@ -88,4 +88,9 @@ describe('StringSchema', () => {
     expect(schema.castFrom(undefined)).toBe('test123');
     expect(schema.castFrom(null)).toBe('test123');
   });
+
+  it('clone should returns cloned schema', () => {
+    const schema = new StringSchema({ name: 'name' });
+    expect(schema.clone()).toBeInstanceOf(StringSchema);
+  });
 });

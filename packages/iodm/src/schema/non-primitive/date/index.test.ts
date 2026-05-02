@@ -79,4 +79,11 @@ describe('DateSchema', () => {
       expect(schema.castFrom(null)).toEqual(new Date('2000-2-2'));
     });
   });
+
+  describe('clone', () => {
+    it('clone should returns cloned schema', () => {
+      const schema = new DateSchema({ name: 'test' });
+      expect(schema.clone()).toBeInstanceOf(DateSchema);
+    });
+  });
 });

@@ -21,7 +21,7 @@ export interface NumberSchemaValidationOptions extends BaseSchemaValidateOptions
 export interface NumberSchemaConstructorOptions
   extends BaseSchemaConstructorOptions, NumberSchemaValidationOptions {}
 
-export class NumberSchema extends BaseSchema {
+export class NumberSchema extends BaseSchema<NumberSchemaConstructorOptions> {
   constructor(options: NumberSchemaConstructorOptions) {
     super(options);
 
@@ -76,5 +76,9 @@ export class NumberSchema extends BaseSchema {
     }
 
     return val;
+  }
+
+  clone(): NumberSchema {
+    return new NumberSchema(this.constructorOptions);
   }
 }

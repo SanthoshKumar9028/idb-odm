@@ -7,12 +7,11 @@ export interface ArraySchemaConstructorOptions extends BaseSchemaConstructorOpti
   valueSchema: BaseSchema;
 }
 
-export class ArraySchema extends BaseSchema {
+export class ArraySchema extends BaseSchema<ArraySchemaConstructorOptions> {
   private valueSchema: BaseSchema;
 
   constructor(options: ArraySchemaConstructorOptions) {
     super(options);
-
     this.valueSchema = options.valueSchema;
   }
 
@@ -38,5 +37,9 @@ export class ArraySchema extends BaseSchema {
     }
 
     return val.map((v) => this.valueSchema.castFrom(v, options));
+  }
+
+  clone(): ArraySchema {
+    return new ArraySchema(this.constructorOptions);
   }
 }

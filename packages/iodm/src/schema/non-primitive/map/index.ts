@@ -10,4 +10,8 @@ export class MapSchema extends BaseSchema {
 
     return val;
   }
+
+  clone(): MapSchema {
+    return new MapSchema(this.constructorOptions);
+  }
 }

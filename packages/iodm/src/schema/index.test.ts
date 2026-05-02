@@ -232,13 +232,14 @@ describe('Schema', () => {
     expect(schema.middleware).toBeDefined();
   });
 
-  it('plugin should execute immediately', () => {
+  it('plugin should not execute immediately', () => {
     const schema = new Schema({ name: String });
     const pluginFn = vi.fn();
 
     schema.plugin(pluginFn);
 
-    expect(pluginFn).toHaveBeenCalledWith(schema, undefined);
+    expect(pluginFn).not.toHaveBeenCalled();
+    expect(schema.plugins[0].fn).toBe(pluginFn);
   });
 
   it('plugin should accept options', () => {
@@ -247,7 +248,18 @@ describe('Schema', () => {
 
     schema.plugin(pluginFn, { option: 'value' });
 
-    expect(pluginFn).toHaveBeenCalledWith(schema, { option: 'value' });
+    expect(pluginFn).not.toHaveBeenCalled();
+    expect(schema.plugins[0].fn).toBe(pluginFn);
+  });
+
+  it('plugin should execute only when schema applyPlugins method is called', () => {
+    const schema = new Schema({ name: String });
+    const pluginFn = vi.fn();
+
+    schema.plugin(pluginFn);
+    schema.applyPlugins();
+
+    expect(pluginFn).toHaveBeenCalledTimes(1);
   });
 
   it('should support async save', async () => {

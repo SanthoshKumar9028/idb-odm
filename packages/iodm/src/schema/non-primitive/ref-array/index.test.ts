@@ -452,4 +452,12 @@ describe('RefArraySchema', () => {
     expect(schema2.castFrom(undefined, {})).toEqual([2]);
     expect(schema2.castFrom(null, {})).toEqual([2]);
   });
+
+  it('clone should returns cloned schema', () => {
+    const schema = new RefArraySchema({
+      valueSchema: new NumberSchema({ name: 'item' }),
+      ref: 'User',
+    });
+    expect(schema.clone()).toBeInstanceOf(RefArraySchema);
+  });
 });

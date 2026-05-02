@@ -15,7 +15,7 @@ export interface DateSchemaValidationOptions extends BaseSchemaValidateOptions {
 export interface DateSchemaConstructorOptions
   extends BaseSchemaConstructorOptions, DateSchemaValidationOptions {}
 
-export class DateSchema extends BaseSchema {
+export class DateSchema extends BaseSchema<DateSchemaConstructorOptions> {
   constructor(options: DateSchemaConstructorOptions = {}) {
     super(options);
 
@@ -60,5 +60,9 @@ export class DateSchema extends BaseSchema {
     }
 
     return val;
+  }
+
+  clone(): DateSchema {
+    return new DateSchema(this.constructorOptions);
   }
 }

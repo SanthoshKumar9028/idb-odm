@@ -7,4 +7,8 @@ export class BooleanSchema extends BaseSchema {
 
     return !!val;
   }
+
+  clone(): BooleanSchema {
+    return new BooleanSchema(this.constructorOptions);
+  }
 }

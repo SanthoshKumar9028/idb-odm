@@ -23,7 +23,7 @@ export interface StringSchemaValidationOptions extends BaseSchemaValidateOptions
 export interface StringSchemaConstructorOptions
   extends BaseSchemaConstructorOptions, StringSchemaValidationOptions {}
 
-export class StringSchema extends BaseSchema {
+export class StringSchema extends BaseSchema<StringSchemaConstructorOptions> {
   constructor(options: StringSchemaConstructorOptions) {
     super(options);
 
@@ -89,5 +89,9 @@ export class StringSchema extends BaseSchema {
     let val = this.getFinalValue(value);
     if (val === undefined || val === null) return val;
     return String(val);
+  }
+
+  clone(): StringSchema {
+    return new StringSchema(this.constructorOptions);
   }
 }

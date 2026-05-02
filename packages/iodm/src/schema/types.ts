@@ -9,6 +9,7 @@ import type {
 } from './base-schema';
 import type { StringSchemaValidationOptions } from './primitive/string';
 import type { DateSchemaValidationOptions } from './non-primitive/date';
+import type { TimestampOption } from '../plugins/timestamps-plugin';
 
 export type SchemaDefinitionNumberValue =
   | typeof Number
@@ -93,6 +94,7 @@ export type FindMiddlewareContext<T, HydratedDoc> =
 
 export interface SchemaOptions {
   keyPath: string;
+  timestamps?: TimestampOption;
 }
 
 export interface SchemaMethodOptions {}
