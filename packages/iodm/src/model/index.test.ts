@@ -183,7 +183,7 @@ describe('AbstractModel', () => {
         execPre: vi.fn(),
         execPost: vi.fn().mockReturnValue('postResult'),
       };
-      (instance as any).documentMiddleware = mockMiddleware;
+      (instance as any)._documentMiddleware = mockMiddleware;
 
       // Mock schema methods
       const mockSchema = {
@@ -205,7 +205,7 @@ describe('AbstractModel', () => {
       expect(mockMiddleware.execPre).toHaveBeenCalled();
       expect(mockMiddleware.execPost).toHaveBeenCalled();
       expect(result).toBe('postResult');
-      expect((instance as any).$_isNew).toBe(false);
+      expect((instance as any)._isNew).toBe(false);
     });
 
     it('should save existing document', async () => {
@@ -224,7 +224,7 @@ describe('AbstractModel', () => {
         execPre: vi.fn(),
         execPost: vi.fn().mockReturnValue('postResult'),
       };
-      (instance as any).documentMiddleware = mockMiddleware;
+      (instance as any)._documentMiddleware = mockMiddleware;
 
       // Mock schema methods
 
@@ -449,7 +449,7 @@ describe('AbstractModel', () => {
       const schema = new Schema({ name: String });
       SyncModel.syncModelToSchema({ name: 'syncStore', schema });
 
-      expect((SyncModel.prototype as any).documentMiddleware).toBeDefined();
+      expect((SyncModel.prototype as any)._documentMiddleware).toBeDefined();
     });
 
     it('should set Query class', () => {
@@ -771,7 +771,7 @@ describe('AbstractModel', () => {
       const saveSpy = vi
         .spyOn(TestModel.prototype as any, 'save')
         .mockImplementation(function (this: any, receivedOptions: any) {
-          expect(this.$_isNew).toBe(false);
+          expect(this._isNew).toBe(false);
           expect(receivedOptions).toBe(options);
           return Promise.resolve('saveResult');
         });
@@ -792,7 +792,7 @@ describe('AbstractModel', () => {
       const saveSpy = vi
         .spyOn(TestModel.prototype as any, 'save')
         .mockImplementation(function (this: any, receivedOptions: any) {
-          expect(this.$_isNew).toBe(false);
+          expect(this._isNew).toBe(false);
           expect(receivedOptions).toBeUndefined();
           return Promise.resolve('saveResult');
         });

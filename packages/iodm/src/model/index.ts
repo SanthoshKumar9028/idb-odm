@@ -37,13 +37,12 @@ import { StringSchema } from '../schema/primitive/string';
 import { NumberSchema } from '../schema/primitive/number';
 
 const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
-  // instance properties and methods
-  private $_isNew: boolean;
-  private documentMiddleware: CustomMiddlewareExecutor;
+  private _isNew: boolean;
+  private _documentMiddleware: CustomMiddlewareExecutor;
 
   constructor(defaultValues: any, options?: ModelOptions) {
-    this.$_isNew = options?.isNew ?? true;
-    this.documentMiddleware = Object.getPrototypeOf(this).documentMiddleware;
+    this._isNew = options?.isNew ?? true;
+    this._documentMiddleware = Object.getPrototypeOf(this)._documentMiddleware;
 
     if (defaultValues && typeof defaultValues === 'object') {
       for (const key in defaultValues) {
@@ -58,31 +57,31 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
       : this.createInstanceTransaction('readwrite');
 
     try {
-      this.documentMiddleware.execPre('save', this, null);
-      this.documentMiddleware.execPre('validate', this, null);
+      this._documentMiddleware.execPre('save', this, null);
+      this._documentMiddleware.execPre('validate', this, null);
 
-      if (this.$_isNew) {
+      if (this._isNew) {
         AbstractModelTemp.insertUniqueKeyIfNotExist(this, this);
       }
 
       try {
         this.validate();
       } catch (err) {
-        this.documentMiddleware.execPost('validate', this, err);
+        this._documentMiddleware.execPost('validate', this, err);
         throw err;
       }
 
-      this.documentMiddleware.execPost('validate', this, null);
+      this._documentMiddleware.execPost('validate', this, null);
 
       await this.getInstanceSchema().save(this, {
         transaction,
-        ...this.getSchemaMethodOptions(),
+        ...this._getSchemaMethodOptions(),
       });
 
       let queryResult: unknown;
       const QueryClass = AbstractModelTemp.getQueryClass(this);
 
-      if (this.$_isNew) {
+      if (this._isNew) {
         queryResult = await new QueryClass(
           this.getInstanceDB(),
           this.getInstanceStoreName()
@@ -92,7 +91,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
           transaction,
         });
 
-        this.$_isNew = false;
+        this._isNew = false;
       } else {
         queryResult = await new QueryClass(
           this.getInstanceDB(),
@@ -103,7 +102,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
         });
       }
 
-      queryResult = this.documentMiddleware.execPost(
+      queryResult = this._documentMiddleware.execPost(
         'save',
         this,
         null,
@@ -117,7 +116,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
           transaction.abort();
         } catch {}
       }
-      this.documentMiddleware.execPost('save', this, err);
+      this._documentMiddleware.execPost('save', this, err);
       throw err;
     }
   }
@@ -125,14 +124,14 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
   validate(): boolean {
     return this.getInstanceSchema().validate(
       this,
-      this.getSchemaMethodOptions()
+      this._getSchemaMethodOptions()
     );
   }
 
   toJSON() {
     return this.getInstanceSchema().castFrom(
       this,
-      this.getSchemaMethodOptions()
+      this._getSchemaMethodOptions()
     );
   }
 
@@ -155,7 +154,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     );
   }
 
-  getSchemaMethodOptions() {
+  private _getSchemaMethodOptions() {
     return {};
   }
 
@@ -544,7 +543,7 @@ const AbstractModel: IModel = class AbstractModelTemp implements ModelInstance {
     });
 
     // defining document middleware executor for the model
-    this.prototype.documentMiddleware = newSchema.middleware.filter((name) => {
+    this.prototype._documentMiddleware = newSchema.middleware.filter((name) => {
       return documentMiddlewareKeys.includes(name);
     });
 
