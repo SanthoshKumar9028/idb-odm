@@ -9,7 +9,7 @@ Execute middleware for a name
 **Signature:**
 
 ```typescript
-exec(name: string, ctx: any, result?: any, ...args: any[]): any;
+exec(name: string, ctx: any, error?: any, result?: any, ...args: any[]): any;
 ```
 
 ## Parameters
@@ -62,6 +62,22 @@ any
 </td></tr>
 <tr><td>
 
+error
+
+
+</td><td>
+
+any
+
+
+</td><td>
+
+_(Optional)_ Error if any, otherwise null
+
+
+</td></tr>
+<tr><td>
+
 result
 
 
@@ -72,7 +88,7 @@ any
 
 </td><td>
 
-_(Optional)_ The result from the operation
+_(Optional)_ The return value from the operation
 
 
 </td></tr>
@@ -88,7 +104,7 @@ any\[\]
 
 </td><td>
 
-Additional arguments
+Additional arguments if any
 
 
 </td></tr>

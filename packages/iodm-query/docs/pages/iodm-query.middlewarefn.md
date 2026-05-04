@@ -7,5 +7,5 @@
 **Signature:**
 
 ```typescript
-export type MiddlewareFn<C = any, R = any> = (this: C, res: R, ...args: any[]) => any;
+export type MiddlewareFn<C = any, R = any, E = Error> = (this: C, error: E, result: R, ...args: any[]) => any;
 ```

@@ -9,11 +9,11 @@ Executes the query with accumulated options
 **Signature:**
 
 ```typescript
-exec(): Promise<ResultType>;
+exec(): Promise<any>;
 ```
 **Returns:**
 
-Promise&lt;ResultType&gt;
+Promise&lt;any&gt;
 
 
 ## Example

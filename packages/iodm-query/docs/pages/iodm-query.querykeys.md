@@ -7,5 +7,5 @@
 **Signature:**
 
 ```typescript
-queryKeys: ("find" | "openCursor" | "findById" | "insertOne" | "insertMany" | "replaceOne" | "updateMany" | "updateOne" | "deleteMany" | "deleteOne" | "findByIdAndDelete" | "findByIdAndUpdate" | "countDocuments")[]
+queryKeys: QueryInternalKeys[]
 ```

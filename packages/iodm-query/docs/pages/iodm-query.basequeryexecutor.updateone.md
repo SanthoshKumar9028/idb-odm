@@ -49,7 +49,7 @@ updater
 
 </td><td>
 
-QueryExecutorUpdateManyUpdater&lt;DocumentType&gt;
+[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocumentType&gt;
 
 
 </td><td>
@@ -63,7 +63,7 @@ options
 
 </td><td>
 
-QueryExecutorUpdateOneOptions
+[QueryExecutorUpdateOneOptions](./iodm-query.queryexecutorupdateoneoptions.md)
 
 
 </td><td>

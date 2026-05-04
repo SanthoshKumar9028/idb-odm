@@ -92,7 +92,7 @@ Clone the MiddlewareStore instance along with its middleware
 </td></tr>
 <tr><td>
 
-[exec(name, ctx, result, args)](./iodm-query.middlewarestore.exec.md)
+[exec(name, ctx, error, result, args)](./iodm-query.middlewarestore.exec.md)
 
 
 </td><td>

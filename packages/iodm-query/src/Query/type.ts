@@ -20,13 +20,13 @@ import type MiddlewareExecutor from '../utils/MiddlewareExecutor';
 import type { MiddlewareFn } from '../utils/MiddlewareStore';
 import type { Prettify } from '../utils/type';
 
-interface QueryOptionsWithTransaction {
+export interface QueryOptionsWithTransaction {
   transaction?: IDBTransaction;
 }
 
-type QueryExecutorCommonKeys = keyof QueryExecutorCommonOptions;
+export type QueryExecutorCommonKeys = keyof QueryExecutorCommonOptions;
 
-type QueryFunctionOptions<Options> = Prettify<
+export type QueryFunctionOptions<Options> = Prettify<
   QueryOptionsWithTransaction & Omit<Options, QueryExecutorCommonKeys>
 >;
 

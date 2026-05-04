@@ -9,3 +9,5 @@
 ```typescript
 export type QueryUpdateManyOptions = QueryFunctionOptions<QueryExecutorUpdateManyOptions>;
 ```
+**References:** [QueryFunctionOptions](./iodm-query.queryfunctionoptions.md)<!-- -->, [QueryExecutorUpdateManyOptions](./iodm-query.queryexecutorupdatemanyoptions.md)
+

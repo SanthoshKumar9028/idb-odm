@@ -9,3 +9,5 @@
 ```typescript
 export type QueryDeleteOneOptions = QueryFunctionOptions<QueryExecutorDeleteOneOptions>;
 ```
+**References:** [QueryFunctionOptions](./iodm-query.queryfunctionoptions.md)<!-- -->, [QueryExecutorDeleteOneOptions](./iodm-query.queryexecutordeleteoneoptions.md)
+

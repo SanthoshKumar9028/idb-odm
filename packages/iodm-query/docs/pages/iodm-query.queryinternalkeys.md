@@ -8,7 +8,7 @@
 
 ```typescript
 export type QueryInternalKeys = keyof {
-    [K in QueryKeys as `_${K}`]: unknown;
+    [K in QueryKeys]: unknown;
 };
 ```
 **References:** [QueryKeys](./iodm-query.querykeys.md)

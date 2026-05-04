@@ -9,7 +9,100 @@
 ```typescript
 export interface IQuery<ResultType, DocumentType> extends IBaseQuery<ResultType, DocumentType> 
 ```
-**Extends:** IBaseQuery&lt;ResultType, DocumentType&gt;
+**Extends:** [IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+
+## Properties
+
+<table><thead><tr><th>
+
+Property
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[idb](./iodm-query.iquery.idb.md)
+
+
+</td><td>
+
+
+</td><td>
+
+IDBDatabase
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[middleware](./iodm-query.iquery.middleware.md)
+
+
+</td><td>
+
+
+</td><td>
+
+[MiddlewareExecutor](./iodm-query.middlewareexecutor.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[options](./iodm-query.iquery.options.md)
+
+
+</td><td>
+
+
+</td><td>
+
+[QueryOptions](./iodm-query.queryoptions.md)<!-- -->&lt;DocumentType&gt;
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[storeName](./iodm-query.iquery.storename.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+
+</td></tr>
+</tbody></table>
 
 ## Methods
 
@@ -27,6 +120,15 @@ Description
 <tbody><tr><td>
 
 [exec()](./iodm-query.iquery.exec.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[index(idx)](./iodm-query.iquery.index.md)
 
 
 </td><td>

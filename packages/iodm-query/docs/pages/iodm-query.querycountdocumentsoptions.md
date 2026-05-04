@@ -9,3 +9,5 @@
 ```typescript
 export type QueryCountDocumentsOptions = QueryFunctionOptions<QueryExecutorCountDocumentsOptions>;
 ```
+**References:** [QueryFunctionOptions](./iodm-query.queryfunctionoptions.md)<!-- -->, [QueryExecutorCountDocumentsOptions](./iodm-query.queryexecutorcountdocumentsoptions.md)
+

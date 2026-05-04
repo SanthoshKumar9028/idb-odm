@@ -53,7 +53,7 @@ payload
 
 </td><td>
 
-QueryExecutorUpdateManyUpdater&lt;DocumentType&gt;
+[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocumentType&gt;
 
 
 </td><td>

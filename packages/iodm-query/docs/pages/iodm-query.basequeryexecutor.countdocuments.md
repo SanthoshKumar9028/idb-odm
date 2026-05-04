@@ -49,7 +49,7 @@ options
 
 </td><td>
 
-QueryExecutorCountDocumentsOptions
+[QueryExecutorCountDocumentsOptions](./iodm-query.queryexecutorcountdocumentsoptions.md)
 
 
 </td><td>

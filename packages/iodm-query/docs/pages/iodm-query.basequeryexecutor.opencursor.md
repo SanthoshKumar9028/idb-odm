@@ -49,7 +49,7 @@ options
 
 </td><td>
 
-QueryExecutorOpenCursorOptions
+[QueryExecutorOpenCursorOptions](./iodm-query.queryexecutoropencursoroptions.md)
 
 
 </td><td>

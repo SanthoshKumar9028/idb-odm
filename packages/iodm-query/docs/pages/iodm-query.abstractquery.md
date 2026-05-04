@@ -70,6 +70,23 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[idb](./iodm-query.abstractquery.idb.md)
+
+
+</td><td>
+
+
+</td><td>
+
+IDBDatabase
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [middleware](./iodm-query.abstractquery.middleware.md)
 
 
@@ -81,6 +98,40 @@ Description
 </td><td>
 
 [MiddlewareExecutor](./iodm-query.middlewareexecutor.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[options](./iodm-query.abstractquery.options.md)
+
+
+</td><td>
+
+
+</td><td>
+
+[QueryOptions](./iodm-query.queryoptions.md)<!-- -->&lt;DocumentType&gt;
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[storeName](./iodm-query.abstractquery.storename.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
 
 
 </td><td>
@@ -216,6 +267,20 @@ Removes the document with the id and returnes the deleted document. if the docum
 </td><td>
 
 Updates the document with the id and returns the updated document. if the document is not present `undefined` will be returned
+
+
+</td></tr>
+<tr><td>
+
+[index(idx)](./iodm-query.abstractquery.index.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Specified index will be used when performing query related operations
 
 
 </td></tr>

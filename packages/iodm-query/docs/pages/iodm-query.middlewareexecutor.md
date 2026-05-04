@@ -120,6 +120,30 @@ Description
 </td></tr>
 <tr><td>
 
+[clearPostHooks(name)](./iodm-query.middlewareexecutor.clearposthooks.md)
+
+
+</td><td>
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[clearPreHooks(name)](./iodm-query.middlewareexecutor.clearprehooks.md)
+
+
+</td><td>
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [clone()](./iodm-query.middlewareexecutor.clone.md)
 
 
@@ -132,7 +156,7 @@ Description
 </td></tr>
 <tr><td>
 
-[execPost(event, ctx, result, args)](./iodm-query.middlewareexecutor.execpost.md)
+[execPost(event, ctx, error, result, args)](./iodm-query.middlewareexecutor.execpost.md)
 
 
 </td><td>
@@ -144,7 +168,7 @@ Description
 </td></tr>
 <tr><td>
 
-[execPre(event, ctx, result, args)](./iodm-query.middlewareexecutor.execpre.md)
+[execPre(event, ctx, error, result, args)](./iodm-query.middlewareexecutor.execpre.md)
 
 
 </td><td>
@@ -157,6 +181,30 @@ Description
 <tr><td>
 
 [filter(cb)](./iodm-query.middlewareexecutor.filter.md)
+
+
+</td><td>
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[getPostHooks(name)](./iodm-query.middlewareexecutor.getposthooks.md)
+
+
+</td><td>
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[getPreHooks(name)](./iodm-query.middlewareexecutor.getprehooks.md)
 
 
 </td><td>

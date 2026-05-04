@@ -9,3 +9,5 @@
 ```typescript
 export type QueryFindByIdAndUpdateOptions = QueryFunctionOptions<QueryExecutorFindByIdAndUpdateOptions>;
 ```
+**References:** [QueryFunctionOptions](./iodm-query.queryfunctionoptions.md)<!-- -->, [QueryExecutorFindByIdAndUpdateOptions](./iodm-query.queryexecutorfindbyidandupdateoptions.md)
+

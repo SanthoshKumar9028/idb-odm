@@ -9,3 +9,5 @@
 ```typescript
 export type QueryOpenCursorOptions = QueryFunctionOptions<QueryExecutorOpenCursorOptions>;
 ```
+**References:** [QueryFunctionOptions](./iodm-query.queryfunctionoptions.md)<!-- -->, [QueryExecutorOpenCursorOptions](./iodm-query.queryexecutoropencursoroptions.md)
+

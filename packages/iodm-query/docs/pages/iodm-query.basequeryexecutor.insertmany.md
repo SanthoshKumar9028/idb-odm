@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-insertMany<ResultType>(payload: unknown[], options: QueryExecutorInsertOptions): Promise<ResultType>;
+insertMany<ResultType, DocumentType = unknown>(payload: unknown[], options: QueryExecutorInsertOptions): Promise<ResultType>;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ options
 
 </td><td>
 
-QueryExecutorInsertOptions
+[QueryExecutorInsertOptions](./iodm-query.queryexecutorinsertoptions.md)
 
 
 </td><td>

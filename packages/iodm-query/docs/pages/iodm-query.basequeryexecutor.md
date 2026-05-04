@@ -114,6 +114,18 @@ Description
 </td></tr>
 <tr><td>
 
+[getObjectStore({ index, storeName, transaction })](./iodm-query.basequeryexecutor.getobjectstore.md)
+
+
+</td><td>
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [insertMany(payload, options)](./iodm-query.basequeryexecutor.insertmany.md)
 
 

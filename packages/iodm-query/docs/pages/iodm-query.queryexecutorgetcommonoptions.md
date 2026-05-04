@@ -7,9 +7,9 @@
 **Signature:**
 
 ```typescript
-export interface QueryExecutorGetCommonOptions extends QueryExecutorCommonOptions 
+export interface QueryExecutorGetCommonOptions extends QueryExecutorCommonOptions, QueryExecutorIndexOptions 
 ```
-**Extends:** QueryExecutorCommonOptions
+**Extends:** [QueryExecutorCommonOptions](./iodm-query.queryexecutorcommonoptions.md)<!-- -->, [QueryExecutorIndexOptions](./iodm-query.queryexecutorindexoptions.md)
 
 ## Properties
 
@@ -63,7 +63,7 @@ _(Optional)_
 
 </td><td>
 
-Record&lt;string, PopulateField&gt;
+Record&lt;string, [PopulateField](./iodm-query.populatefield.md)<!-- -->&gt;
 
 
 </td><td>

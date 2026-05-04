@@ -8,63 +8,63 @@
 
 ```typescript
 export type QueryOptions<DocumentType = unknown> = {
-    type: '_openCursor';
+    type: 'openCursor';
     query: QueryRootFilter;
     execOptions: QueryOpenCursorOptions;
 } | {
-    type: '_find';
+    type: 'find';
     query: Partial<QueryRootFilter>;
     execOptions: QueryFindOptions;
 } | {
-    type: '_findById';
+    type: 'findById';
     query: {
         $key: IDBValidKey;
     };
     execOptions: QueryFindByIdOptions;
 } | {
-    type: '_insertOne';
+    type: 'insertOne';
     insertList: DocumentType[];
     execOptions: QueryInsertOneOptions;
 } | {
-    type: '_insertMany';
+    type: 'insertMany';
     insertList: DocumentType[];
     execOptions: QueryInsertManyOptions;
 } | {
-    type: '_replaceOne';
+    type: 'replaceOne';
     payload: DocumentType;
     execOptions: QueryReplaceOneOptions;
 } | {
-    type: '_updateMany';
+    type: 'updateMany';
     query: QueryRootFilter;
     payload: QueryExecutorUpdateManyUpdater<DocumentType>;
     execOptions: QueryUpdateManyOptions;
 } | {
-    type: '_updateOne';
+    type: 'updateOne';
     query: QueryRootFilter;
     payload: QueryExecutorUpdateManyUpdater<DocumentType>;
     execOptions: QueryUpdateOneOptions;
 } | {
-    type: '_deleteMany';
+    type: 'deleteMany';
     query: QueryRootFilter;
     execOptions: QueryDeleteManyOptions;
 } | {
-    type: '_deleteOne';
+    type: 'deleteOne';
     query: QueryRootFilter;
     execOptions: QueryDeleteOneOptions;
 } | {
-    type: '_findByIdAndDelete';
+    type: 'findByIdAndDelete';
     id: IDBValidKey;
     execOptions: QueryFindByIdAndDeleteOptions;
 } | {
-    type: '_findByIdAndUpdate';
+    type: 'findByIdAndUpdate';
     id: IDBValidKey;
     payload: QueryExecutorUpdateManyUpdater<DocumentType>;
     execOptions: QueryFindByIdAndUpdateOptions;
 } | {
-    type: '_countDocuments';
+    type: 'countDocuments';
     query: QueryRootFilter;
     execOptions: QueryCountDocumentsOptions;
 };
 ```
-**References:** [QueryRootFilter](./iodm-query.queryrootfilter.md)<!-- -->, [QueryOpenCursorOptions](./iodm-query.queryopencursoroptions.md)<!-- -->, [QueryFindOptions](./iodm-query.queryfindoptions.md)<!-- -->, [QueryFindByIdOptions](./iodm-query.queryfindbyidoptions.md)<!-- -->, [QueryInsertOneOptions](./iodm-query.queryinsertoneoptions.md)<!-- -->, [QueryInsertManyOptions](./iodm-query.queryinsertmanyoptions.md)<!-- -->, [QueryReplaceOneOptions](./iodm-query.queryreplaceoneoptions.md)<!-- -->, [QueryUpdateManyOptions](./iodm-query.queryupdatemanyoptions.md)<!-- -->, [QueryDeleteManyOptions](./iodm-query.querydeletemanyoptions.md)<!-- -->, [QueryDeleteOneOptions](./iodm-query.querydeleteoneoptions.md)<!-- -->, [QueryFindByIdAndDeleteOptions](./iodm-query.queryfindbyidanddeleteoptions.md)<!-- -->, [QueryFindByIdAndUpdateOptions](./iodm-query.queryfindbyidandupdateoptions.md)<!-- -->, [QueryCountDocumentsOptions](./iodm-query.querycountdocumentsoptions.md)
+**References:** [QueryRootFilter](./iodm-query.queryrootfilter.md)<!-- -->, [QueryOpenCursorOptions](./iodm-query.queryopencursoroptions.md)<!-- -->, [QueryFindOptions](./iodm-query.queryfindoptions.md)<!-- -->, [QueryFindByIdOptions](./iodm-query.queryfindbyidoptions.md)<!-- -->, [QueryInsertOneOptions](./iodm-query.queryinsertoneoptions.md)<!-- -->, [QueryInsertManyOptions](./iodm-query.queryinsertmanyoptions.md)<!-- -->, [QueryReplaceOneOptions](./iodm-query.queryreplaceoneoptions.md)<!-- -->, [QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->, [QueryUpdateManyOptions](./iodm-query.queryupdatemanyoptions.md)<!-- -->, [QueryUpdateOneOptions](./iodm-query.queryupdateoneoptions.md)<!-- -->, [QueryDeleteManyOptions](./iodm-query.querydeletemanyoptions.md)<!-- -->, [QueryDeleteOneOptions](./iodm-query.querydeleteoneoptions.md)<!-- -->, [QueryFindByIdAndDeleteOptions](./iodm-query.queryfindbyidanddeleteoptions.md)<!-- -->, [QueryFindByIdAndUpdateOptions](./iodm-query.queryfindbyidandupdateoptions.md)<!-- -->, [QueryCountDocumentsOptions](./iodm-query.querycountdocumentsoptions.md)
 

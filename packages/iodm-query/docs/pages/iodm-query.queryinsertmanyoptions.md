@@ -9,3 +9,5 @@
 ```typescript
 export type QueryInsertManyOptions = QueryFunctionOptions<QueryExecutorInsertOptions>;
 ```
+**References:** [QueryFunctionOptions](./iodm-query.queryfunctionoptions.md)<!-- -->, [QueryExecutorInsertOptions](./iodm-query.queryexecutorinsertoptions.md)
+

@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-execPost(event: string, ctx: any, result?: any, ...args: any[]): any;
+execPost(event: string, ctx: any, error?: any, result?: any, ...args: any[]): any;
 ```
 
 ## Parameters
@@ -53,6 +53,22 @@ any
 
 
 </td><td>
+
+
+</td></tr>
+<tr><td>
+
+error
+
+
+</td><td>
+
+any
+
+
+</td><td>
+
+_(Optional)_
 
 
 </td></tr>

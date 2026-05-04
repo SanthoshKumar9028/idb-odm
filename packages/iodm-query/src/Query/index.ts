@@ -851,9 +851,11 @@ export abstract class AbstractQuery<
  *
  * @example
  * ```ts
- * const query = new Query(idb, "store-name");
- * const list = await query.find({ $key: "text" });
- * const item = await query.findById(id);
+ * const query1 = new Query(idb, "store-name");
+ * const list = await query1.find({ $key: "text" });
+ *
+ * const query2 = new Query(idb, "store-name");
+ * const item = await query2.findById(id);
  * ```
  *
  * @beta

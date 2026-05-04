@@ -49,7 +49,7 @@ options
 
 </td><td>
 
-QueryExecutorInsertOptions
+[QueryExecutorInsertOptions](./iodm-query.queryexecutorinsertoptions.md)
 
 
 </td><td>

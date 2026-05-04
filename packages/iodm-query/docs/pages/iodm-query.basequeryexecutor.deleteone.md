@@ -49,7 +49,7 @@ options
 
 </td><td>
 
-QueryExecutorDeleteOneOptions
+[QueryExecutorDeleteOneOptions](./iodm-query.queryexecutordeleteoneoptions.md)
 
 
 </td><td>
