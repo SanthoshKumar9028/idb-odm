@@ -53,7 +53,7 @@ func
 
 </td><td>
 
-[InjectFunctionContext](./iodm.injectfunctioncontext.md)<!-- -->&lt;IModel&lt;RawDocType, TInstanceMethods&gt;, TStaticMethods\[K\]&gt;
+[InjectFunctionContext](./iodm.injectfunctioncontext.md)<!-- -->&lt;[IModel](./iodm.imodel.md)<!-- -->&lt;RawDocType, TInstanceMethods&gt;, TStaticMethods\[K\]&gt;
 
 
 </td><td>

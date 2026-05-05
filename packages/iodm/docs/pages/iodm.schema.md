@@ -4,6 +4,8 @@
 
 ## Schema class
 
+Schema class represents the structure of the documents in a collection, defining the types of each field, validation rules, default values, and other properties.
+
 **Signature:**
 
 ```typescript
@@ -129,7 +131,7 @@ MiddlewareStore
 
 </td><td>
 
-CustomMiddlewareExecutor
+[CustomMiddlewareExecutor](./iodm.custommiddlewareexecutor.md)
 
 
 </td><td>
@@ -163,7 +165,7 @@ Array&lt;{ fn: [PluginFn](./iodm.pluginfn.md)<!-- -->&lt;RawDocType, TInstanceMe
 
 </td><td>
 
-{ \[K in keyof TStaticMethods\]?: [InjectFunctionContext](./iodm.injectfunctioncontext.md)<!-- -->&lt;IModel&lt;RawDocType, TInstanceMethods, TVirtualProperties&gt;, TStaticMethods\[K\]&gt;; }
+{ \[K in keyof TStaticMethods\]?: [InjectFunctionContext](./iodm.injectfunctioncontext.md)<!-- -->&lt;[IModel](./iodm.imodel.md)<!-- -->&lt;RawDocType, TInstanceMethods, TVirtualProperties&gt;, TStaticMethods\[K\]&gt;; }
 
 
 </td><td>

@@ -33,6 +33,10 @@ import { middlewareKeys } from './constants.ts';
 import CustomMiddlewareExecutor from './custom-middleware-executor.ts';
 import { timestampsPlugin } from '../plugins/timestamps-plugin.ts';
 
+/**
+ * Schema class represents the structure of the documents in a collection, defining the types of each field, validation rules, default values, and other properties.
+ */
+
 export class Schema<
   RawDocType = any,
   TInstanceMethods = {},

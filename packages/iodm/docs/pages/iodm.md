@@ -19,10 +19,32 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[AbstractModelClass](./iodm.abstractmodelclass.md)
+
+
+</td><td>
+
+AbstractModelClass is an abstract class that serves as the base for all models in the ODM. It should not be instantiated directly. Instead, use `iodm.model` to create a model class that extends AbstractModelClass, and then instantiate that model class to create instances of the model.
+
+
+</td></tr>
+<tr><td>
+
+[CustomMiddlewareExecutor](./iodm.custommiddlewareexecutor.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [Schema](./iodm.schema.md)
 
 
 </td><td>
+
+Schema class represents the structure of the documents in a collection, defining the types of each field, validation rules, default values, and other properties.
 
 
 </td></tr>
@@ -68,6 +90,42 @@ Description
 <tbody><tr><td>
 
 [BroadcastEnabledEventsOptions](./iodm.broadcastenabledeventsoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[IModel](./iodm.imodel.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[ModelInstance](./iodm.modelinstance.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[ModelOptions](./iodm.modeloptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[ModelSaveOptions](./iodm.modelsaveoptions.md)
 
 
 </td><td>

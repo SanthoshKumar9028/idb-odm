@@ -37,7 +37,7 @@ fn
 
 </td><td>
 
-MiddlewareFn&lt;IModel&lt;RawDocType, TInstanceMethods&gt;, MessageEvent&lt;any&gt;&gt;
+MiddlewareFn&lt;[IModel](./iodm.imodel.md)<!-- -->&lt;RawDocType, TInstanceMethods&gt;, MessageEvent&lt;any&gt;&gt;
 
 
 </td><td>
@@ -56,7 +56,7 @@ schema instance for chaining
 
 ## Remarks
 
-This middleware will be executed for all the events that are enabled for broadcasting, using the enableBroadcastFor method, so the payload should be checked in the middleware to handle different events accordingly.
+This middleware will be executed for all the events that are enabled for broadcasting, using the `enableBroadcastFor` method, so the payload should be checked in the middleware to handle different events accordingly.
 
 ## Example
 
