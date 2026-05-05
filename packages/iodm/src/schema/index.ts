@@ -4,6 +4,7 @@ import type {
   FindMiddlewareContext,
   InjectFunctionContext,
   PluginFn,
+  SchemaDefinition,
   SchemaDefinitionValue,
   SchemaMethodOptions,
   SchemaOptions,
@@ -31,10 +32,6 @@ import { VirtualType } from './virtual-type/VirtualType.ts';
 import { middlewareKeys } from './constants.ts';
 import CustomMiddlewareExecutor from './custom-middleware-executor.ts';
 import { timestampsPlugin } from '../plugins/timestamps-plugin.ts';
-
-type SchemaDefinition<RawDocType> = Partial<
-  Record<keyof RawDocType, SchemaDefinitionValue>
->;
 
 export class Schema<
   RawDocType = any,
@@ -242,20 +239,43 @@ export class Schema<
     throw new Error(`Type for ${prop} is not supported`);
   }
 
+  /**
+   * Get all reference names used in the schema, 
+   * useful for creating transactions that involve multiple models.
+   * 
+   * @returns array of reference names used in the schema
+   */
   getRefNames(): string[] {
     return [...this.refNames.values()];
   }
 
+  /**
+   * Get schema for a specific key
+   * 
+   * @param key - key of the schema path to get the schema for
+   * @returns schema for the key
+   */
   getSchemaFor(key: string) {
     return this.tree[key];
   }
 
+  /**
+   * Set schema for a specific key, useful for circular references
+   * 
+   * @param keySchema - schema to set for the key
+   * @returns
+   */
   setSchemaFor(keySchema: BaseSchema) {
     if (keySchema.name) {
       this.tree[keySchema.name] = keySchema;
     }
   }
 
+  /**
+   * Clones the created schema
+   * 
+   * @returns cloned schema
+   */
   clone() {
     const newSchema = new Schema<
       RawDocType,
@@ -292,6 +312,13 @@ export class Schema<
     }
   }
 
+  /**
+   * Validates the given value against the schema
+   * 
+   * @param value - value to validate
+   * @param options - validation options
+   * @returns true if value is valid, otherwise throws an error
+   */
   validate(value: unknown, options: SchemaMethodOptions) {
     if (!value || typeof value !== 'object') {
       throw new Error('value must be an Object');
@@ -318,6 +345,13 @@ export class Schema<
     return newDoc;
   }
 
+  /**
+   * Casts the given value to the schema types
+   * 
+   * @param value - value to cast
+   * @param options - casting options
+   * @returns casted value
+   */
   castFrom(value: unknown, options: SchemaMethodOptions) {
     let val = this.getFinalValue(value);
     if (!val || typeof val !== 'object') {
@@ -335,6 +369,24 @@ export class Schema<
     return obj;
   }
 
+  /**
+   * Creates a virtual property on the schema
+   * 
+   * @example
+   * ```ts
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   * 
+   * userSchema.virtual('fullName').get(function() {
+   *  return `${this.firstName} ${this.lastName}`;
+   * });
+   * ```
+   * 
+   * @param key - name of the virtual property
+   * @returns created virtual property
+   */
   virtual(key: string): VirtualType<RawDocType> {
     if (this.tree[key]) {
       throw new Error('Creating virtual for the existing key');
@@ -350,6 +402,25 @@ export class Schema<
     return virtualProp;
   }
 
+  /**
+   * Adds an instance method to the schema
+   * 
+   * @example
+   * ```ts
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   * 
+   * userSchema.method('getFullName', function() {
+   *  return `${this.firstName} ${this.lastName}`;
+   * });
+   * ```
+   * 
+   * @param name - name of the method
+   * @param func - function implementation of the method
+   * @returns schema instance for chaining
+   */
   method<K extends keyof TInstanceMethods>(
     name: K,
     func: InjectFunctionContext<
@@ -361,6 +432,28 @@ export class Schema<
     return this;
   }
 
+  /**
+   * Adds a static method to the schema
+   * 
+   * @example
+   * ```ts
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   * 
+   * userSchema.static('getUsers', function() {
+   *  return this.find({});
+   * });
+   * 
+   * const User = new Model('User', userSchema);
+   * User.getUsers().then(users => console.log(users));
+   * ```
+   * 
+   * @param name - name of the method
+   * @param func - function implementation of the method
+   * @returns schema instance for chaining
+   */
   static<K extends keyof TStaticMethods>(
     name: K,
     func: InjectFunctionContext<
@@ -372,6 +465,25 @@ export class Schema<
     return this;
   }
 
+  /**
+   * Adds a pre middleware for the given event(s)
+   * 
+   * @example
+   * ```ts
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   * 
+   * userSchema.pre('save', function() {
+   *  console.log(this.firstName + ' ' + this.lastName, 'User is being saved');
+   * });
+   * ```
+   * 
+   * @param name - name of the event(s) to add the middleware for, can be a string, array of strings or regex
+   * @param func - middleware function
+   * @returns schema instance for chaining
+   */
   pre<E extends MiddlewareKeys | RegExp | (MiddlewareKeys | RegExp)[]>(
     name: E,
     fn: MiddlewareFn<FindMiddlewareContext<E, HydratedDoc>>
@@ -391,6 +503,25 @@ export class Schema<
     return this;
   }
 
+  /**
+   * Adds a post middleware for the given event(s)
+   * 
+   * @example
+   * ```ts
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   * 
+   * userSchema.post('save', function() {
+   *  console.log(this.firstName + ' ' + this.lastName, 'User has been saved');
+   * });
+   * ```
+   * 
+   * @param name - name of the event(s) to add the middleware for, can be a string, array of strings or regex
+   * @param func - middleware function
+   * @returns schema instance for chaining
+   */
   post<E extends MiddlewareKeys | RegExp | (MiddlewareKeys | RegExp)[]>(
     name: E,
     fn: MiddlewareFn<FindMiddlewareContext<E, HydratedDoc>>
@@ -419,6 +550,31 @@ export class Schema<
     // empty handler, top level model will add custom logic
   }
 
+  /**
+   * Adds a plugin to the schema, plugin will not be applied until the applyPlugins method is called.
+   * 
+   * @example
+   * ```ts
+   * const pluginFn = (schema, options) => {
+   *  // plugin implementation
+   * }
+   * 
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   * 
+   * userSchema.plugin(pluginFn, { option1: 'value1' });
+   * ```
+   * 
+   * @remarks
+   * applyPlugins method will be called internally by the top level model when the model is initialized, 
+   * so there is no need to call it manually in most cases.
+   * 
+   * @param fn - plugin function to apply to the schema
+   * @param opt - options to pass to the plugin function
+   * @returns schema instance for chaining
+   */
   plugin(
     fn: PluginFn<
       RawDocType,
@@ -430,31 +586,110 @@ export class Schema<
     opt?: any
   ) {
     this.plugins.push({ fn, opt });
+    return this;
   }
 
+  /**
+   * Applies all the added plugins to the schema, should be called after adding all plugins and before using the schema to create a model.
+   * This method is called internally by the top level model when the model is initialized, so there is no need to call it manually in most cases.
+   *
+   * @remarks 
+   * Calling this method multiple times will re-apply all plugins, 
+   * so it should be used with caution.
+   */
   applyPlugins() {
     this.plugins.forEach(({ fn, opt }) => {
       fn(this, opt);
     });
   }
 
+  /**
+   * Enables broadcasting for the given event, when the event is emitted, the payload prepared by the prepare function 
+   * will be sent to the middleware registered with the `broadcastHook` method, in the other tabs or windows,
+   * which can be used to implement real-time features.
+   * 
+   * @remarks
+   * The same tab which emitted the event will not receive the broadcast.
+   * 
+   * @example
+   * ```ts
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   * 
+   * userSchema.enableBroadcastFor('save', {
+   *  type: 'post',
+   *  prepare: (payload) => {
+   *    return JSON.stringify(payload);
+   *  }
+   * });
+   * ```
+   * @param event - the event for which to enable broadcasting
+   * @param data - the broadcast enabled event options
+   * @returns schema instance for chaining
+   */
   enableBroadcastFor(
     event: MiddlewareKeys,
     data: BroadcastEnabledEventsOptions
   ) {
     this.broadcastEnabledEvents[event] = data;
+    return this;
   }
 
+  /**
+   * Adds a middleware to be executed when a broadcast is received for the events enabled for broadcasting, 
+   * can be used to implement real-time features in the application.
+   * 
+   * @example
+   * ```ts
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   * 
+   * userSchema.enableBroadcastFor('save', {
+   *  // options
+   * });
+   * 
+   * userSchema.broadcastHook((payload) => {
+   *  console.log('Received broadcast with payload:', payload);
+   * });
+   * ```
+   * 
+   * @remarks
+   * This middleware will be executed for all the events that are enabled for broadcasting, using the `enableBroadcastFor` method, 
+   * so the payload should be checked in the middleware to handle different events accordingly.
+   * 
+   * @param fn - middleware function to execute when a broadcast is received
+   * @returns schema instance for chaining
+   */
   broadcastHook(
     fn: MiddlewareFn<IModel<RawDocType, TInstanceMethods>, MessageEvent<any>>
   ) {
     this.broadcastMiddleware.hook('broadcast', fn);
+    return this
   }
 
+  /**
+   * Executes the broadcast middlewares for the given context, should be called by the top level model when a broadcast is received.
+   * 
+   * @param ctx - context to pass to the broadcast middlewares
+   * @param error - error to pass to the broadcast middlewares, if any
+   * @param result - result to pass to the broadcast middlewares, if any
+   * @param args - additional arguments to pass to the broadcast middlewares
+   * @returns schema instance for chaining
+   */
   execBroadcastHooks(ctx: any, error?: any, result?: any, ...args: any[]) {
     this.broadcastMiddleware.exec('broadcast', ctx, error, result, ...args);
+    return this;
   }
 
+  /**
+   * Iterates over the schema tree entries, useful for recursive operations on the schema tree
+   * 
+   * @param callbackfn - function to execute for each entry in the schema tree
+   */
   treeEntries(
     callbackfn: (
       value: [string, BaseSchema],
