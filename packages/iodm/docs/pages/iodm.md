@@ -39,6 +39,17 @@ AbstractModelClass is an abstract class that serves as the base for all models i
 </td></tr>
 <tr><td>
 
+[Iodm](./iodm.iodm.md)
+
+
+</td><td>
+
+Iodm is the main class of the package. It is used to create models and apply plugins.
+
+
+</td></tr>
+<tr><td>
+
 [Schema](./iodm.schema.md)
 
 
@@ -70,6 +81,8 @@ Description
 
 </td><td>
 
+Configures the IndexedDB database to be used by the models. This function should be called before using any models to ensure that the database is properly set up.
+
 
 </td></tr>
 </tbody></table>
@@ -90,6 +103,15 @@ Description
 <tbody><tr><td>
 
 [BroadcastEnabledEventsOptions](./iodm.broadcastenabledeventsoptions.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[ConfigureIndexedDBProps](./iodm.configureindexeddbprops.md)
 
 
 </td><td>
@@ -180,6 +202,8 @@ Description
 
 
 </td><td>
+
+Instance of Iodm class. This is the default export of the package and can be used to create models and apply plugins.
 
 
 </td></tr>

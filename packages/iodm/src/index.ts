@@ -35,8 +35,9 @@ export type {
     ModelOptions,
     ModelSaveOptions,
 } from './model/types';
+export type { ConfigureIndexedDBProps } from './configure';
 
-export { default } from './iodm';
+export { default, Iodm } from './iodm';
 export { configureIDB } from './configure';
 export { AbstractModel, AbstractModelClass } from './model/index';
 export { default as CustomMiddlewareExecutor } from './schema/custom-middleware-executor';

@@ -4,6 +4,8 @@
 
 ## configureIDB() function
 
+Configures the IndexedDB database to be used by the models. This function should be called before using any models to ensure that the database is properly set up.
+
 **Signature:**
 
 ```typescript
@@ -35,10 +37,12 @@ config
 
 </td><td>
 
-ConfigureIndexedDBProps
+[ConfigureIndexedDBProps](./iodm.configureindexeddbprops.md)
 
 
 </td><td>
+
+The configuration object for setting up the IndexedDB database. It includes the name and version of the database, the models to be used, and optional callbacks for handling the upgrade process.
 
 
 </td></tr>
@@ -47,4 +51,52 @@ ConfigureIndexedDBProps
 **Returns:**
 
 Promise&lt;IDBDatabase&gt;
+
+A promise that resolves to the configured IDBDatabase instance once the database is successfully opened and configured.
+
+## Example 1
+
+
+```ts
+import { createRoot } from 'react-dom/client';
+import { configureIDB } from 'iodm';
+import UserModel from './models/UserModel';
+import App from './App';
+
+const config = {
+  db: 'MyDB',
+  version: 1,
+  models: [UserModel],
+};
+
+configureIDB(config).then((db) => {
+  createRoot(document.getElementById('app')!).render(<App />);
+}).catch((error) => {
+  createRoot(document.getElementById('app')!).render(<div>Error configuring database</div>);
+});
+```
+
+## Example 2
+
+
+```ts
+// Using the returned promise directly in a React component with Suspense
+import { use } from 'react';
+import { configureIDB } from 'iodm';
+import UserModel from './models/UserModel';
+
+const config = {
+  db: 'MyDB',
+  version: 1,
+  models: [UserModel],
+};
+
+const dbPromise = configureIDB(config);
+
+function App() {
+   use(dbPromise);
+
+  // rest of the app
+}
+```
 

@@ -4,8 +4,26 @@
 
 ## \_default variable
 
+Instance of Iodm class. This is the default export of the package and can be used to create models and apply plugins.
+
 **Signature:**
 
 ```typescript
 _default: Iodm
 ```
+
+## Example
+
+
+```ts
+import iodm from 'iodm';
+
+const userSchema = new Schema({
+  name: String,
+  age: Number,
+});
+
+const UserModel = iodm.model('User', userSchema);
+UserModel.find({ name: 'John' }).then(users => console.log(users));
+```
+
