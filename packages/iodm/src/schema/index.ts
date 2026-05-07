@@ -35,6 +35,29 @@ import { timestampsPlugin } from '../plugins/timestamps-plugin.ts';
 
 /**
  * Schema class represents the structure of the documents in a collection, defining the types of each field, validation rules, default values, and other properties.
+ * 
+ * @example
+ * ```ts
+ * const userSchema = new Schema({
+ *  name: { type: String, required: true },
+ *  age: { type: Number, min: 0 },
+ *  email: { type: String, match: /.+\@.+\..+/ },
+ *  role: { type: String, enum: ['user', 'admin'] },
+ * });
+ * 
+ * @remarks
+ * Try to avoid creating schemas with reserved properties names, such as
+ * 
+ * - _isNew
+ * - _documentMiddleware
+ * - save
+ * - validate
+ * - toJSON
+ * - getInstanceSchema
+ * - getInstanceDB
+ * - getInstanceStoreName
+ * - createInstanceTransaction
+ * - _getSchemaMethodOptions
  */
 
 export class Schema<

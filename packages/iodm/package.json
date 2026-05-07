@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "iodm",
-  "version": "0.0.4",
+  "version": "1.0.0-rc.0",
   "description": "Object Data Modeling library for IndexedDB",
   "main": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,8 @@
   ],
   "keywords": [
     "odm",
-    "indexeddb"
+    "indexeddb",
+    "browser"
   ],
   "author": "Santhoshkumar",
   "license": "MIT",
@@ -29,7 +30,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "iodm-query": "0.0.7"
+    "iodm-query": "1.0.0-rc.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

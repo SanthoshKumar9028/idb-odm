@@ -13,6 +13,16 @@ export declare class Schema<RawDocType = any, TInstanceMethods = {}, TVirtualPro
 ```
 **Extends:** BaseSchema
 
+## Remarks
+
+Try to avoid creating schemas with reserved properties names, such as
+
+- \_isNew - \_documentMiddleware - save - validate - toJSON - getInstanceSchema - getInstanceDB - getInstanceStoreName - createInstanceTransaction - \_getSchemaMethodOptions
+
+## Example
+
+\`\`\`<!-- -->ts const userSchema = new Schema(<!-- -->{ name: { type: String, required: true }<!-- -->, age: { type: Number, min: 0 }<!-- -->, email: { type: String, match: /.+<!-- -->@<!-- -->.+<!-- -->.<!-- -->.+/ }<!-- -->, role: { type: String, enum: \['user', 'admin'\] }<!-- -->, }<!-- -->);
+
 ## Constructors
 
 <table><thead><tr><th>

@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
-      - run: npm ci
-      - run: npm run build
-      - run: npm publish --provenance --access public --workspace=iodm
+      - run: npm ci --workspace=iodm-query
+      - run: npm run build --workspace=iodm-query
+      - run: npm publish --tag latest --provenance --access public --workspace=iodm
 
