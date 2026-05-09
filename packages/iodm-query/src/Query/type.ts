@@ -1,6 +1,5 @@
 import type {
   SearchKey,
-  QueryExecutorCommonOptions,
   QueryExecutorInsertOptions,
   QueryExecutorReplaceOneOptions,
   QueryExecutorUpdateManyOptions,
@@ -24,7 +23,7 @@ export interface QueryOptionsWithTransaction {
   transaction?: IDBTransaction;
 }
 
-export type QueryExecutorCommonKeys = keyof QueryExecutorCommonOptions;
+export type QueryExecutorCommonKeys = 'idb' | 'storeName' | 'transaction';
 
 export type QueryFunctionOptions<Options> = Prettify<
   QueryOptionsWithTransaction & Omit<Options, QueryExecutorCommonKeys>
@@ -68,7 +67,7 @@ export type QueryFindByIdAndUpdateOptions =
 export type QueryCountDocumentsOptions =
   QueryFunctionOptions<QueryExecutorCountDocumentsOptions>;
 
-export type QueryOptions<DocumentType = unknown> =
+export type QueryOptions<DocType = unknown> =
   | {
       type: 'openCursor';
       query: QueryRootFilter;
@@ -86,29 +85,29 @@ export type QueryOptions<DocumentType = unknown> =
     }
   | {
       type: 'insertOne';
-      insertList: DocumentType[];
+      insertList: DocType[];
       execOptions: QueryInsertOneOptions;
     }
   | {
       type: 'insertMany';
-      insertList: DocumentType[];
+      insertList: DocType[];
       execOptions: QueryInsertManyOptions;
     }
   | {
       type: 'replaceOne';
-      payload: DocumentType;
+      payload: DocType;
       execOptions: QueryReplaceOneOptions;
     }
   | {
       type: 'updateMany';
       query: QueryRootFilter;
-      payload: QueryExecutorUpdateManyUpdater<DocumentType>;
+      payload: QueryExecutorUpdateManyUpdater<DocType>;
       execOptions: QueryUpdateManyOptions;
     }
   | {
       type: 'updateOne';
       query: QueryRootFilter;
-      payload: QueryExecutorUpdateManyUpdater<DocumentType>;
+      payload: QueryExecutorUpdateManyUpdater<DocType>;
       execOptions: QueryUpdateOneOptions;
     }
   | {
@@ -129,7 +128,7 @@ export type QueryOptions<DocumentType = unknown> =
   | {
       type: 'findByIdAndUpdate';
       id: IDBValidKey;
-      payload: QueryExecutorUpdateManyUpdater<DocumentType>;
+      payload: QueryExecutorUpdateManyUpdater<DocType>;
       execOptions: QueryFindByIdAndUpdateOptions;
     }
   | {
@@ -138,62 +137,62 @@ export type QueryOptions<DocumentType = unknown> =
       execOptions: QueryCountDocumentsOptions;
     };
 
-export interface IBaseQuery<ResultType, DocumentType> {
+export interface IBaseQuery<ResultType, DocType> {
   openCursor(
     query: QueryRootFilter,
     options: QueryOpenCursorOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   find(
     query: QueryRootFilter,
     options?: QueryFindOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   findById(
     id: SearchKey,
     options?: QueryFindByIdOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   insertOne(
     payload: unknown,
     options?: QueryInsertOneOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   insertMany(
     payload: unknown[],
     options?: QueryInsertManyOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   replaceOne(
-    payload: DocumentType,
+    payload: DocType,
     options: QueryReplaceOneOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   updateMany(
     query: QueryRootFilter,
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    payload: QueryExecutorUpdateManyUpdater<DocType>,
     options: QueryUpdateManyOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   updateOne(
     query: QueryRootFilter,
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    payload: QueryExecutorUpdateManyUpdater<DocType>,
     options: QueryUpdateOneOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   deleteMany(
     query: QueryRootFilter,
     options: QueryDeleteManyOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   deleteOne(
     query: QueryRootFilter,
     options: QueryDeleteOneOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   findByIdAndDelete(
     id: IDBValidKey,
     options: QueryFindByIdAndDeleteOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   findByIdAndUpdate(
     id: IDBValidKey,
-    payload: (param: DocumentType) => DocumentType,
+    payload: (param: DocType) => DocType,
     options: QueryFindByIdAndUpdateOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
   countDocuments(
     query: QueryRootFilter,
     options: QueryCountDocumentsOptions
-  ): IBaseQuery<ResultType, DocumentType>;
+  ): IBaseQuery<ResultType, DocType>;
 }
 
 export type QueryKeys = keyof IBaseQuery<unknown, unknown> & {};
@@ -202,18 +201,18 @@ export type QueryInternalKeys = keyof {
   [K in QueryKeys]: unknown;
 };
 
-export interface IQuery<ResultType, DocumentType> extends IBaseQuery<
+export interface IQuery<ResultType, DocType> extends IBaseQuery<
   ResultType,
-  DocumentType
+  DocType
 > {
   idb: IDBDatabase;
   storeName: string;
-  options: QueryOptions<DocumentType>;
+  options: QueryOptions<DocType>;
   middleware: MiddlewareExecutor;
-  populate(path: string): IQuery<ResultType, DocumentType>;
-  index(idx: string): IQuery<ResultType, DocumentType>;
-  pre(name: string, fn: MiddlewareFn): IQuery<ResultType, DocumentType>;
-  post(name: string, fn: MiddlewareFn): IQuery<ResultType, DocumentType>;
+  populate(path: string): IQuery<ResultType, DocType>;
+  index(idx: string): IQuery<ResultType, DocType>;
+  pre(name: string, fn: MiddlewareFn): IQuery<ResultType, DocType>;
+  post(name: string, fn: MiddlewareFn): IQuery<ResultType, DocType>;
   exec(): Promise<ResultType>;
   then(
     onFulfilled?: (value: ResultType) => any | Promise<any>,

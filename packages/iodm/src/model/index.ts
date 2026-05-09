@@ -13,7 +13,7 @@ import type {
   QueryDeleteManyOptions,
   QueryCountDocumentsOptions,
   QueryExecutorUpdateManyUpdater,
-  QueryRootFilter
+  QueryRootFilter,
 } from 'iodm-query';
 import type { Schema } from '../schema';
 import type {
@@ -36,9 +36,9 @@ import { NumberSchema } from '../schema/primitive/number';
 
 /**
  * AbstractModelClass is an abstract class that serves as the base for all models in the ODM.
- * It should not be instantiated directly. Instead, use `iodm.model` to create a model class that extends AbstractModelClass, 
+ * It should not be instantiated directly. Instead, use `iodm.model` to create a model class that extends AbstractModelClass,
  * and then instantiate that model class to create instances of the model.
- * 
+ *
  */
 class AbstractModelClass implements ModelInstance {
   private _isNew: boolean;
@@ -46,7 +46,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Creates an instance of AbstractModel.
-   * 
+   *
    * @param defaultValues - An object containing default values for the instance properties.
    * @param options - Optional settings for the instance creation.
    * @param options.isNew - A boolean indicating whether the instance is new (default: true).
@@ -64,13 +64,13 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Saves the current instance to the database. If the instance is new, it will be inserted; otherwise, it will be replaced.
-   * 
+   *
    * @example
    * ```ts
    * const instance = new UserModel({ name: 'John' });
    * await instance.save();
    * ```
-   * 
+   *
    * @param options - Optional settings for the save operation.
    * @returns A promise that resolves with the result of the save operation.
    * @throws Will throw an error if validation fails or if there is an issue during the save process.
@@ -138,7 +138,7 @@ class AbstractModelClass implements ModelInstance {
       if (!(err instanceof Event && err.type === 'error')) {
         try {
           transaction.abort();
-        } catch { }
+        } catch {}
       }
       this._documentMiddleware.execPost('save', this, err);
       throw err;
@@ -147,7 +147,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Validates the current instance against its schema.
-   * 
+   *
    * @returns A boolean indicating whether the instance is valid.
    * @throws Will throw an error if validation fails.
    */
@@ -160,7 +160,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Converts the instance to a plain JavaScript object, applying schema casting.
-   * 
+   *
    * @returns A plain JavaScript object representing the instance.
    */
   toJSON() {
@@ -185,7 +185,7 @@ class AbstractModelClass implements ModelInstance {
   /**
    * Creates an instance of IDBTransaction for the current instance.
    * The transaction will include the storeName for the current instance and all referenced storeNames defined in the schema.
-   * 
+   *
    * @param mode - The mode for the transaction (default: 'readwrite').
    * @returns An IDBTransaction instance.
    */
@@ -223,7 +223,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Retrieves the schema associated with the model or instance.
-   * 
+   *
    * @param obj - An optional instance of the model. If provided, the schema will be retrieved based on the instance's constructor; otherwise, it will be retrieved based on the model itself.
    * @returns The schema associated with the model or instance.
    * @throws Will throw an error if the schema is not defined.
@@ -240,7 +240,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Retrieves the database instance associated with the model or instance.
-   * 
+   *
    * @param obj - An optional instance of the model. If provided, the database will be retrieved based on the instance's constructor; otherwise, it will be retrieved based on the model itself.
    * @returns The database instance associated with the model or instance.
    * @throws Will throw an error if the database is not defined.
@@ -256,7 +256,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Sets the database instance for the model.
-   * 
+   *
    * @param idb - The IDBDatabase instance to be set for the model.
    */
   static setDB(idb: IDBDatabase) {
@@ -265,7 +265,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Retrieves the store name associated with the model or instance.
-   * 
+   *
    * @param obj - An optional instance of the model. If provided, the store name will be retrieved based on the instance's constructor; otherwise, it will be retrieved based on the model itself.
    * @returns The store name associated with the model or instance.
    * @throws Will throw an error if the store name is not defined.
@@ -344,7 +344,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Creates a transaction for the model.
-   * 
+   *
    * @param mode - The mode for the transaction.
    * @returns The transaction instance.
    */
@@ -366,10 +366,10 @@ class AbstractModelClass implements ModelInstance {
    *   console.log(doc);
    * }
    * ```
-   * 
+   *
    * @remarks
-   * Any opeation that takes time in between the iteration of the cursor will result in an error, because the transaction of the cursor will be closed. 
-   * Be cautious when using the cursor to not do any long operation in between the iteration, 
+   * Any opeation that takes time in between the iteration of the cursor will result in an error, because the transaction of the cursor will be closed.
+   * Be cautious when using the cursor to not do any long operation in between the iteration,
    * if you need to do it, consider using `find` method instead of `openCursor` and iterate the result array.
    *
    * @param query - Search query object
@@ -392,13 +392,13 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Finds documents in the database that match the specified filter and options.
-   * 
+   *
    * @example
    * ```ts
    * const users = await UserModel.find({ age: { $gt: 18 } });
    * console.log(users);
    * ```
-   * 
+   *
    * @param filter - An optional filter object to specify the search criteria.
    * @param options - Optional settings for the find operation.
    * @returns A promise that resolves with an array of documents that match the filter criteria.
@@ -413,13 +413,13 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Finds a single document in the database by its ID.
-   * 
+   *
    * @example
    * ```ts
    * const user = await UserModel.findById('123');
    * console.log(user);
    * ```
-   * 
+   *
    * @param id - The ID of the document to find.
    * @param options - Optional settings for the findById operation.
    * @returns A promise that resolves with the document that matches the specified ID, or `undefined` if no document is found.
@@ -454,8 +454,8 @@ class AbstractModelClass implements ModelInstance {
   }
 
   /**
-   * Inserts multiple documents into the database. 
-   * 
+   * Inserts multiple documents into the database.
+   *
    * @example
    * ```ts
    * const users = await UserModel.insertMany([
@@ -464,10 +464,10 @@ class AbstractModelClass implements ModelInstance {
    * ]);
    * console.log(users);
    * ```
-   * 
+   *
    * @remarks
    * Nested schema values will not be saved to its corresponding object stores.
-   * 
+   *
    * @param docs - An array of documents to be inserted into the database.
    * @param options - Optional settings for the insertMany operation.
    * @returns A promise that resolves with an array of results for each document insertion. Each result will either be the inserted document (including any default values and generated keys) or an error if the insertion failed for that document.
@@ -497,7 +497,7 @@ class AbstractModelClass implements ModelInstance {
     if (options?.throwOnError && validationErrors.length) {
       try {
         transaction.abort();
-      } catch { }
+      } catch {}
 
       throw docs.map((_, i) => {
         return validationErrorsMap.get(i);
@@ -527,17 +527,17 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Replaces a single document in the database. The document to be replaced will be determined based on the unique key defined in the schema.
-   * 
+   *
    * @example
    * ```ts
    * const user = await UserModel.replaceOne({ _id: '123', name: 'John', age: 30 });
    * console.log(user);
    * ```
-   * 
+   *
    * @remarks
    * - Nested schema values will be saved to their corresponding object stores.
    * - By default the keyPath will be `_id`, but it can be configured in the schema options.
-   * 
+   *
    * @param doc - The document to be replaced in the database. It must include the unique key defined in the schema to identify the document to be replaced.
    * @param options - Optional settings for the replaceOne operation.
    * @returns A promise that resolves with the replaced document, including any default values and generated keys.
@@ -549,7 +549,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Updates multiple documents in the database that match the specified filter with the provided update payload.
-   * 
+   *
    * @example
    * ```ts
    * const result = await UserModel.updateMany(
@@ -558,11 +558,11 @@ class AbstractModelClass implements ModelInstance {
    * );
    * console.log(result);
    * ```
-   * 
+   *
    * @remarks
    * When using updateMany, the values will not be validated against the schema.
    * If the document need to validate, use `schema.validate` method before calling updateMany.
-   * 
+   *
    * @param filter - The filter object to specify the search criteria for the documents to be updated.
    * @param payload - The update payload specifying the fields to be updated and their new values or a update function.
    * @param options - Optional settings for the updateMany operation.
@@ -570,7 +570,7 @@ class AbstractModelClass implements ModelInstance {
    */
   static updateMany(
     filter: QueryRootFilter,
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    payload: QueryExecutorUpdateManyUpdater<any>,
     options?: QueryUpdateManyOptions
   ) {
     return new this.Query(this.getDB(), this.getStoreName()).updateMany(
@@ -585,7 +585,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Updates a single document in the database that matches the specified filter with the provided update payload.
-   * 
+   *
    * @example
    * ```ts
    * const result = await UserModel.updateOne(
@@ -594,11 +594,11 @@ class AbstractModelClass implements ModelInstance {
    * );
    * console.log(result);
    * ```
-   * 
+   *
    * @remarks
    * When using updateOne, the values will not be validated against the schema.
    * If the document need to validate, use `schema.validate` method before calling updateOne.
-   * 
+   *
    * @param filter - The filter object to specify the search criteria for the document to be updated.
    * @param payload - The update payload specifying the fields to be updated and their new values or a update function.
    * @param options - Optional settings for the updateOne operation.
@@ -606,7 +606,7 @@ class AbstractModelClass implements ModelInstance {
    */
   static updateOne(
     filter: QueryRootFilter,
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    payload: QueryExecutorUpdateManyUpdater<any>,
     options?: QueryUpdateOneOptions
   ) {
     return new this.Query(this.getDB(), this.getStoreName()).updateOne(
@@ -621,13 +621,13 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Deletes multiple documents from the database that match the specified filter.
-   * 
+   *
    * @example
    * ```ts
    * const result = await UserModel.deleteMany({ age: { $lt: 18 } });
    * console.log(result);
    * ```
-   * 
+   *
    * @param filter - An optional filter object to specify the search criteria for the documents to be deleted. If no filter is provided, all documents in the store will be deleted.
    * @param options - Optional settings for the deleteMany operation.
    * @returns A promise that resolves with the result of the delete operation, including information about the number of documents deleted.
@@ -647,13 +647,13 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Deletes a single document from the database that matches the specified filter.
-   * 
+   *
    * @example
    * ```ts
    * const result = await UserModel.deleteOne({ _id: '123' });
    * console.log(result);
    * ```
-   * 
+   *
    * @param filter - An optional filter object to specify the search criteria for the document to be deleted. If no filter is provided, no document will be deleted.
    * @param options - Optional settings for the deleteOne operation.
    * @returns A promise that resolves with the result of the delete operation, including information about the number of documents deleted.
@@ -667,13 +667,13 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Finds a single document by its ID and deletes it from the database.
-   * 
+   *
    * @example
    * ```ts
    * const user = await UserModel.findByIdAndDelete('123');
    * console.log(user);
    * ```
-   * 
+   *
    * @param id - The ID of the document to find and delete.
    * @param options - Optional settings for the findByIdAndDelete operation.
    * @returns A promise that resolves with the document that was deleted, or `undefined` if no document was found with the specified ID.
@@ -694,7 +694,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Finds a single document by its ID and updates it with the provided update payload.
-   * 
+   *
    * @example
    * ```ts
    * const user = await UserModel.findByIdAndUpdate(
@@ -703,10 +703,10 @@ class AbstractModelClass implements ModelInstance {
    * );
    * console.log(user);
    * ```
-   * 
+   *
    * @remarks
    * When using findByIdAndUpdate, the values will not be validated against the schema.
-   * 
+   *
    * @param id - The ID of the document to find and update.
    * @param payload - The update payload specifying the fields to be updated and their new values or a update function.
    * @param options - Optional settings for the findByIdAndUpdate operation.
@@ -730,13 +730,13 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Counts the number of documents in the database that match the specified filter.
-   * 
+   *
    * @example
    * ```ts
    * const count = await UserModel.countDocuments({ age: { $gt: 18 } });
    * console.log(count);
    * ```
-   * 
+   *
    * @param filter - An optional filter object to specify the search criteria for the documents to be counted. If no filter is provided, all documents in the store will be counted.
    * @param options - Optional settings for the countDocuments operation.
    * @returns A promise that resolves with the number of documents that match the specified filter criteria.
@@ -788,7 +788,7 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Handles incoming broadcast messages and executes the corresponding broadcast hooks defined in the schema.
-   * 
+   *
    * @param ev - The message event containing the broadcast message data.
    */
   static onBroadCastMessage(ev: MessageEvent<any>) {

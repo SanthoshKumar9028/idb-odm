@@ -87,39 +87,115 @@ export const evalFilter = (filter: QueryRootFilter, doc: any) => {
   return true;
 };
 
-export const applyUpdates = (doc: any, updateOptions: UpdaterOptions) => {
-  if (typeof doc !== 'object' || !doc) return doc;
+const recursivelyApplySet = (doc: any, setObj: UpdaterOptions['$set']) => {
+  for (const key in setObj) {
+    if (key.includes('.')) {
+      const [firstKey, ...restKeys] = key.split('.');
 
-  if (updateOptions.$set) {
-    for (const key in updateOptions.$set) {
-      doc[key] = updateOptions.$set[key];
+      if (!doc[firstKey]) doc[firstKey] = {};
+      recursivelyApplySet(doc[firstKey], { [restKeys.join('.')]: setObj[key] });
+    } else {
+      doc[key] = setObj[key];
     }
   }
+};
 
-  if (updateOptions.$unset) {
-    for (const key in updateOptions.$unset) {
+const recursivelyApplyUnset = (
+  doc: any,
+  unsetObj: UpdaterOptions['$unset']
+) => {
+  for (const key in unsetObj) {
+    if (key.includes('.')) {
+      const [firstKey, ...restKeys] = key.split('.');
+
+      if (doc[firstKey]) {
+        recursivelyApplyUnset(doc[firstKey], { [restKeys.join('.')]: '' });
+      }
+    } else {
       delete doc[key];
     }
   }
+};
 
-  if (updateOptions.$push) {
-    for (const key in updateOptions.$push) {
+const recursivelyApplyPush = (doc: any, pushObj: UpdaterOptions['$push']) => {
+  for (const key in pushObj) {
+    if (key.includes('.')) {
+      const [firstKey, ...restKeys] = key.split('.');
+
+      if (!doc[firstKey]) doc[firstKey] = {};
+
+      recursivelyApplyPush(doc[firstKey], {
+        [restKeys.join('.')]: pushObj[key],
+      });
+    } else {
       if (Array.isArray(doc[key])) {
-        doc[key].push(updateOptions.$push[key]);
+        doc[key].push(pushObj[key]);
       }
     }
   }
+};
 
-  if (updateOptions.$pop) {
-    for (const key in updateOptions.$pop) {
+const recursivelyApplyPop = (doc: any, popObj: UpdaterOptions['$pop']) => {
+  for (const key in popObj) {
+    if (key.includes('.')) {
+      const [firstKey, ...restKeys] = key.split('.');
+
+      if (!doc[firstKey]) doc[firstKey] = {};
+
+      recursivelyApplyPop(doc[firstKey], {
+        [restKeys.join('.')]: popObj[key],
+      });
+    } else {
       if (Array.isArray(doc[key])) {
-        if (updateOptions.$pop[key] == 1) {
+        if (popObj[key] == 1) {
           doc[key].pop();
         } else {
           doc[key].shift();
         }
       }
     }
+  }
+};
+
+const recursivelyApplyInc = (doc: any, incObj: UpdaterOptions['$inc']) => {
+  for (const key in incObj) {
+    if (key.includes('.')) {
+      const [firstKey, ...restKeys] = key.split('.');
+
+      if (doc[firstKey]) {
+        recursivelyApplyInc(doc[firstKey], {
+          [restKeys.join('.')]: incObj[key],
+        });
+      }
+    } else {
+      if (typeof doc[key] === 'number') {
+        doc[key] += incObj[key];
+      }
+    }
+  }
+};
+
+export const applyUpdates = (doc: any, updateOptions: UpdaterOptions) => {
+  if (typeof doc !== 'object' || !doc) return doc;
+
+  if (updateOptions.$set) {
+    recursivelyApplySet(doc, updateOptions.$set);
+  }
+
+  if (updateOptions.$inc) {
+    recursivelyApplyInc(doc, updateOptions.$inc);
+  }
+
+  if (updateOptions.$unset) {
+    recursivelyApplyUnset(doc, updateOptions.$unset);
+  }
+
+  if (updateOptions.$push) {
+    recursivelyApplyPush(doc, updateOptions.$push);
+  }
+
+  if (updateOptions.$pop) {
+    recursivelyApplyPop(doc, updateOptions.$pop);
   }
 
   return doc;

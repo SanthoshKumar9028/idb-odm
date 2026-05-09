@@ -549,11 +549,42 @@ describe('BaseQueryExecutor', () => {
 
       const updateRes = await queryExecutor.updateMany<any, any>(
         { $key: '123' },
-        { $set: { desc: 'test' } },
+        { $set: { desc: 'test', 'nested.key': 1 } },
         { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
       );
 
-      expect(mockUpdate).toHaveBeenCalledWith({ test: '123', desc: 'test' });
+      expect(mockUpdate).toHaveBeenCalledWith({
+        test: '123',
+        desc: 'test',
+        nested: { key: 1 },
+      });
+      expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
+    });
+
+    it('should update with $set operator for array', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () =>
+            event.onsuccess({
+              target: {
+                result: { value: { test: [{ one: 1 }] }, update: mockUpdate },
+              },
+            }),
+          0
+        );
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<any, any>(
+        { $key: '123' },
+        { $set: { 'test.0.two': 2, 'test.1.one': 1 } },
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledWith({
+        test: [{ one: 1, two: 2 }, { one: 1 }],
+      });
       expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
     });
 
@@ -564,7 +595,10 @@ describe('BaseQueryExecutor', () => {
           () =>
             event.onsuccess({
               target: {
-                result: { value: { test: '123' }, update: mockUpdate },
+                result: {
+                  value: { test: '123', desc: 'desc', nested: { key: 'test' } },
+                  update: mockUpdate,
+                },
               },
             }),
           0
@@ -574,11 +608,41 @@ describe('BaseQueryExecutor', () => {
 
       const updateRes = await queryExecutor.updateMany<any, any>(
         { $key: '123' },
-        { $unset: { desc: '' } },
+        { $unset: { desc: '', 'nested.key': '' } },
         { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
       );
 
-      expect(mockUpdate).toHaveBeenCalledWith({ test: '123' });
+      expect(mockUpdate).toHaveBeenCalledWith({ test: '123', nested: {} });
+      expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
+    });
+
+    it('should update with $unset operator array', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () =>
+            event.onsuccess({
+              target: {
+                result: {
+                  value: { test: [{ one: 1, two: 2 }, { one: 1 }] },
+                  update: mockUpdate,
+                },
+              },
+            }),
+          0
+        );
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<any, any>(
+        { $key: '123' },
+        { $unset: { 'test.0': '', 'test.1.one': '' } },
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledWith({
+        test: [undefined, {}],
+      });
       expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
     });
 
@@ -590,7 +654,7 @@ describe('BaseQueryExecutor', () => {
             event.onsuccess({
               target: {
                 result: {
-                  value: { test: '123', skills: [] },
+                  value: { test: '123', skills: [], nested: { key: [] } },
                   update: mockUpdate,
                 },
               },
@@ -602,11 +666,15 @@ describe('BaseQueryExecutor', () => {
 
       const updateRes = await queryExecutor.updateMany<any, any>(
         { $key: '123' },
-        { $push: { skills: 1 } },
+        { $push: { skills: 1, 'nested.key': 1, notfound: 1 } },
         { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
       );
 
-      expect(mockUpdate).toHaveBeenCalledWith({ test: '123', skills: [1] });
+      expect(mockUpdate).toHaveBeenCalledWith({
+        test: '123',
+        skills: [1],
+        nested: { key: [1] },
+      });
       expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
     });
 
@@ -618,7 +686,7 @@ describe('BaseQueryExecutor', () => {
             event.onsuccess({
               target: {
                 result: {
-                  value: { test: '123', skills: [1] },
+                  value: { test: '123', skills: [1], nested: { key: [1] } },
                   update: mockUpdate,
                 },
               },
@@ -630,11 +698,47 @@ describe('BaseQueryExecutor', () => {
 
       const updateRes = await queryExecutor.updateMany<any, any>(
         { $key: '123' },
-        { $pop: { skills: 1 } },
+        { $pop: { skills: 1, 'nested.key': 1, notfound: 1 } },
         { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
       );
 
-      expect(mockUpdate).toHaveBeenCalledWith({ test: '123', skills: [] });
+      expect(mockUpdate).toHaveBeenCalledWith({
+        test: '123',
+        skills: [],
+        nested: { key: [] },
+      });
+      expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
+    });
+
+    it('should update with $inc operator', async () => {
+      mockOpenCursor.mockImplementationOnce(() => {
+        const event = { onsuccess(...params: any[]) {} };
+        setTimeout(
+          () =>
+            event.onsuccess({
+              target: {
+                result: {
+                  value: { name: 'test', amount: 1, nested: { key: 1 } },
+                  update: mockUpdate,
+                },
+              },
+            }),
+          0
+        );
+        return event;
+      });
+
+      const updateRes = await queryExecutor.updateMany<any, any>(
+        { $key: '123' },
+        { $inc: { name: 1, amount: 10, 'nested.key': -1 } },
+        { idb: mockIdb, storeName: 'test', transaction, updateLimit: 1 }
+      );
+
+      expect(mockUpdate).toHaveBeenCalledWith({
+        name: 'test',
+        amount: 11,
+        nested: { key: 0 },
+      });
       expect(updateRes).toEqual({ modifiedCount: 1, matchedCount: 1 });
     });
 

@@ -46,7 +46,6 @@ export type {
   QueryExecutorFindByIdAndUpdateOptions,
   QueryExecutorFindByIdOptions,
   QueryExecutorFindOptions,
-  QueryExecutorIndexOptions,
   QueryExecutorInsertOptions,
   QueryExecutorOpenCursorOptions,
   QueryExecutorReplaceOneOptions,

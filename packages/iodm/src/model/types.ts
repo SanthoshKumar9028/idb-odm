@@ -95,35 +95,35 @@ export interface IModel<
   ): Promise<unknown>;
   updateMany(
     filter: QueryRootFilter,
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    payload: QueryExecutorUpdateManyUpdater<TRawDocType>,
     options?: QueryUpdateManyOptions
-  ): Query<QueryExecutorUpdateManyResponse, DocumentType>;
+  ): Query<QueryExecutorUpdateManyResponse, TRawDocType>;
   updateOne(
     filter: QueryRootFilter,
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    payload: QueryExecutorUpdateManyUpdater<TRawDocType>,
     options?: QueryUpdateOneOptions
-  ): Query<QueryExecutorUpdateManyResponse, DocumentType>;
+  ): Query<QueryExecutorUpdateManyResponse, TRawDocType>;
   deleteMany(
     filter?: QueryRootFilter,
     options?: QueryDeleteManyOptions
-  ): Query<QueryExecutorDeleteManyResponse, DocumentType>;
+  ): Query<QueryExecutorDeleteManyResponse, TRawDocType>;
   deleteOne(
     filter?: QueryRootFilter,
     options?: QueryDeleteOneOptions
-  ): Query<QueryExecutorDeleteManyResponse, DocumentType>;
+  ): Query<QueryExecutorDeleteManyResponse, TRawDocType>;
   findByIdAndDelete(
     id: IDBValidKey,
     options?: QueryFindByIdAndDeleteOptions
-  ): Query<HydratedDoc, DocumentType>;
+  ): Query<HydratedDoc, TRawDocType>;
   findByIdAndUpdate(
     id: IDBValidKey,
     payload: QueryExecutorUpdateManyUpdater<TRawDocType>,
     options?: QueryFindByIdAndUpdateOptions
-  ): Query<HydratedDoc, DocumentType>;
+  ): Query<HydratedDoc, TRawDocType>;
   countDocuments(
     filter?: QueryRootFilter,
     options?: QueryCountDocumentsOptions
-  ): Query<number, DocumentType>;
+  ): Query<number, TRawDocType>;
 }
 
 export interface PostMessage {

@@ -25,13 +25,13 @@ import { MiddlewareExecutor } from '../utils/MiddlewareExecutor';
 
 export abstract class AbstractQuery<
   ResultType = unknown,
-  DocumentType = unknown,
-> implements IQuery<ResultType, DocumentType> {
+  DocType = unknown,
+> implements IQuery<ResultType, DocType> {
   private execCount: number = 0;
   abstract middleware: MiddlewareExecutor;
   idb: IDBDatabase;
   storeName: string;
-  options: QueryOptions<DocumentType>;
+  options: QueryOptions<DocType>;
 
   /**
    *
@@ -197,7 +197,7 @@ export abstract class AbstractQuery<
    * @param options - Query options
    * @returns
    */
-  insertOne(payload: DocumentType, options: QueryInsertOneOptions = {}) {
+  insertOne(payload: DocType, options: QueryInsertOneOptions = {}) {
     this.options = {
       type: 'insertOne',
       insertList: [payload],
@@ -253,7 +253,7 @@ export abstract class AbstractQuery<
    * @param options - Query options
    * @returns
    */
-  insertMany(payload: DocumentType[], options: QueryInsertManyOptions = {}) {
+  insertMany(payload: DocType[], options: QueryInsertManyOptions = {}) {
     this.options = {
       type: 'insertMany',
       insertList: payload,
@@ -298,7 +298,7 @@ export abstract class AbstractQuery<
    * @param options - Query options
    * @returns
    */
-  replaceOne(payload: DocumentType, options: QueryReplaceOneOptions = {}) {
+  replaceOne(payload: DocType, options: QueryReplaceOneOptions = {}) {
     this.options = {
       type: 'replaceOne',
       payload: payload,
@@ -322,15 +322,15 @@ export abstract class AbstractQuery<
       transaction = this.idb.transaction(this.storeName, 'readwrite');
     }
 
-    return QueryExecutorFactory.getInstance().replaceOne<
-      ResultType,
-      DocumentType
-    >(payload, {
-      ...execOptions,
-      idb: this.idb,
-      storeName: this.storeName,
-      transaction,
-    });
+    return QueryExecutorFactory.getInstance().replaceOne<ResultType, DocType>(
+      payload,
+      {
+        ...execOptions,
+        idb: this.idb,
+        storeName: this.storeName,
+        transaction,
+      }
+    );
   }
 
   /**
@@ -349,7 +349,7 @@ export abstract class AbstractQuery<
    */
   updateMany(
     query: QueryRootFilter,
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    payload: QueryExecutorUpdateManyUpdater<DocType>,
     options: QueryUpdateManyOptions = {}
   ) {
     this.options = {
@@ -374,15 +374,16 @@ export abstract class AbstractQuery<
       transaction = this.idb.transaction(this.storeName, 'readwrite');
     }
 
-    return QueryExecutorFactory.getInstance().updateMany<
-      ResultType,
-      DocumentType
-    >(query, payload, {
-      ...execOptions,
-      idb: this.idb,
-      storeName: this.storeName,
-      transaction,
-    });
+    return QueryExecutorFactory.getInstance().updateMany<ResultType, DocType>(
+      query,
+      payload,
+      {
+        ...execOptions,
+        idb: this.idb,
+        storeName: this.storeName,
+        transaction,
+      }
+    );
   }
 
   /**
@@ -401,7 +402,7 @@ export abstract class AbstractQuery<
    */
   updateOne(
     query: QueryRootFilter,
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    payload: QueryExecutorUpdateManyUpdater<DocType>,
     options: QueryUpdateManyOptions = {}
   ) {
     this.options = {
@@ -426,15 +427,16 @@ export abstract class AbstractQuery<
       transaction = this.idb.transaction(this.storeName, 'readwrite');
     }
 
-    return QueryExecutorFactory.getInstance().updateOne<
-      ResultType,
-      DocumentType
-    >(query, payload, {
-      ...execOptions,
-      idb: this.idb,
-      storeName: this.storeName,
-      transaction,
-    });
+    return QueryExecutorFactory.getInstance().updateOne<ResultType, DocType>(
+      query,
+      payload,
+      {
+        ...execOptions,
+        idb: this.idb,
+        storeName: this.storeName,
+        transaction,
+      }
+    );
   }
 
   /**
@@ -603,7 +605,7 @@ export abstract class AbstractQuery<
    */
   findByIdAndUpdate(
     id: IDBValidKey,
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>,
+    payload: QueryExecutorUpdateManyUpdater<DocType>,
     options: QueryFindByIdAndUpdateOptions = {}
   ) {
     this.options = {
@@ -630,7 +632,7 @@ export abstract class AbstractQuery<
 
     return QueryExecutorFactory.getInstance().findByIdAndUpdate<
       ResultType,
-      DocumentType
+      DocType
     >(id, payload, {
       ...execOptions,
       idb: this.idb,
@@ -751,7 +753,7 @@ export abstract class AbstractQuery<
    * @param fn - Middleware function
    * @returns
    */
-  pre(name: string, fn: MiddlewareFn): Query<ResultType, DocumentType> {
+  pre(name: string, fn: MiddlewareFn): Query<ResultType, DocType> {
     this.middleware.pre(name, fn);
     return this;
   }
@@ -766,8 +768,26 @@ export abstract class AbstractQuery<
    * @param fn - Middleware function
    * @returns
    */
-  post(name: string, fn: MiddlewareFn): Query<ResultType, DocumentType> {
+  post(name: string, fn: MiddlewareFn): Query<ResultType, DocType> {
     this.middleware.post(name, fn);
+    return this;
+  }
+
+  /**
+   * When lean option is set to true, the returned documents will not be converted to instances of the Model class, instead they will be returned as plain objects.
+   *
+   * @example
+   * ```ts
+   * const query = new Query(idb, "store-name");
+   * const data1 = await query.find({}).lean().exec(); // same as .lean(true)
+   * const data2 = await query.find({}).lean(true).exec();
+   * ```
+   *
+   * @param flag - lean option flag
+   * @returns
+   */
+  lean(flag: boolean = true) {
+    this.options.execOptions.lean = flag;
     return this;
   }
 
@@ -862,7 +882,7 @@ export abstract class AbstractQuery<
  */
 export class Query<
   ResultType = unknown,
-  DocumentType = unknown,
-> extends AbstractQuery<ResultType, DocumentType> {
+  DocType = unknown,
+> extends AbstractQuery<ResultType, DocType> {
   middleware: MiddlewareExecutor = new MiddlewareExecutor();
 }

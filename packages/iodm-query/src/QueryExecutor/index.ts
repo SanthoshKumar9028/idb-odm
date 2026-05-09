@@ -34,7 +34,7 @@ export class BaseQueryExecutor {
     query: QueryRootFilter,
     options: QueryExecutorOpenCursorOptions
   ): Promise<ResultType> {
-    const { throwOnError = true, Constructor } = options;
+    const { throwOnError = true, lean = false, Constructor } = options;
     const _this = this;
 
     return {
@@ -73,7 +73,7 @@ export class BaseQueryExecutor {
                     ? await Constructor.preProcess(cursor.value, options)
                     : cursor.value;
 
-                yield newDoc && Constructor
+                yield !lean && newDoc && Constructor
                   ? new Constructor(newDoc, { isNew: false })
                   : newDoc;
               }
@@ -97,7 +97,7 @@ export class BaseQueryExecutor {
     options: QueryExecutorFindOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
-      const { Constructor } = options;
+      const { lean = false, Constructor } = options;
 
       const result: unknown[] = [];
       const cursorReq = this.getObjectStore(options).openCursor(query.$key);
@@ -117,7 +117,7 @@ export class BaseQueryExecutor {
               : cursor.value;
 
           result.push(
-            newDoc && Constructor
+            !lean && newDoc && Constructor
               ? new Constructor(newDoc, { isNew: false })
               : newDoc
           );
@@ -136,7 +136,7 @@ export class BaseQueryExecutor {
     options: QueryExecutorFindByIdOptions
   ): Promise<ResultType> {
     return new Promise((res, rej) => {
-      const { Constructor } = options;
+      const { lean = false, Constructor } = options;
 
       const objectStore = this.getObjectStore(options);
 
@@ -152,7 +152,7 @@ export class BaseQueryExecutor {
               : event.target.result;
 
           result = (
-            newDoc && Constructor
+            !lean && newDoc && Constructor
               ? new Constructor(newDoc, { isNew: false })
               : newDoc
           ) as ResultType;
@@ -166,43 +166,47 @@ export class BaseQueryExecutor {
     });
   }
 
-  async insertMany<ResultType, DocumentType = unknown>(
+  async insertMany<ResultType, DocType = unknown>(
     payload: unknown[],
     options: QueryExecutorInsertOptions
   ): Promise<ResultType> {
-    const { storeName, transaction, throwOnError, Constructor } = options;
+    const {
+      storeName,
+      transaction,
+      throwOnError,
+      lean = false,
+      Constructor,
+    } = options;
 
     const objectStore = transaction.objectStore(storeName);
-    const insertRes: QueryExecutorInsertManyResponse<DocumentType> = [];
+    const insertRes: QueryExecutorInsertManyResponse<DocType> = [];
 
     for (let i = 0; i < payload.length; ++i) {
-      const addRes = await new Promise<DocumentType | InsertError>(
-        (res, rej) => {
-          const addReq = objectStore.add(payload[i]);
+      const addRes = await new Promise<DocType | InsertError>((res, rej) => {
+        const addReq = objectStore.add(payload[i]);
 
-          addReq.onsuccess = async () => {
-            const newDoc = Constructor
-              ? await Constructor.preProcess(payload[i], options)
-              : payload[i];
+        addReq.onsuccess = async () => {
+          const newDoc = Constructor
+            ? await Constructor.preProcess(payload[i], options)
+            : payload[i];
 
-            let result = (
-              newDoc && Constructor
-                ? new Constructor(newDoc, { isNew: false })
-                : newDoc
-            ) as DocumentType;
+          let result = (
+            !lean && newDoc && Constructor
+              ? new Constructor(newDoc, { isNew: false })
+              : newDoc
+          ) as DocType;
 
-            res(result);
-          };
-          addReq.onerror = (event) => {
-            if (throwOnError) {
-              rej(event);
-            } else {
-              event.preventDefault();
-              res(event);
-            }
-          };
-        }
-      );
+          res(result);
+        };
+        addReq.onerror = (event) => {
+          if (throwOnError) {
+            rej(event);
+          } else {
+            event.preventDefault();
+            res(event);
+          }
+        };
+      });
 
       insertRes.push(addRes);
     }
@@ -210,22 +214,23 @@ export class BaseQueryExecutor {
     return insertRes as ResultType;
   }
 
-  async insertOne<ResultType>(
+  async insertOne<ResultType, DocType = unknown>(
     payload: unknown,
     options: QueryExecutorInsertOptions
   ): Promise<ResultType> {
     const insertRes = await this.insertMany<
-      QueryExecutorInsertManyResponse<DocumentType>
+      QueryExecutorInsertManyResponse<DocType>,
+      DocType
     >([payload], options);
 
     return insertRes[0] as ResultType;
   }
 
-  async replaceOne<ResultType, DocumentType = unknown>(
-    payload: DocumentType,
+  async replaceOne<ResultType, DocType = unknown>(
+    payload: DocType,
     options: QueryExecutorReplaceOneOptions
   ): Promise<ResultType> {
-    const { storeName, transaction, Constructor } = options;
+    const { storeName, transaction, lean = false, Constructor } = options;
 
     return new Promise((res, rej) => {
       let objectStore = options.objectStore;
@@ -242,7 +247,7 @@ export class BaseQueryExecutor {
           : payload;
 
         let result = (
-          newDoc && Constructor
+          !lean && newDoc && Constructor
             ? new Constructor(newDoc, { isNew: false })
             : newDoc
         ) as ResultType;
@@ -255,9 +260,9 @@ export class BaseQueryExecutor {
     });
   }
 
-  async updateMany<ResultType, DocumentType = unknown>(
+  async updateMany<ResultType, DocType = unknown>(
     query: QueryRootFilter,
-    updater: QueryExecutorUpdateManyUpdater<DocumentType>,
+    updater: QueryExecutorUpdateManyUpdater<DocType>,
     options: QueryExecutorUpdateManyOptions
   ): Promise<ResultType> {
     const { transaction, updateLimit, throwOnError } = options;
@@ -336,9 +341,9 @@ export class BaseQueryExecutor {
     });
   }
 
-  async updateOne<ResultType, DocumentType = unknown>(
+  async updateOne<ResultType, DocType = unknown>(
     query: QueryRootFilter,
-    updater: QueryExecutorUpdateManyUpdater<DocumentType>,
+    updater: QueryExecutorUpdateManyUpdater<DocType>,
     options: QueryExecutorUpdateOneOptions
   ): Promise<ResultType> {
     return this.updateMany(query, updater, {
@@ -437,8 +442,9 @@ export class BaseQueryExecutor {
     const {
       storeName,
       transaction,
-      Constructor,
       throwOnError = true,
+      lean = false,
+      Constructor,
     } = options;
     return new Promise((res, rej) => {
       const getReq = this.getObjectStore(options).get(id);
@@ -458,7 +464,9 @@ export class BaseQueryExecutor {
         doc = Constructor ? await Constructor.preProcess(doc, options) : doc;
 
         doc = (
-          Constructor ? new Constructor(doc, { isNew: false }) : doc
+          !lean && doc && Constructor
+            ? new Constructor(doc, { isNew: false })
+            : doc
         ) as ResultType;
 
         try {
@@ -498,9 +506,9 @@ export class BaseQueryExecutor {
     });
   }
 
-  async findByIdAndUpdate<ResultType, DocumentType = unknown>(
+  async findByIdAndUpdate<ResultType, DocType = unknown>(
     id: IDBValidKey,
-    updater: QueryExecutorUpdateManyUpdater<DocumentType>,
+    updater: QueryExecutorUpdateManyUpdater<DocType>,
     options: QueryExecutorFindByIdAndUpdateOptions
   ): Promise<ResultType> {
     const {
@@ -508,6 +516,7 @@ export class BaseQueryExecutor {
       transaction,
       Constructor,
       throwOnError = true,
+      lean = false,
       new: returnNewDoc = true,
     } = options;
 
@@ -515,10 +524,10 @@ export class BaseQueryExecutor {
       const getReq = this.getObjectStore(options).get(id);
 
       getReq.onsuccess = (event) => {
-        let doc: DocumentType | undefined = undefined;
+        let doc: DocType | undefined = undefined;
 
         if (event.target && 'result' in event.target) {
-          doc = event.target.result as DocumentType;
+          doc = event.target.result as DocType;
         }
 
         if (!doc) {
@@ -545,7 +554,7 @@ export class BaseQueryExecutor {
               : docToReturn;
 
             res(
-              Constructor
+              !lean && docToReturn && Constructor
                 ? new Constructor(docToReturn, { isNew: false })
                 : docToReturn
             );

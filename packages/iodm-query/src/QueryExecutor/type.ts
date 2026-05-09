@@ -39,6 +39,8 @@ export interface QueryExecutorCommonOptions {
   idb: IDBDatabase;
   storeName: string;
   transaction: IDBTransaction;
+  lean?: boolean;
+  index?: string;
 }
 
 export interface GetObjectStoreOption {
@@ -55,12 +57,7 @@ export interface PopulateField {
   path: string;
 }
 
-export interface QueryExecutorIndexOptions {
-  index?: string;
-}
-
-export interface QueryExecutorGetCommonOptions
-  extends QueryExecutorCommonOptions, QueryExecutorIndexOptions {
+export interface QueryExecutorGetCommonOptions extends QueryExecutorCommonOptions {
   populateFields?: Record<string, PopulateField>;
   Constructor?: {
     new (obj: any, options: { isNew: boolean }): any;
@@ -84,13 +81,11 @@ export interface QueryExecutorInsertOptions
 
 export type InsertError = Event;
 
-export type QueryExecutorInsertManyResponse<DocumentType> = Array<
-  DocumentType | InsertError
+export type QueryExecutorInsertManyResponse<DocType> = Array<
+  DocType | InsertError
 >;
 
-export type QueryExecutorInsertOneResponse<DocumentType> =
-  | DocumentType
-  | InsertError;
+export type QueryExecutorInsertOneResponse<DocType> = DocType | InsertError;
 
 export interface QueryExecutorReplaceOneQuery {
   $key: IDBValidKey;
@@ -102,17 +97,17 @@ export interface QueryExecutorReplaceOneOptions extends QueryExecutorGetCommonOp
 
 export interface UpdaterOptions {
   $set?: Record<string, any>;
+  $inc?: Record<string, number>;
   $unset?: Record<string, ''>;
   $push?: Record<string, any>;
   $pop?: Record<string, 1 | -1>;
 }
 
-export type QueryExecutorUpdateManyUpdater<DocumentType> =
+export type QueryExecutorUpdateManyUpdater<DocType> =
   | UpdaterOptions
-  | ((param: DocumentType) => DocumentType);
+  | ((param: DocType) => DocType);
 
-export interface QueryExecutorUpdateManyOptions
-  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {
+export interface QueryExecutorUpdateManyOptions extends QueryExecutorCommonOptionsThrownOnError {
   updateLimit?: number;
 }
 
@@ -121,16 +116,13 @@ export interface QueryExecutorUpdateManyResponse {
   matchedCount: number;
 }
 
-export interface QueryExecutorUpdateOneOptions
-  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {}
+export interface QueryExecutorUpdateOneOptions extends QueryExecutorCommonOptionsThrownOnError {}
 
-export interface QueryExecutorDeleteManyOptions
-  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {
+export interface QueryExecutorDeleteManyOptions extends QueryExecutorCommonOptionsThrownOnError {
   deleteLimit?: number;
 }
 
-export interface QueryExecutorDeleteOneOptions
-  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {}
+export interface QueryExecutorDeleteOneOptions extends QueryExecutorCommonOptionsThrownOnError {}
 
 export interface QueryExecutorDeleteManyResponse {
   deletedCount: number;
@@ -149,5 +141,4 @@ export interface QueryExecutorFindByIdAndUpdateOptions
   new?: boolean;
 }
 
-export interface QueryExecutorCountDocumentsOptions
-  extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions {}
+export interface QueryExecutorCountDocumentsOptions extends QueryExecutorCommonOptionsThrownOnError {}
