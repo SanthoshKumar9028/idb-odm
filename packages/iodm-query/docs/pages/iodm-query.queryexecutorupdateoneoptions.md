@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-export interface QueryExecutorUpdateOneOptions extends QueryExecutorCommonOptionsThrownOnError, QueryExecutorIndexOptions 
+export interface QueryExecutorUpdateOneOptions extends QueryExecutorCommonOptionsThrownOnError 
 ```
-**Extends:** [QueryExecutorCommonOptionsThrownOnError](./iodm-query.queryexecutorcommonoptionsthrownonerror.md)<!-- -->, [QueryExecutorIndexOptions](./iodm-query.queryexecutorindexoptions.md)
+**Extends:** [QueryExecutorCommonOptionsThrownOnError](./iodm-query.queryexecutorcommonoptionsthrownonerror.md)
 

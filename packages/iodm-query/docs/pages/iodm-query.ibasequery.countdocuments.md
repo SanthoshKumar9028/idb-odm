@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-countDocuments(query: QueryRootFilter, options: QueryCountDocumentsOptions): IBaseQuery<ResultType, DocumentType>;
+countDocuments(query: QueryRootFilter, options: QueryCountDocumentsOptions): IBaseQuery<ResultType, DocType>;
 ```
 
 ## Parameters
@@ -60,5 +60,5 @@ options
 
 **Returns:**
 
-[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocType&gt;
 

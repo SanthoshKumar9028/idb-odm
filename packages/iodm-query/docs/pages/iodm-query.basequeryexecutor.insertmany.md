@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-insertMany<ResultType, DocumentType = unknown>(payload: unknown[], options: QueryExecutorInsertOptions): Promise<ResultType>;
+insertMany<ResultType, DocType = unknown>(payload: unknown[], options: QueryExecutorInsertOptions): Promise<ResultType>;
 ```
 
 ## Parameters

@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-findByIdAndUpdate(id: IDBValidKey, payload: (param: DocumentType) => DocumentType, options: QueryFindByIdAndUpdateOptions): IBaseQuery<ResultType, DocumentType>;
+findByIdAndUpdate(id: IDBValidKey, payload: (param: DocType) => DocType, options: QueryFindByIdAndUpdateOptions): IBaseQuery<ResultType, DocType>;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ payload
 
 </td><td>
 
-(param: DocumentType) =&gt; DocumentType
+(param: DocType) =&gt; DocType
 
 
 </td><td>
@@ -74,5 +74,5 @@ options
 
 **Returns:**
 
-[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocType&gt;
 

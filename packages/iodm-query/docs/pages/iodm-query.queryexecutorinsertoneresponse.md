@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-export type QueryExecutorInsertOneResponse<DocumentType> = DocumentType | InsertError;
+export type QueryExecutorInsertOneResponse<DocType> = DocType | InsertError;
 ```
 **References:** [InsertError](./iodm-query.inserterror.md)
 

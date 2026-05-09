@@ -12,9 +12,9 @@ Query builder for IndexedDB
 **Signature:**
 
 ```typescript
-export declare class Query<ResultType = unknown, DocumentType = unknown> extends AbstractQuery<ResultType, DocumentType> 
+export declare class Query<ResultType = unknown, DocType = unknown> extends AbstractQuery<ResultType, DocType> 
 ```
-**Extends:** [AbstractQuery](./iodm-query.abstractquery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+**Extends:** [AbstractQuery](./iodm-query.abstractquery.md)<!-- -->&lt;ResultType, DocType&gt;
 
 ## Example
 

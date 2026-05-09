@@ -35,6 +35,25 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[$inc?](./iodm-query.updateroptions._inc.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Record&lt;string, number&gt;
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
 [$pop?](./iodm-query.updateroptions._pop.md)
 
 

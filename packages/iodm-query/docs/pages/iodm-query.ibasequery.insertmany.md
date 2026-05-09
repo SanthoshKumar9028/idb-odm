@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-insertMany(payload: unknown[], options?: QueryInsertManyOptions): IBaseQuery<ResultType, DocumentType>;
+insertMany(payload: unknown[], options?: QueryInsertManyOptions): IBaseQuery<ResultType, DocType>;
 ```
 
 ## Parameters
@@ -62,5 +62,5 @@ _(Optional)_
 
 **Returns:**
 
-[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocType&gt;
 

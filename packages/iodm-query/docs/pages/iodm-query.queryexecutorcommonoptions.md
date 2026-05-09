@@ -52,6 +52,44 @@ IDBDatabase
 </td></tr>
 <tr><td>
 
+[index?](./iodm-query.queryexecutorcommonoptions.index.md)
+
+
+</td><td>
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
+[lean?](./iodm-query.queryexecutorcommonoptions.lean.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
 [storeName](./iodm-query.queryexecutorcommonoptions.storename.md)
 
 

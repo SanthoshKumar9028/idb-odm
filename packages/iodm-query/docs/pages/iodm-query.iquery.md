@@ -7,9 +7,9 @@
 **Signature:**
 
 ```typescript
-export interface IQuery<ResultType, DocumentType> extends IBaseQuery<ResultType, DocumentType> 
+export interface IQuery<ResultType, DocType> extends IBaseQuery<ResultType, DocType> 
 ```
-**Extends:** [IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+**Extends:** [IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocType&gt;
 
 ## Properties
 
@@ -78,7 +78,7 @@ IDBDatabase
 
 </td><td>
 
-[QueryOptions](./iodm-query.queryoptions.md)<!-- -->&lt;DocumentType&gt;
+[QueryOptions](./iodm-query.queryoptions.md)<!-- -->&lt;DocType&gt;
 
 
 </td><td>

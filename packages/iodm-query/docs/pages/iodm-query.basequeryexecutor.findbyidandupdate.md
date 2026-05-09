@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-findByIdAndUpdate<ResultType, DocumentType = unknown>(id: IDBValidKey, updater: QueryExecutorUpdateManyUpdater<DocumentType>, options: QueryExecutorFindByIdAndUpdateOptions): Promise<ResultType>;
+findByIdAndUpdate<ResultType, DocType = unknown>(id: IDBValidKey, updater: QueryExecutorUpdateManyUpdater<DocType>, options: QueryExecutorFindByIdAndUpdateOptions): Promise<ResultType>;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ updater
 
 </td><td>
 
-[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocumentType&gt;
+[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocType&gt;
 
 
 </td><td>

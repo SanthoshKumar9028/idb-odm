@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-replaceOne(payload: DocumentType, options: QueryReplaceOneOptions): IBaseQuery<ResultType, DocumentType>;
+replaceOne(payload: DocType, options: QueryReplaceOneOptions): IBaseQuery<ResultType, DocType>;
 ```
 
 ## Parameters
@@ -35,7 +35,7 @@ payload
 
 </td><td>
 
-DocumentType
+DocType
 
 
 </td><td>
@@ -60,5 +60,5 @@ options
 
 **Returns:**
 
-[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocType&gt;
 

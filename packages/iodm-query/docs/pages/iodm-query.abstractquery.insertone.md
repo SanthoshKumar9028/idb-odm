@@ -9,7 +9,7 @@ Inserts a single Document into IndexedDB object store
 **Signature:**
 
 ```typescript
-insertOne(payload: DocumentType, options?: QueryInsertOneOptions): this;
+insertOne(payload: DocType, options?: QueryInsertOneOptions): this;
 ```
 
 ## Parameters
@@ -37,7 +37,7 @@ payload
 
 </td><td>
 
-DocumentType
+DocType
 
 
 </td><td>

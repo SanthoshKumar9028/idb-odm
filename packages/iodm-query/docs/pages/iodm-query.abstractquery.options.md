@@ -7,5 +7,5 @@
 **Signature:**
 
 ```typescript
-options: QueryOptions<DocumentType>;
+options: QueryOptions<DocType>;
 ```

@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-updateMany(query: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<DocumentType>, options: QueryUpdateManyOptions): IBaseQuery<ResultType, DocumentType>;
+updateMany(query: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<DocType>, options: QueryUpdateManyOptions): IBaseQuery<ResultType, DocType>;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ payload
 
 </td><td>
 
-[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocumentType&gt;
+[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocType&gt;
 
 
 </td><td>
@@ -74,5 +74,5 @@ options
 
 **Returns:**
 
-[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocType&gt;
 

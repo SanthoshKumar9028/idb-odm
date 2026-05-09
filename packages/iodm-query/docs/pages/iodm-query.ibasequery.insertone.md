@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-insertOne(payload: unknown, options?: QueryInsertOneOptions): IBaseQuery<ResultType, DocumentType>;
+insertOne(payload: unknown, options?: QueryInsertOneOptions): IBaseQuery<ResultType, DocType>;
 ```
 
 ## Parameters
@@ -62,5 +62,5 @@ _(Optional)_
 
 **Returns:**
 
-[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocType&gt;
 

@@ -7,7 +7,5 @@
 **Signature:**
 
 ```typescript
-export type QueryExecutorCommonKeys = keyof QueryExecutorCommonOptions;
+export type QueryExecutorCommonKeys = 'idb' | 'storeName' | 'transaction';
 ```
-**References:** [QueryExecutorCommonOptions](./iodm-query.queryexecutorcommonoptions.md)
-

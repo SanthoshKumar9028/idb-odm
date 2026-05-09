@@ -9,7 +9,7 @@ To replace existing document with new document, if key is not present new docume
 **Signature:**
 
 ```typescript
-replaceOne(payload: DocumentType, options?: QueryReplaceOneOptions): this;
+replaceOne(payload: DocType, options?: QueryReplaceOneOptions): this;
 ```
 
 ## Parameters
@@ -37,7 +37,7 @@ payload
 
 </td><td>
 
-DocumentType
+DocType
 
 
 </td><td>

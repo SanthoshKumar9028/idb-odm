@@ -9,7 +9,7 @@ Based on the query, matched documents will be updated
 **Signature:**
 
 ```typescript
-updateMany(query: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<DocumentType>, options?: QueryUpdateManyOptions): this;
+updateMany(query: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<DocType>, options?: QueryUpdateManyOptions): this;
 ```
 
 ## Parameters
@@ -53,7 +53,7 @@ payload
 
 </td><td>
 
-[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocumentType&gt;
+[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocType&gt;
 
 
 </td><td>

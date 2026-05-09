@@ -9,7 +9,7 @@ Updates the document with the id and returns the updated document. if the docume
 **Signature:**
 
 ```typescript
-findByIdAndUpdate(id: IDBValidKey, payload: QueryExecutorUpdateManyUpdater<DocumentType>, options?: QueryFindByIdAndUpdateOptions): this;
+findByIdAndUpdate(id: IDBValidKey, payload: QueryExecutorUpdateManyUpdater<DocType>, options?: QueryFindByIdAndUpdateOptions): this;
 ```
 
 ## Parameters
@@ -53,7 +53,7 @@ payload
 
 </td><td>
 
-[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocumentType&gt;
+[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocType&gt;
 
 
 </td><td>

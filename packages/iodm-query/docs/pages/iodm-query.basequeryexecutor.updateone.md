@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-updateOne<ResultType, DocumentType = unknown>(query: QueryRootFilter, updater: QueryExecutorUpdateManyUpdater<DocumentType>, options: QueryExecutorUpdateOneOptions): Promise<ResultType>;
+updateOne<ResultType, DocType = unknown>(query: QueryRootFilter, updater: QueryExecutorUpdateManyUpdater<DocType>, options: QueryExecutorUpdateOneOptions): Promise<ResultType>;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ updater
 
 </td><td>
 
-[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocumentType&gt;
+[QueryExecutorUpdateManyUpdater](./iodm-query.queryexecutorupdatemanyupdater.md)<!-- -->&lt;DocType&gt;
 
 
 </td><td>

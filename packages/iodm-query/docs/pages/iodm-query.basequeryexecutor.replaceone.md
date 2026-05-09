@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-replaceOne<ResultType, DocumentType = unknown>(payload: DocumentType, options: QueryExecutorReplaceOneOptions): Promise<ResultType>;
+replaceOne<ResultType, DocType = unknown>(payload: DocType, options: QueryExecutorReplaceOneOptions): Promise<ResultType>;
 ```
 
 ## Parameters
@@ -35,7 +35,7 @@ payload
 
 </td><td>
 
-DocumentType
+DocType
 
 
 </td><td>

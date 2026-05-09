@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-populate(path: string): IQuery<ResultType, DocumentType>;
+populate(path: string): IQuery<ResultType, DocType>;
 ```
 
 ## Parameters
@@ -46,5 +46,5 @@ string
 
 **Returns:**
 
-[IQuery](./iodm-query.iquery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+[IQuery](./iodm-query.iquery.md)<!-- -->&lt;ResultType, DocType&gt;
 

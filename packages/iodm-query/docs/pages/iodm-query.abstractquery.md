@@ -7,9 +7,9 @@
 **Signature:**
 
 ```typescript
-export declare abstract class AbstractQuery<ResultType = unknown, DocumentType = unknown> implements IQuery<ResultType, DocumentType> 
+export declare abstract class AbstractQuery<ResultType = unknown, DocType = unknown> implements IQuery<ResultType, DocType> 
 ```
-**Implements:** [IQuery](./iodm-query.iquery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+**Implements:** [IQuery](./iodm-query.iquery.md)<!-- -->&lt;ResultType, DocType&gt;
 
 ## Constructors
 
@@ -114,7 +114,7 @@ IDBDatabase
 
 </td><td>
 
-[QueryOptions](./iodm-query.queryoptions.md)<!-- -->&lt;DocumentType&gt;
+[QueryOptions](./iodm-query.queryoptions.md)<!-- -->&lt;DocType&gt;
 
 
 </td><td>
@@ -309,6 +309,20 @@ Inserts multiple documents into IndexedDB object store
 </td><td>
 
 Inserts a single Document into IndexedDB object store
+
+
+</td></tr>
+<tr><td>
+
+[lean(flag)](./iodm-query.abstractquery.lean.md)
+
+
+</td><td>
+
+
+</td><td>
+
+When lean option is set to true, the returned documents will not be converted to instances of the Model class, instead they will be returned as plain objects.
 
 
 </td></tr>

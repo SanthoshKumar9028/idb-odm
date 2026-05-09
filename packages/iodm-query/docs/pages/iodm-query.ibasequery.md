@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-export interface IBaseQuery<ResultType, DocumentType> 
+export interface IBaseQuery<ResultType, DocType> 
 ```
 
 ## Methods

@@ -9,7 +9,7 @@ Adds a new pre middleware function
 **Signature:**
 
 ```typescript
-pre(name: string, fn: MiddlewareFn): Query<ResultType, DocumentType>;
+pre(name: string, fn: MiddlewareFn): Query<ResultType, DocType>;
 ```
 
 ## Parameters
@@ -66,7 +66,7 @@ Middleware function
 
 **Returns:**
 
-[Query](./iodm-query.query.md)<!-- -->&lt;ResultType, DocumentType&gt;
+[Query](./iodm-query.query.md)<!-- -->&lt;ResultType, DocType&gt;
 
 
 ## Remarks

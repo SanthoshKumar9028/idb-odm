@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-export type QueryOptions<DocumentType = unknown> = {
+export type QueryOptions<DocType = unknown> = {
     type: 'openCursor';
     query: QueryRootFilter;
     execOptions: QueryOpenCursorOptions;
@@ -23,25 +23,25 @@ export type QueryOptions<DocumentType = unknown> = {
     execOptions: QueryFindByIdOptions;
 } | {
     type: 'insertOne';
-    insertList: DocumentType[];
+    insertList: DocType[];
     execOptions: QueryInsertOneOptions;
 } | {
     type: 'insertMany';
-    insertList: DocumentType[];
+    insertList: DocType[];
     execOptions: QueryInsertManyOptions;
 } | {
     type: 'replaceOne';
-    payload: DocumentType;
+    payload: DocType;
     execOptions: QueryReplaceOneOptions;
 } | {
     type: 'updateMany';
     query: QueryRootFilter;
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>;
+    payload: QueryExecutorUpdateManyUpdater<DocType>;
     execOptions: QueryUpdateManyOptions;
 } | {
     type: 'updateOne';
     query: QueryRootFilter;
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>;
+    payload: QueryExecutorUpdateManyUpdater<DocType>;
     execOptions: QueryUpdateOneOptions;
 } | {
     type: 'deleteMany';
@@ -58,7 +58,7 @@ export type QueryOptions<DocumentType = unknown> = {
 } | {
     type: 'findByIdAndUpdate';
     id: IDBValidKey;
-    payload: QueryExecutorUpdateManyUpdater<DocumentType>;
+    payload: QueryExecutorUpdateManyUpdater<DocType>;
     execOptions: QueryFindByIdAndUpdateOptions;
 } | {
     type: 'countDocuments';

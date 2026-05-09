@@ -240,15 +240,6 @@ Description
 </td></tr>
 <tr><td>
 
-[QueryExecutorIndexOptions](./iodm-query.queryexecutorindexoptions.md)
-
-
-</td><td>
-
-
-</td></tr>
-<tr><td>
-
 [QueryExecutorInsertOptions](./iodm-query.queryexecutorinsertoptions.md)
 
 

@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-find(query: QueryRootFilter, options?: QueryFindOptions): IBaseQuery<ResultType, DocumentType>;
+find(query: QueryRootFilter, options?: QueryFindOptions): IBaseQuery<ResultType, DocType>;
 ```
 
 ## Parameters
@@ -62,5 +62,5 @@ _(Optional)_
 
 **Returns:**
 
-[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocumentType&gt;
+[IBaseQuery](./iodm-query.ibasequery.md)<!-- -->&lt;ResultType, DocType&gt;
 

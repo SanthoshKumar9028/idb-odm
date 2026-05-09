@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-insertOne<ResultType>(payload: unknown, options: QueryExecutorInsertOptions): Promise<ResultType>;
+insertOne<ResultType, DocType = unknown>(payload: unknown, options: QueryExecutorInsertOptions): Promise<ResultType>;
 ```
 
 ## Parameters

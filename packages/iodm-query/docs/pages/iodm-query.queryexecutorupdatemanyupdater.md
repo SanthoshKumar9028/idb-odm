@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-export type QueryExecutorUpdateManyUpdater<DocumentType> = UpdaterOptions | ((param: DocumentType) => DocumentType);
+export type QueryExecutorUpdateManyUpdater<DocType> = UpdaterOptions | ((param: DocType) => DocType);
 ```
 **References:** [UpdaterOptions](./iodm-query.updateroptions.md)
 
