@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-countDocuments(filter?: QueryRootFilter, options?: QueryCountDocumentsOptions): Query<number, DocumentType>;
+countDocuments(filter?: QueryRootFilter, options?: QueryCountDocumentsOptions): Query<number, TRawDocType>;
 ```
 
 ## Parameters
@@ -64,5 +64,5 @@ _(Optional)_
 
 **Returns:**
 
-Query&lt;number, DocumentType&gt;
+Query&lt;number, TRawDocType&gt;
 

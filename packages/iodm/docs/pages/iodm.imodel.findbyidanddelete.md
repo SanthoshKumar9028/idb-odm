@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-findByIdAndDelete(id: IDBValidKey, options?: QueryFindByIdAndDeleteOptions): Query<HydratedDoc, DocumentType>;
+findByIdAndDelete(id: IDBValidKey, options?: QueryFindByIdAndDeleteOptions): Query<HydratedDoc, TRawDocType>;
 ```
 
 ## Parameters
@@ -62,5 +62,5 @@ _(Optional)_
 
 **Returns:**
 
-Query&lt;HydratedDoc, DocumentType&gt;
+Query&lt;HydratedDoc, TRawDocType&gt;
 

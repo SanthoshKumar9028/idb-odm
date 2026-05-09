@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-findByIdAndUpdate(id: IDBValidKey, payload: QueryExecutorUpdateManyUpdater<TRawDocType>, options?: QueryFindByIdAndUpdateOptions): Query<HydratedDoc, DocumentType>;
+findByIdAndUpdate(id: IDBValidKey, payload: QueryExecutorUpdateManyUpdater<TRawDocType>, options?: QueryFindByIdAndUpdateOptions): Query<HydratedDoc, TRawDocType>;
 ```
 
 ## Parameters
@@ -76,5 +76,5 @@ _(Optional)_
 
 **Returns:**
 
-Query&lt;HydratedDoc, DocumentType&gt;
+Query&lt;HydratedDoc, TRawDocType&gt;
 

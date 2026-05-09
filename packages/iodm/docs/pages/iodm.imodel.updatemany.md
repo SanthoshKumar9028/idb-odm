@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-updateMany(filter: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<DocumentType>, options?: QueryUpdateManyOptions): Query<QueryExecutorUpdateManyResponse, DocumentType>;
+updateMany(filter: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<TRawDocType>, options?: QueryUpdateManyOptions): Query<QueryExecutorUpdateManyResponse, TRawDocType>;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ payload
 
 </td><td>
 
-QueryExecutorUpdateManyUpdater&lt;DocumentType&gt;
+QueryExecutorUpdateManyUpdater&lt;TRawDocType&gt;
 
 
 </td><td>
@@ -76,5 +76,5 @@ _(Optional)_
 
 **Returns:**
 
-Query&lt;QueryExecutorUpdateManyResponse, DocumentType&gt;
+Query&lt;QueryExecutorUpdateManyResponse, TRawDocType&gt;
 

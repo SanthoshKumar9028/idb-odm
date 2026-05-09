@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-deleteMany(filter?: QueryRootFilter, options?: QueryDeleteManyOptions): Query<QueryExecutorDeleteManyResponse, DocumentType>;
+deleteMany(filter?: QueryRootFilter, options?: QueryDeleteManyOptions): Query<QueryExecutorDeleteManyResponse, TRawDocType>;
 ```
 
 ## Parameters
@@ -64,5 +64,5 @@ _(Optional)_
 
 **Returns:**
 
-Query&lt;QueryExecutorDeleteManyResponse, DocumentType&gt;
+Query&lt;QueryExecutorDeleteManyResponse, TRawDocType&gt;
 

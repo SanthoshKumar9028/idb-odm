@@ -9,7 +9,7 @@ Updates multiple documents in the database that match the specified filter with 
 **Signature:**
 
 ```typescript
-static updateMany(filter: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<DocumentType>, options?: QueryUpdateManyOptions): Query<any, any>;
+static updateMany(filter: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<any>, options?: QueryUpdateManyOptions): Query<any, any>;
 ```
 
 ## Parameters
@@ -53,7 +53,7 @@ payload
 
 </td><td>
 
-QueryExecutorUpdateManyUpdater&lt;DocumentType&gt;
+QueryExecutorUpdateManyUpdater&lt;any&gt;
 
 
 </td><td>

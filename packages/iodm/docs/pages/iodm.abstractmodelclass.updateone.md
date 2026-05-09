@@ -9,7 +9,7 @@ Updates a single document in the database that matches the specified filter with
 **Signature:**
 
 ```typescript
-static updateOne(filter: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<DocumentType>, options?: QueryUpdateOneOptions): Query<any, any>;
+static updateOne(filter: QueryRootFilter, payload: QueryExecutorUpdateManyUpdater<any>, options?: QueryUpdateOneOptions): Query<any, any>;
 ```
 
 ## Parameters
@@ -53,7 +53,7 @@ payload
 
 </td><td>
 
-QueryExecutorUpdateManyUpdater&lt;DocumentType&gt;
+QueryExecutorUpdateManyUpdater&lt;any&gt;
 
 
 </td><td>
