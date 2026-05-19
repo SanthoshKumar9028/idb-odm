@@ -8,6 +8,8 @@
 
 ```typescript
 export type SchemaDefinitionValue = BaseSchema | SchemaDefinitionStringValue | SchemaDefinitionNumberValue | typeof Boolean | SchemaDefinitionDateValue | typeof Map | typeof Set | [SchemaDefinitionValue] | ({
+    type: BaseSchema;
+} & BaseSchemaValidateOptions & BaseSchemaIndexOptions) | ({
     type: typeof Boolean;
 } & BaseSchemaValidateOptions & BaseSchemaIndexOptions) | ({
     type: typeof Date;

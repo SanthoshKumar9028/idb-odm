@@ -69,10 +69,14 @@ const config = {
   models: [UserModel],
 };
 
+const root = createRoot(document.getElementById('app')!);
+
+root.render(<p>Loading</p>);
+
 configureIDB(config).then((db) => {
-  createRoot(document.getElementById('app')!).render(<App />);
+  root.render(<App />);
 }).catch((error) => {
-  createRoot(document.getElementById('app')!).render(<div>Error configuring database</div>);
+  root.render(<div>Error configuring database</div>);
 });
 ```
 
