@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { RefArraySchema } from './index';
 import { NumberSchema } from '../../primitive/number';
 import iodm from '../../../iodm';
+import { RefSchema } from '../ref';
 
 vi.mock('../../../iodm', () => ({
   default: {
@@ -39,10 +40,14 @@ describe('RefArraySchema', () => {
 
     iodm.models['User'] = mockModel as any;
 
-    const valueSchema = new NumberSchema({ name: 'id', min: 1 });
     const refArraySchema = new RefArraySchema({
       ref: 'User',
-      valueSchema,
+      valueSchema: new RefSchema({
+        ref: 'User',
+        valueSchema: new NumberSchema({ name: 'id' }),
+      }),
+      required: true,
+      name: 'authors',
     });
 
     expect(refArraySchema.validate([{ _id: 5 }, { _id: 10 }], {} as any)).toBe(
@@ -59,15 +64,19 @@ describe('RefArraySchema', () => {
 
     iodm.models['User'] = mockModel as any;
 
-    const valueSchema = new NumberSchema({ name: 'id', min: 1 });
     const refArraySchema = new RefArraySchema({
       ref: 'User',
-      valueSchema,
+      valueSchema: new RefSchema({
+        ref: 'User',
+        valueSchema: new NumberSchema({ name: 'id', min: 1 }),
+      }),
+      required: true,
+      name: 'arrayRef',
     });
 
     expect(() =>
       refArraySchema.validate([{ _id: 5 }, { _id: -1 }], {} as any)
-    ).toThrow();
+    ).toThrow('arrayRef.1._id must be greater then or equal to 1');
   });
 
   it('validate should return true for undefined/null values', () => {
@@ -81,6 +90,7 @@ describe('RefArraySchema', () => {
 
     const valueSchema = new NumberSchema({ name: 'id' });
     const refArraySchema = new RefArraySchema({
+      name: 'arrayRef',
       ref: 'User',
       valueSchema,
     });
@@ -124,15 +134,17 @@ describe('RefArraySchema', () => {
 
     iodm.models['User'] = mockModel as any;
 
-    const valueSchema = new NumberSchema({ name: 'id' });
     const refArraySchema = new RefArraySchema({
       ref: 'User',
-      valueSchema,
+      valueSchema: new RefSchema({
+        ref: 'User',
+        valueSchema: new NumberSchema({ name: 'id' }),
+      }),
       required: true,
       name: 'authors',
     });
 
-    expect(() => refArraySchema.validate(null, {} as any)).toThrow(
+    expect(() => refArraySchema.validate(null, { path: 'authors' })).toThrow(
       'authors is required!'
     );
   });
@@ -146,10 +158,14 @@ describe('RefArraySchema', () => {
 
     iodm.models['User'] = mockModel as any;
 
-    const valueSchema = new NumberSchema({ name: 'id' });
     const refArraySchema = new RefArraySchema({
       ref: 'User',
-      valueSchema,
+      valueSchema: new RefSchema({
+        ref: 'User',
+        valueSchema: new NumberSchema({ name: 'id' }),
+      }),
+      required: true,
+      name: 'authors',
     });
 
     const result = refArraySchema.castFrom(

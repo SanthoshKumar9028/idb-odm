@@ -2,6 +2,7 @@ import type { SchemaMethodOptions } from '../types';
 
 export interface ThrowMessageArgs {
   value: any;
+  path?: string;
 }
 
 export interface ValidationRuleOptions {
@@ -18,19 +19,24 @@ export class ValidationRule {
     this.message = options.message;
   }
 
-  validate(value: any, _: SchemaMethodOptions): boolean {
+  validate(value: any, options: SchemaMethodOptions): boolean {
     if (this.validator && this.validator(value)) {
       return true;
     }
 
-    this.throwMessage({ value });
+    this.throwMessage(value, options);
   }
 
-  throwMessage(args: ThrowMessageArgs): never {
+  throwMessage(value: unknown, options: SchemaMethodOptions): never {
     if (typeof this.message === 'string') {
-      throw new Error(this.message);
+      let message = this.message;
+      if (options.path) {
+        message = message.replaceAll('{KEY}', options.path);
+      }
+
+      throw new Error(message);
     }
 
-    throw new Error(this.message(args));
+    throw new Error(this.message({ value, path: options.path }));
   }
 }

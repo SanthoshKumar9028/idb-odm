@@ -1,3 +1,4 @@
+import type { SchemaMethodOptions } from '../../types';
 import type { ValidationRuleOptions } from '../validate';
 import { ValidationRule } from '../validate';
 
@@ -13,9 +14,9 @@ export class MaxDateValidationRule extends ValidationRule {
     this.max = options.max;
   }
 
-  validate(value: unknown): boolean {
+  validate(value: unknown, options: SchemaMethodOptions): boolean {
     if (value instanceof Date && value > this.max) {
-      this.throwMessage({ value });
+      this.throwMessage(value, options);
     }
 
     return true;

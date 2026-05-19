@@ -1,3 +1,4 @@
+import type { SchemaMethodOptions } from '../../types';
 import type { ValidationRuleOptions } from '../validate';
 import { ValidationRule } from '../validate';
 
@@ -13,9 +14,9 @@ export class MatchValidationRule extends ValidationRule {
     this.match = options.match;
   }
 
-  validate(value: unknown): boolean {
+  validate(value: unknown, options: SchemaMethodOptions): boolean {
     if (typeof value === 'string' && !this.match.test(value)) {
-      this.throwMessage({ value });
+      this.throwMessage(value, options);
     }
 
     return true;

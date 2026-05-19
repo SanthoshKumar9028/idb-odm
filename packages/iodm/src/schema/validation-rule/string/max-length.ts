@@ -1,3 +1,4 @@
+import type { SchemaMethodOptions } from '../../types';
 import type { ValidationRuleOptions } from '../validate';
 import { ValidationRule } from '../validate';
 
@@ -13,9 +14,9 @@ export class MaxLengthValidationRule extends ValidationRule {
     this.maxLength = options.maxLength;
   }
 
-  validate(value: unknown): boolean {
+  validate(value: unknown, options: SchemaMethodOptions): boolean {
     if (typeof value === 'string' && value.length > this.maxLength) {
-      this.throwMessage({ value });
+      this.throwMessage(value, options);
     }
 
     return true;

@@ -40,17 +40,23 @@ const userSchema = new Schema<User>({
 
 const UserModel = iodm.model('User', userSchema);
 
-const configurePromise = configureIDB({
-  db: 'MyAppDB',
+const config = {
+  db: 'MyDB',
   version: 1,
   models: [UserModel],
-});
+};
 
-configurePromise.then(() => {
-  createRoot(document.getElementById('root')!).render(<App />);
-}).catch(() => {
-    createRoot(document.getElementById('root')!).render(<div>Error initializing database</div>);
-});
+const root = createRoot(document.getElementById('app')!);
+
+root.render(<p>Loading...</p>);
+
+configureIDB(config)
+  .then((db) => {
+    root.render(<App />);
+  })
+  .catch((error) => {
+    root.render(<div>Error configuring database</div>);
+  });
 ```
 
 ## Quick Start with TypeScript

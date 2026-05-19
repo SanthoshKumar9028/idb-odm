@@ -30,7 +30,7 @@ export class StringSchema extends BaseSchema<StringSchemaConstructorOptions> {
     if (typeof options.minLength === 'number') {
       this.validationRules.push(
         new MinLengthValidationRule({
-          message: `${options.name} length must be greater then or equal to ${options.minLength}`,
+          message: `{KEY} length must be greater then or equal to ${options.minLength}`,
           minLength: options.minLength,
         })
       );
@@ -46,7 +46,7 @@ export class StringSchema extends BaseSchema<StringSchemaConstructorOptions> {
     if (typeof options.maxLength === 'number') {
       this.validationRules.push(
         new MaxLengthValidationRule({
-          message: `${options.name} length must be less then or equal to ${options.maxLength}`,
+          message: `{KEY} length must be less then or equal to ${options.maxLength}`,
           maxLength: options.maxLength,
         })
       );
@@ -72,7 +72,7 @@ export class StringSchema extends BaseSchema<StringSchemaConstructorOptions> {
       this.validationRules.push(
         new MatchValidationRule({
           match: options.match,
-          message: `${options.name} is failed to match the RegExp`,
+          message: `{KEY} is failed to match the RegExp`,
         })
       );
     } else if (Array.isArray(options.match)) {

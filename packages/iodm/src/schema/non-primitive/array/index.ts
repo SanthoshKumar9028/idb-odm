@@ -21,8 +21,16 @@ export class ArraySchema extends BaseSchema<ArraySchemaConstructorOptions> {
     this.validationRules.forEach((rule) => rule.validate(castedValue, options));
 
     if (castedValue) {
-      castedValue.forEach((v) => {
-        this.valueSchema.validate(v, options);
+      castedValue.forEach((v, i) => {
+        let indexPath = String(i);
+
+        if (options.path) {
+          indexPath = `${options.path}.${indexPath}`;
+        } else if (this.name) {
+          indexPath = `${this.name}.${indexPath}`;
+        }
+
+        this.valueSchema.validate(v, { ...options, path: indexPath });
       });
     }
 

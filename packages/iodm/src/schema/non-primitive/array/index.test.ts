@@ -43,7 +43,7 @@ describe('ArraySchema', () => {
 
     expect(arraySchema.validate([5, 10], {} as any)).toBe(true);
     expect(() => arraySchema.validate([4, 10], {} as any)).toThrow(
-      'item must be greater then or equal to 5'
+      'numbers.0 must be greater then or equal to 5'
     );
   });
 
@@ -55,7 +55,7 @@ describe('ArraySchema', () => {
     });
 
     expect(() => arraySchema.validate([], {} as any)).not.toThrow();
-    expect(() => arraySchema.validate(null, {} as any)).toThrow(
+    expect(() => arraySchema.validate(null, { path: 'numbers' })).toThrow(
       'numbers is required!'
     );
   });

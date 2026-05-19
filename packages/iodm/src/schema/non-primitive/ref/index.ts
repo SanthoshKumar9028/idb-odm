@@ -33,14 +33,23 @@ export class RefSchema extends BaseSchema<RefSchemaConstructorOptions> {
   validate(value: unknown, options: SchemaMethodOptions): boolean {
     const keyPath = this.getRefModel().getSchema().getSchemaOptions().keyPath;
 
+    let indexPath = keyPath;
+
     if (value && typeof value === 'object') {
-      return this.valueSchema.validate(
-        value[keyPath as keyof typeof value],
-        options
-      );
+      if (options.path) {
+        indexPath = `${options.path}.${indexPath}`;
+      }
+
+      return this.valueSchema.validate(value[keyPath as keyof typeof value], {
+        ...options,
+        path: indexPath,
+      });
     }
 
-    return this.valueSchema.validate(value, options);
+    return this.valueSchema.validate(value, {
+      ...options,
+      path: options.path ?? keyPath,
+    });
   }
 
   async save(value: unknown, options: SchemaSaveMethodOptions) {

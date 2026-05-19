@@ -22,7 +22,7 @@ export class DateSchema extends BaseSchema<DateSchemaConstructorOptions> {
     if (options.min instanceof Date) {
       this.validationRules.push(
         new MinDateValidationRule({
-          message: `${options.name} must be greater then or equal to ${options.min}`,
+          message: `{KEY} must be greater then or equal to ${options.min}`,
           min: options.min,
         })
       );
@@ -38,7 +38,7 @@ export class DateSchema extends BaseSchema<DateSchemaConstructorOptions> {
     if (options.max instanceof Date) {
       this.validationRules.push(
         new MaxDateValidationRule({
-          message: `${options.name} must be less then or equal to ${options.max}`,
+          message: `{KEY} must be less then or equal to ${options.max}`,
           max: options.max,
         })
       );

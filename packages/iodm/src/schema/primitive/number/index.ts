@@ -28,7 +28,7 @@ export class NumberSchema extends BaseSchema<NumberSchemaConstructorOptions> {
     if (typeof options.min === 'number') {
       this.validationRules.push(
         new MinValidationRule({
-          message: `${options.name} must be greater then or equal to ${options.min}`,
+          message: `{KEY} must be greater then or equal to ${options.min}`,
           min: options.min,
         })
       );
@@ -44,7 +44,7 @@ export class NumberSchema extends BaseSchema<NumberSchemaConstructorOptions> {
     if (typeof options.max === 'number') {
       this.validationRules.push(
         new MaxValidationRule({
-          message: `${options.name} must be less then or equal to ${options.max}`,
+          message: `{KEY} must be less then or equal to ${options.max}`,
           max: options.max,
         })
       );

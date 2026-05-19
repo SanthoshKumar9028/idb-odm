@@ -14,25 +14,25 @@ import type { TimestampOption } from '../plugins/timestamps-plugin';
 export type SchemaDefinitionNumberValue =
   | typeof Number
   | ({
-    type: typeof Number;
-    ref?: string;
-  } & NumberSchemaValidationOptions &
-    BaseSchemaIndexOptions);
+      type: typeof Number;
+      ref?: string;
+    } & NumberSchemaValidationOptions &
+      BaseSchemaIndexOptions);
 
 export type SchemaDefinitionStringValue =
   | typeof String
   | ({
-    type: typeof String;
-    ref?: string;
-  } & StringSchemaValidationOptions &
-    BaseSchemaIndexOptions);
+      type: typeof String;
+      ref?: string;
+    } & StringSchemaValidationOptions &
+      BaseSchemaIndexOptions);
 
 export type SchemaDefinitionDateValue =
   | typeof Date
   | ({
-    type: typeof Date;
-  } & DateSchemaValidationOptions &
-    BaseSchemaIndexOptions);
+      type: typeof Date;
+    } & DateSchemaValidationOptions &
+      BaseSchemaIndexOptions);
 
 export type SchemaDefinitionValue =
   | BaseSchema
@@ -43,13 +43,14 @@ export type SchemaDefinitionValue =
   | typeof Map
   | typeof Set
   | [SchemaDefinitionValue]
+  | ({ type: BaseSchema } & BaseSchemaValidateOptions & BaseSchemaIndexOptions)
   | ({ type: typeof Boolean } & BaseSchemaValidateOptions &
-    BaseSchemaIndexOptions)
+      BaseSchemaIndexOptions)
   | ({ type: typeof Date } & BaseSchemaValidateOptions & BaseSchemaIndexOptions)
   | ({ type: typeof Map } & BaseSchemaValidateOptions & BaseSchemaIndexOptions)
   | ({ type: typeof Set } & BaseSchemaValidateOptions & BaseSchemaIndexOptions)
   | ({ type: [SchemaDefinitionValue] } & BaseSchemaValidateOptions &
-    BaseSchemaIndexOptions);
+      BaseSchemaIndexOptions);
 
 export type SchemaDefinition<RawDocType> = Partial<
   Record<keyof RawDocType, SchemaDefinitionValue>
@@ -58,10 +59,10 @@ export type SchemaDefinition<RawDocType> = Partial<
 export type ObtainSchemaGeneric<
   TSchema,
   alias extends
-  | 'DocType'
-  | 'TInstanceMethods'
-  | 'TVirtualProperties'
-  | 'TStaticMethods',
+    | 'DocType'
+    | 'TInstanceMethods'
+    | 'TVirtualProperties'
+    | 'TStaticMethods',
 > =
   TSchema extends Schema<
     infer DocType,
@@ -69,13 +70,13 @@ export type ObtainSchemaGeneric<
     infer TVirtualProperties,
     infer TStaticMethods
   >
-  ? {
-    DocType: DocType;
-    TInstanceMethods: TInstanceMethods;
-    TVirtualProperties: TVirtualProperties;
-    TStaticMethods: TStaticMethods;
-  }[alias]
-  : unknown;
+    ? {
+        DocType: DocType;
+        TInstanceMethods: TInstanceMethods;
+        TVirtualProperties: TVirtualProperties;
+        TStaticMethods: TStaticMethods;
+      }[alias]
+    : unknown;
 
 export type InferSchemaType<TSchema> = IfAny<
   TSchema,
@@ -89,19 +90,21 @@ export type InjectFunctionContext<C, F> = F extends (...args: any) => any
 
 export type FindMiddlewareContext<T, HydratedDoc> =
   T extends Array<any>
-  ? T[0]
-  : T extends RegExp
-  ? any
-  : T extends 'save' | 'validate'
-  ? HydratedDoc
-  : IQuery<any, any>;
+    ? T[0]
+    : T extends RegExp
+      ? any
+      : T extends 'save' | 'validate'
+        ? HydratedDoc
+        : IQuery<any, any>;
 
 export interface SchemaOptions {
   keyPath: string;
   timestamps?: TimestampOption;
 }
 
-export interface SchemaMethodOptions { }
+export interface SchemaMethodOptions {
+  path?: string;
+}
 
 export interface SchemaSaveMethodOptions extends SchemaMethodOptions {
   transaction: IDBTransaction;

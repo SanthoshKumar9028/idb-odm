@@ -75,7 +75,7 @@ export abstract class BaseSchema<
 
     if (required) {
       this.validationRules.push(
-        new RequiredValidationRule({ message: `${name} is required!` })
+        new RequiredValidationRule({ message: '{KEY} is required!' })
       );
     }
   }

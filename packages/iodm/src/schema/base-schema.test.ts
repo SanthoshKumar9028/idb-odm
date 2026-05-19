@@ -85,7 +85,9 @@ describe('BaseSchema', () => {
         (rule) => rule instanceof RequiredValidationRule
       )
     ).toBe(true);
-    expect(() => schema.validate('', {} as any)).toThrow('req is required!');
+    expect(() => schema.validate('', { path: 'req' })).toThrow(
+      'req is required!'
+    );
     expect(schema.validate('value', {} as any)).toBe(true);
   });
 

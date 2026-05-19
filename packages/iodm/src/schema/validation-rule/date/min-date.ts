@@ -1,3 +1,4 @@
+import type { SchemaMethodOptions } from '../../types';
 import type { ValidationRuleOptions } from '../validate';
 import { ValidationRule } from '../validate';
 
@@ -13,9 +14,9 @@ export class MinDateValidationRule extends ValidationRule {
     this.min = options.min;
   }
 
-  validate(value: unknown): boolean {
+  validate(value: unknown, options: SchemaMethodOptions): boolean {
     if (value instanceof Date && value < this.min) {
-      this.throwMessage({ value });
+      this.throwMessage(value, options);
     }
 
     return true;

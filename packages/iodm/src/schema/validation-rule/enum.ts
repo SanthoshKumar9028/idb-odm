@@ -1,3 +1,4 @@
+import type { SchemaMethodOptions } from '../types';
 import type { ValidationRuleOptions } from './validate';
 import { ValidationRule } from './validate';
 
@@ -13,9 +14,9 @@ export class EnumValidationRule<T> extends ValidationRule {
     this.enumValues = options.enumValues;
   }
 
-  validate(value: any): boolean {
+  validate(value: any, options: SchemaMethodOptions): boolean {
     if (!this.enumValues.includes(value)) {
-      this.throwMessage({ value });
+      this.throwMessage(value, options);
     }
 
     return true;

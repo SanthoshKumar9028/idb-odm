@@ -17,7 +17,17 @@ export class RefArraySchema extends RefSchema {
       throw new Error('cant cast to a array');
     }
 
-    return value.every((v) => super.validate(v, options));
+    return value.every((v, i) => {
+      let indexPath = String(i);
+
+      if (options.path) {
+        indexPath = `${options.path}.${indexPath}`;
+      } else if (this.name) {
+        indexPath = `${this.name}.${indexPath}`;
+      }
+
+      return this.valueSchema.validate(v, { ...options, path: indexPath });
+    });
   }
 
   async save(value: unknown, options: SchemaSaveMethodOptions) {
