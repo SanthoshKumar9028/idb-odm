@@ -175,10 +175,13 @@ describe('RefSchema', () => {
       transaction: mockTransaction as any,
     } as any);
 
-    expect(mockRefModelConstructor).toHaveBeenCalledWith({
-      _id: 1,
-      name: 'John',
-    });
+    expect(mockRefModelConstructor).toHaveBeenCalledWith(
+      {
+        _id: 1,
+        name: 'John',
+      },
+      { isNew: false }
+    );
     expect(mockSave).toHaveBeenCalledWith({ transaction: mockTransaction });
   });
 

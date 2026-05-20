@@ -10,9 +10,9 @@ import { AbstractModel } from './model';
 
 /**
  * Iodm is the main class of the package. It is used to create models and apply plugins.
- * 
+ *
  * @remarks
- * Iodm is a Singleton class, meaning that there is only one instance of it throughout the application. 
+ * Iodm is a Singleton class, meaning that there is only one instance of it throughout the application.
  * This instance is exported as the default export of the package.
  */
 export class Iodm {
@@ -29,7 +29,7 @@ export class Iodm {
 
   /**
    * Registers a plugin to be applied to all models created after the plugin is registered.
-   * 
+   *
    * @param fn - The plugin function to be registered. This function will be called with the schema of each model created after the plugin is registered.
    * @param opt - Optional options to be passed to the plugin function when it is called.
    */
@@ -45,20 +45,20 @@ export class Iodm {
 
   /**
    * Creates a new model with the given name and schema.
-   * 
+   *
    * @example
    * ```ts
    * import iodm from 'iodm';
-   * 
+   *
    * const userSchema = new Schema({
    *   name: String,
    *   age: Number,
    * });
-   * 
+   *
    * const UserModel = iodm.model('User', userSchema);
    * UserModel.find({ name: 'John' }).then(users => console.log(users));
    * ```
-   * 
+   *
    * @param name - The name of the model to be created.
    * @param schema - The schema for the model to be created.
    * @returns The created model.
@@ -72,7 +72,7 @@ export class Iodm {
     ObtainSchemaGeneric<TSchema, 'TVirtualProperties'>
   > &
     ObtainSchemaGeneric<TSchema, 'TStaticMethods'> {
-    const NewModel: IModel = class extends AbstractModel { } as IModel;
+    const NewModel: IModel = class extends AbstractModel {} as IModel;
 
     const newSchema = schema.clone();
 
@@ -86,16 +86,16 @@ export class Iodm {
 
 /**
  * Instance of Iodm class. This is the default export of the package and can be used to create models and apply plugins.
- * 
+ *
  * @example
  * ```ts
  * import iodm from 'iodm';
- * 
+ *
  * const userSchema = new Schema({
  *   name: String,
  *   age: Number,
  * });
- * 
+ *
  * const UserModel = iodm.model('User', userSchema);
  * UserModel.find({ name: 'John' }).then(users => console.log(users));
  * ```

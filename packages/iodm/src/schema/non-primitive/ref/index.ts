@@ -57,7 +57,8 @@ export class RefSchema extends BaseSchema<RefSchemaConstructorOptions> {
 
     const RefModel = this.getRefModel();
 
-    const modelObj = value instanceof RefModel ? value : new RefModel(value);
+    const modelObj =
+      value instanceof RefModel ? value : new RefModel(value, { isNew: false });
 
     try {
       return modelObj.save({ transaction: options.transaction });
