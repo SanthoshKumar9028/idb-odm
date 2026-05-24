@@ -89,7 +89,7 @@ class AbstractModelClass implements ModelInstance {
       }
 
       try {
-        this.validate();
+        this.validate(options);
       } catch (err) {
         this._documentMiddleware.execPost('validate', this, err);
         throw err;
@@ -151,11 +151,8 @@ class AbstractModelClass implements ModelInstance {
    * @returns A boolean indicating whether the instance is valid.
    * @throws Will throw an error if validation fails.
    */
-  validate(): boolean {
-    return this.getInstanceSchema().validate(
-      this,
-      this._getSchemaMethodOptions()
-    );
+  validate(options: ModelSaveOptions = {}): boolean {
+    return this.getInstanceSchema().validate(this, options);
   }
 
   /**
@@ -434,16 +431,16 @@ class AbstractModelClass implements ModelInstance {
 
   /**
    * Inserts a single document into the database.
-   * 
+   *
    * @example
    * ```ts
    * const user = await UserModel.insertOne({ name: 'John', age: 30 });
    * console.log(user);
    * ```
-   * 
+   *
    * @remarks
    * Nested schema values will be saved to it's corresponding object stores.
-   * 
+   *
    * @param doc - The document to be inserted into the database.
    * @param options - Optional settings for the insertOne operation.
    * @returns A promise that resolves with the inserted document, including any default values and generated keys.

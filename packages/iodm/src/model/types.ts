@@ -20,10 +20,9 @@ import type {
   QueryUpdateOneOptions,
 } from 'iodm-query';
 import type { Schema } from '../schema';
+import type { SchemaSaveMethodOptions } from '../schema/types';
 
-export interface ModelSaveOptions {
-  transaction?: IDBTransaction;
-}
+export type ModelSaveOptions = Partial<SchemaSaveMethodOptions>;
 
 export interface ModelInstance {
   save(options?: ModelSaveOptions): Promise<any>;

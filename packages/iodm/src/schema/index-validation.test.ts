@@ -360,6 +360,33 @@ describe('Schema validation', () => {
         roots.validate({ _id: 1, children: [{ nodeId: -1 }] }, {} as any)
       ).toThrow('children.0.nodeId must be greater then or equal to 1');
     });
+
+    it('should pass correct path when saving ref object', () => {
+      const mockSave = vi.fn();
+      const mockModel = class {
+        static getSchema = vi.fn(() => ({
+          getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+        }));
+        save = mockSave;
+      };
+
+      iodm.models['User'] = mockModel as any;
+
+      const schema = new Schema(
+        {
+          nodeId: {
+            type: Number,
+            ref: 'User',
+            min: 1,
+            required: true,
+          },
+        },
+        { keyPath: 'nodeId' }
+      );
+
+      schema.save({ nodeId: { _id: 5, name: 'John' } }, {} as any);
+      expect(mockSave).toHaveBeenCalledWith({ path: 'nodeId' });
+    });
   });
 
   describe('ArrayRef', () => {
@@ -395,6 +422,43 @@ describe('Schema validation', () => {
           {} as any
         )
       ).toThrow('orders.0.orderId must be greater then or equal to 1');
+    });
+
+    it('should pass correct path when saving ref objects', () => {
+      const mockSave = vi.fn();
+      const mockModel = class {
+        static getSchema = vi.fn(() => ({
+          getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+        }));
+        save = mockSave;
+      };
+
+      iodm.models['User'] = mockModel as any;
+
+      const schema = new Schema({
+        orders: [
+          {
+            type: Number,
+            ref: 'User',
+            min: 1,
+            required: true,
+          },
+        ],
+      });
+
+      schema.save(
+        {
+          _id: 1,
+          orders: [
+            { orderId: 1, name: 'test order 1' },
+            { orderId: 2, name: 'test order 2' },
+          ],
+        },
+        {} as any
+      );
+      expect(mockSave).toHaveBeenCalledTimes(2);
+      expect(mockSave).toHaveBeenNthCalledWith(1, { path: 'orders.0' });
+      expect(mockSave).toHaveBeenNthCalledWith(2, { path: 'orders.1' });
     });
   });
 });

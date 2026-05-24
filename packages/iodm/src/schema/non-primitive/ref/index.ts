@@ -61,7 +61,7 @@ export class RefSchema extends BaseSchema<RefSchemaConstructorOptions> {
       value instanceof RefModel ? value : new RefModel(value, { isNew: false });
 
     try {
-      return modelObj.save({ transaction: options.transaction });
+      return modelObj.save(options);
     } catch (e) {
       options.transaction.abort();
       throw e;

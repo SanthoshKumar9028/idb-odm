@@ -334,8 +334,20 @@ export class Schema<
       throw new Error('value must be an Object');
     }
 
+    let path = '';
+    if (options.path && this.name) {
+      path = `${options.path}.${this.name}`;
+    } else if (options.path) {
+      path = options.path;
+    } else if (this.name) {
+      path = this.name;
+    }
+
     for (const prop in this.tree) {
-      await this.tree[prop].save(value[prop as keyof typeof value], options);
+      await this.tree[prop].save(value[prop as keyof typeof value], {
+        ...options,
+        path: path ? `${path}.${prop}` : prop,
+      });
     }
   }
 

@@ -32,7 +32,19 @@ export class RefArraySchema extends RefSchema {
 
   async save(value: unknown, options: SchemaSaveMethodOptions) {
     if (!Array.isArray(value)) return;
-    return Promise.all(value.map((v) => super.save(v, options)));
+    return Promise.all(
+      value.map((v, i) => {
+        let indexPath = String(i);
+
+        if (options.path) {
+          indexPath = `${options.path}.${indexPath}`;
+        } else if (this.name) {
+          indexPath = `${this.name}.${indexPath}`;
+        }
+
+        super.save(v, { ...options, path: indexPath });
+      })
+    );
   }
 
   async preProcess(
