@@ -64,7 +64,7 @@ export const timestampsPlugin: PluginFn<any, any, any, any, any> = (
 
         this.options.insertList.forEach((doc) => {
           if (doc && typeof doc === 'object') {
-            if (enableCreatedAt) {
+            if (enableCreatedAt && !doc[createdAtKeyName]) {
               doc[createdAtKeyName] = curDate;
             }
 
@@ -87,7 +87,13 @@ export const timestampsPlugin: PluginFn<any, any, any, any, any> = (
           this.options.payload = (...args) => {
             const doc = updater(...args);
             if (doc && typeof doc === 'object') {
-              doc[updatedAtKeyName] = new Date();
+              const curDate = new Date();
+
+              if (enableCreatedAt && !doc[createdAtKeyName]) {
+                doc[createdAtKeyName] = curDate;
+              }
+
+              doc[updatedAtKeyName] = curDate;
             }
             return doc;
           };
@@ -102,7 +108,13 @@ export const timestampsPlugin: PluginFn<any, any, any, any, any> = (
 
       case 'replaceOne':
         if (this.options.payload && typeof this.options.payload === 'object') {
-          this.options.payload[updatedAtKeyName] = new Date();
+          const curDate = new Date();
+
+          if (enableCreatedAt && !this.options.payload[createdAtKeyName]) {
+            this.options.payload[createdAtKeyName] = curDate;
+          }
+
+          this.options.payload[updatedAtKeyName] = curDate;
         }
         break;
     }

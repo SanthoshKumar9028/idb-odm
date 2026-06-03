@@ -20,7 +20,6 @@
     "url": "https://github.com/SanthoshKumar9028/idb-odm"
   },
   "scripts": {
-    "dev": "vite",
     "build": "tsc -b && vite build",
     "api:extractor": "api-extractor run --local --verbose",
     "api:documenter": "api-documenter markdown --input-folder temp --output-folder docs/pages",

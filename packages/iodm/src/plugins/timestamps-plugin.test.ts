@@ -98,6 +98,32 @@ describe('timestampsPlugin', () => {
         expect((doc as any).updatedAt).toBeInstanceOf(Date);
       });
     });
+
+    it('should not add timestamps to inserted docs if createdAt present', () => {
+      timestampsPlugin(schema, true);
+
+      const insertHook = schema.pre.mock.calls.find(
+        ([event]: any) => event === 'insertMany'
+      )[1];
+
+      const createdAt = new Date(2018, 7, 30);
+
+      const docs = [{ createdAt }, { createdAt }];
+
+      const ctx: any = {
+        options: {
+          type: 'insertMany',
+          insertList: docs,
+        },
+      };
+
+      insertHook.call(ctx);
+
+      docs.forEach((doc) => {
+        expect((doc as any).createdAt).toEqual(createdAt);
+        expect((doc as any).updatedAt).toBeInstanceOf(Date);
+      });
+    });
   });
 
   describe('addUpdatedAt hook (object payload)', () => {
@@ -145,6 +171,58 @@ describe('timestampsPlugin', () => {
       expect(originalFn).toHaveBeenCalled();
       expect(result.updatedAt).toBeInstanceOf(Date);
     });
+
+    it('should add timestamps to updated docs if createdAt not present', () => {
+      timestampsPlugin(schema, true);
+
+      const updateHook = schema.pre.mock.calls.find(
+        ([event]: any) => event === 'updateOne'
+      )[1];
+
+      const originalFn = vi.fn().mockReturnValue({});
+
+      const ctx: any = {
+        options: {
+          type: 'updateOne',
+          payload: originalFn,
+        },
+      };
+
+      updateHook.call(ctx);
+
+      const result = ctx.options.payload();
+
+      expect(originalFn).toHaveBeenCalled();
+      expect(result.createdAt).toBeInstanceOf(Date);
+      expect(result.updatedAt).toBeInstanceOf(Date);
+    });
+
+    it('should not add timestamps to updated docs if createdAt present', () => {
+      timestampsPlugin(schema, true);
+
+      const updateHook = schema.pre.mock.calls.find(
+        ([event]: any) => event === 'updateOne'
+      )[1];
+
+      const createdAt = new Date(2018, 7, 30);
+
+      const originalFn = vi.fn().mockReturnValue({ createdAt });
+
+      const ctx: any = {
+        options: {
+          type: 'updateOne',
+          payload: originalFn,
+        },
+      };
+
+      updateHook.call(ctx);
+
+      const result = ctx.options.payload();
+
+      expect(originalFn).toHaveBeenCalled();
+      expect(result.createdAt).toEqual(createdAt);
+      expect(result.updatedAt).toBeInstanceOf(Date);
+    });
   });
 
   describe('replaceOne behavior', () => {
@@ -166,6 +244,31 @@ describe('timestampsPlugin', () => {
 
       replaceHook.call(ctx);
 
+      expect(payload.updatedAt).toBeInstanceOf(Date);
+      expect(payload.createdAt).toBeInstanceOf(Date);
+    });
+
+    it('should not add timestamps to updated docs if createdAt present', () => {
+      timestampsPlugin(schema, true);
+
+      const replaceHook = schema.pre.mock.calls.find(
+        ([event]: any) => event === 'replaceOne'
+      )[1];
+
+      const createdAt = new Date(2018, 7, 30);
+
+      const payload: any = { createdAt };
+
+      const ctx: any = {
+        options: {
+          type: 'replaceOne',
+          payload,
+        },
+      };
+
+      replaceHook.call(ctx);
+
+      expect(payload.createdAt).toEqual(createdAt);
       expect(payload.updatedAt).toBeInstanceOf(Date);
     });
   });
