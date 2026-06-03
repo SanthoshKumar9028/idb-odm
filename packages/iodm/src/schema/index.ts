@@ -267,13 +267,21 @@ export class Schema<
   }
 
   /**
-   * Get all reference names used in the schema,
+   * Get all reference names used in the schema and it's childs,
    * useful for creating transactions that involve multiple models.
    *
-   * @returns array of reference names used in the schema
+   * @returns array of reference names used in the schema and it's childs
    */
   getRefNames(): string[] {
-    return [...this.refNames.values()];
+    const refNamesSet = new Set([...this.refNames.values()]);
+
+    for (const key in this.tree) {
+      this.tree[key].getRefNames().forEach((name) => {
+        refNamesSet.add(name);
+      });
+    }
+
+    return [...refNamesSet.values()];
   }
 
   /**

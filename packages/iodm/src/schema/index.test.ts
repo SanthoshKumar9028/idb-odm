@@ -8,6 +8,7 @@ describe('Schema', () => {
     const mockModel = {
       getSchema: vi.fn(() => ({
         getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+        getRefNames: vi.fn(() => ['Street', 'Street']),
       })),
     };
 
@@ -126,18 +127,22 @@ describe('Schema', () => {
     );
   });
 
-  it('should parse ref field', () => {
-    const schema = new Schema({ authorId: { type: String, ref: 'User' } });
+  describe('getRefNames', () => {
+    it('should return the ref name for a single ref field', () => {
+      const schema = new Schema({ address: { type: String, ref: 'Address' } });
 
-    expect(schema.getRefNames()).toContain('User');
-  });
-
-  it('should parse ref array field', () => {
-    const schema = new Schema({
-      tags: [{ type: String, ref: 'Tag' }],
+      expect(schema.getRefNames()).toEqual(['Address', 'Street']);
+      expect(schema.getRefNames()).toHaveLength(2);
     });
 
-    expect(schema.getRefNames()).toContain('Tag');
+    it('should return the ref name for an array ref field', () => {
+      const schema = new Schema({
+        address: [{ type: String, ref: 'Address' }],
+      });
+
+      expect(schema.getRefNames()).toEqual(['Address', 'Street']);
+      expect(schema.getRefNames()).toHaveLength(2);
+    });
   });
 
   it('should throw for unsupported type', () => {

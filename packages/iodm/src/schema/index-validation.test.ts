@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Schema } from '.';
-import { DateSchema } from './non-primitive/date';
 import iodm from '../iodm';
 
 describe('Schema validation', () => {

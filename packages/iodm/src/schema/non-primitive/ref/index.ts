@@ -30,6 +30,10 @@ export class RefSchema extends BaseSchema<RefSchemaConstructorOptions> {
     return iodm.models[this.ref];
   }
 
+  getRefNames(): string[] {
+    return this.getRefModel().getSchema().getRefNames();
+  }
+
   validate(value: unknown, options: SchemaMethodOptions): boolean {
     const keyPath = this.getRefModel().getSchema().getSchemaOptions().keyPath;
 

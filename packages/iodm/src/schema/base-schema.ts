@@ -106,6 +106,10 @@ export abstract class BaseSchema<
     return true;
   }
 
+  getRefNames(): string[] {
+    return [];
+  }
+
   protected getDefaultValue() {
     return typeof this.defVal === 'function' ? this.defVal() : this.defVal;
   }
