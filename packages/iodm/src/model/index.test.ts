@@ -68,6 +68,19 @@ describe('AbstractModel', () => {
 
     const MockQuery = vi.fn().mockImplementation(() => mockQueryInstance);
     (TestModel as any).Query = MockQuery;
+
+    const mockModel = {
+      getSchema: vi.fn(() => ({
+        getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+        getRefNames: vi.fn(() => ['Street', 'Street']),
+      })),
+    };
+
+    iodm.models['Address'] = mockModel as any;
+  });
+
+  afterEach(() => {
+    iodm.models = {};
   });
 
   it('should throw when schema/db/store is missing', () => {
@@ -97,6 +110,45 @@ describe('AbstractModel', () => {
     const db = createFakeDB();
     TestModel.init(db);
     expect(TestModel.getDB()).toBe(db);
+  });
+
+  it('should apply default value when instance is created', () => {
+    const userSchema = new Schema({
+      name: { type: String, default: 'Unknown' },
+      age: { type: String, default: () => 18 },
+      roles: { type: [{ type: Number }], default: [0] },
+      numbers: { type: [{ type: String, default: 'N/A' }] },
+      address: { type: String, ref: 'Address', default: 'test_address' },
+      arrayRef: { type: [{ type: String, ref: 'Address' }], default: [] },
+      arrayRefValue: {
+        type: [{ type: String, ref: 'Address', default: 'N/A' }],
+        default: [],
+      },
+    });
+
+    const UserModel = iodm.model('testStore', userSchema);
+    const testUser = new UserModel({
+      numbers: ['1234', null, undefined],
+      arrayRefValue: ['1234', null, undefined],
+    });
+
+    expect({
+      name: testUser.name,
+      age: testUser.age,
+      roles: testUser.roles,
+      numbers: testUser.numbers,
+      address: testUser.address,
+      arrayRef: testUser.arrayRef,
+      arrayRefValue: testUser.arrayRefValue,
+    }).toEqual({
+      name: 'Unknown',
+      age: 18,
+      roles: [0],
+      numbers: ['1234', 'N/A', 'N/A'],
+      address: 'test_address',
+      arrayRef: [],
+      arrayRefValue: ['1234', 'N/A', 'N/A'],
+    });
   });
 
   it('preProcess should return doc from schema preProcess', async () => {

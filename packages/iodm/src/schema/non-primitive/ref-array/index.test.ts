@@ -149,6 +149,32 @@ describe('RefArraySchema', () => {
     );
   });
 
+  it('castForm should throw error for non-array values', () => {
+    const mockModel = {
+      getSchema: vi.fn(() => ({
+        getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+      })),
+    };
+
+    iodm.models['User'] = mockModel as any;
+
+    const valueSchema = new NumberSchema({ name: 'id' });
+    const refArraySchema = new RefArraySchema({
+      ref: 'User',
+      valueSchema,
+    });
+
+    expect(() => refArraySchema.castFrom('not-array', {} as any)).toThrow(
+      'cant cast to a array'
+    );
+    expect(() => refArraySchema.castFrom(123, {} as any)).toThrow(
+      'cant cast to a array'
+    );
+    expect(() => refArraySchema.castFrom({}, {} as any)).toThrow(
+      'cant cast to a array'
+    );
+  });
+
   it('castFrom should cast all array elements', () => {
     const mockModel = {
       getSchema: vi.fn(() => ({
@@ -467,6 +493,34 @@ describe('RefArraySchema', () => {
     });
     expect(schema2.castFrom(undefined, {})).toEqual([2]);
     expect(schema2.castFrom(null, {})).toEqual([2]);
+  });
+
+  describe('applyDefaults', () => {
+    it('should return default value for undefined or null value', () => {
+      const mockModel = {
+        getSchema: vi.fn(() => ({
+          getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+        })),
+      };
+
+      iodm.models['User'] = mockModel as any;
+
+      const schema = new RefArraySchema({
+        valueSchema: new NumberSchema({ name: 'item' }),
+        default: [1],
+        ref: 'User',
+      });
+      expect(schema.applyDefaults(undefined, {})).toEqual([1]);
+      expect(schema.applyDefaults(null, {})).toEqual([1]);
+
+      const schema2 = new RefArraySchema({
+        valueSchema: new NumberSchema({ name: 'item' }),
+        default: [{ _id: 2 }],
+        ref: 'User',
+      });
+      expect(schema2.applyDefaults(undefined, {})).toEqual([2]);
+      expect(schema2.applyDefaults(null, {})).toEqual([2]);
+    });
   });
 
   it('clone should returns cloned schema', () => {

@@ -37,14 +37,23 @@ export class ArraySchema extends BaseSchema<ArraySchemaConstructorOptions> {
     return true;
   }
 
-  castFrom(value: unknown, options: SchemaMethodOptions) {
+  getArrayFinalValue(value: unknown) {
     let val: unknown = this.getFinalValue(value);
     if (val === undefined || val === null) return val;
     if (!Array.isArray(val)) {
       throw new Error('cant cast to a array');
     }
+    return val;
+  }
 
-    return val.map((v) => this.valueSchema.castFrom(v, options));
+  applyDefaults(value: unknown, options: SchemaMethodOptions) {
+    const val = this.getArrayFinalValue(value);
+    return val?.map((v) => this.valueSchema.applyDefaults(v, options));
+  }
+
+  castFrom(value: unknown, options: SchemaMethodOptions) {
+    const val = this.getArrayFinalValue(value);
+    return val?.map((v) => this.valueSchema.castFrom(v, options));
   }
 
   clone(): ArraySchema {

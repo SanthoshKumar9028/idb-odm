@@ -110,6 +110,10 @@ export abstract class BaseSchema<
     return [];
   }
 
+  applyDefaults(value: unknown, _: SchemaMethodOptions): unknown {
+    return this.getFinalValue(value);
+  }
+
   protected getDefaultValue() {
     return typeof this.defVal === 'function' ? this.defVal() : this.defVal;
   }

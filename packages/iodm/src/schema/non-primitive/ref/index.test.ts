@@ -375,4 +375,22 @@ describe('RefSchema', () => {
     });
     expect(schema.clone()).toBeInstanceOf(RefSchema);
   });
+
+  describe('applyDefaults', () => {
+    it('should return default value for undefined or null value', () => {
+      const mockModel = {
+        getSchema: vi.fn(() => ({
+          getSchemaOptions: vi.fn(() => ({ keyPath: '_id' })),
+        })),
+      };
+
+      iodm.models['User'] = mockModel as any;
+      const schema = new RefSchema({
+        valueSchema: new NumberSchema({ name: 'item', default: 1 }),
+        ref: 'User',
+      });
+      expect(schema.applyDefaults(undefined, {})).toBe(1);
+      expect(schema.applyDefaults(null, {})).toBe(1);
+    });
+  });
 });

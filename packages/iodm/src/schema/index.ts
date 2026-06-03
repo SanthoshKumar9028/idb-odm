@@ -663,6 +663,28 @@ export class Schema<
   }
 
   /**
+   * Applies default values to the given document according to the schema definition.
+   *
+   * @remarks
+   * This method is called internally by the top level model when creating a new document.
+   * Normally, there is no need to call it manually, unless you want to apply defaults to a document before creating an instance of the model.
+   *
+   * @param doc
+   * @param options
+   * @returns Returns the document with default values applied
+   */
+  applyDefaults(doc: unknown, options: SchemaMethodOptions) {
+    if (!doc || typeof doc !== 'object') return;
+
+    for (const prop in this.tree) {
+      doc[prop as keyof typeof doc] = this.tree[prop].applyDefaults(
+        doc[prop as keyof typeof doc],
+        options
+      ) as never;
+    }
+  }
+
+  /**
    * Enables broadcasting for the given event, when the event is emitted, the payload prepared by the prepare function
    * will be sent to the middleware registered with the `broadcastHook` method, in the other tabs or windows,
    * which can be used to implement real-time features.

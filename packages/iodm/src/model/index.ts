@@ -34,6 +34,11 @@ import { generateNumberId, generateStringId, isPostMessage } from './helpers';
 import { StringSchema } from '../schema/primitive/string';
 import { NumberSchema } from '../schema/primitive/number';
 
+export const defaultModelOptions: ModelOptions = {
+  defaults: true,
+  isNew: true,
+};
+
 /**
  * AbstractModelClass is an abstract class that serves as the base for all models in the ODM.
  * It should not be instantiated directly. Instead, use `iodm.model` to create a model class that extends AbstractModelClass,
@@ -51,14 +56,18 @@ class AbstractModelClass implements ModelInstance {
    * @param options - Optional settings for the instance creation.
    * @param options.isNew - A boolean indicating whether the instance is new (default: true).
    */
-  constructor(defaultValues: any, options?: ModelOptions) {
+  constructor(doc: any, options: ModelOptions = defaultModelOptions) {
     this._isNew = options?.isNew ?? true;
     this._documentMiddleware = Object.getPrototypeOf(this)._documentMiddleware;
 
-    if (defaultValues && typeof defaultValues === 'object') {
-      for (const key in defaultValues) {
-        (this as any)[key] = defaultValues[key];
+    if (doc && typeof doc === 'object') {
+      for (const key in doc) {
+        (this as any)[key] = doc[key];
       }
+    }
+
+    if (options.defaults) {
+      this.getInstanceSchema().applyDefaults(this, {});
     }
   }
 

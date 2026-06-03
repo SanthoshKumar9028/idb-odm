@@ -3,38 +3,6 @@ import { ArraySchema } from './index';
 import { NumberSchema } from '../../primitive/number';
 
 describe('ArraySchema', () => {
-  it('should cast arrays using value schema', () => {
-    const arraySchema = new ArraySchema({
-      name: 'numbers',
-      valueSchema: new NumberSchema({ name: 'item' }),
-    });
-
-    const result = arraySchema.castFrom([1, 2, 3], {} as any);
-
-    expect(result).toEqual([1, 2, 3]);
-  });
-
-  it('should pass through undefined/null for castFrom', () => {
-    const arraySchema = new ArraySchema({
-      name: 'numbers',
-      valueSchema: new NumberSchema({ name: 'item' }),
-    });
-
-    expect(arraySchema.castFrom(undefined, {} as any)).toBeUndefined();
-    expect(arraySchema.castFrom(null, {} as any)).toBeNull();
-  });
-
-  it('should throw for non-array values in castFrom', () => {
-    const arraySchema = new ArraySchema({
-      name: 'numbers',
-      valueSchema: new NumberSchema({ name: 'item' }),
-    });
-
-    expect(() => arraySchema.castFrom('not-an-array', {} as any)).toThrow(
-      'cant cast to a array'
-    );
-  });
-
   it('should validate elements with valueSchema rules', () => {
     const arraySchema = new ArraySchema({
       name: 'numbers',
@@ -60,28 +28,73 @@ describe('ArraySchema', () => {
     );
   });
 
-  it('should return default value for undefined or null value', () => {
-    const schema = new ArraySchema({
-      valueSchema: new NumberSchema({ name: 'item', default: 2 }),
-      default: [1, undefined],
-    });
-    expect(schema.castFrom(undefined, {})).toEqual([1, 2]);
-    expect(schema.castFrom(null, {})).toEqual([1, 2]);
-  });
-
-  it('should execute and return default value for undefined or null value when function is given', () => {
-    const schema = new ArraySchema({
-      valueSchema: new NumberSchema({ name: 'item' }),
-      default: () => [1, 2],
-    });
-    expect(schema.castFrom(undefined, {})).toEqual([1, 2]);
-    expect(schema.castFrom(null, {})).toEqual([1, 2]);
-  });
-
   it('clone should returns cloned schema', () => {
     const schema = new ArraySchema({
       valueSchema: new NumberSchema({ name: 'item' }),
     });
     expect(schema.clone()).toBeInstanceOf(ArraySchema);
+  });
+
+  describe('applyDefaults', () => {
+    it('should return default value for undefined or null value', () => {
+      const schema = new ArraySchema({
+        valueSchema: new NumberSchema({ name: 'item', default: 2 }),
+        default: [1, undefined],
+      });
+      expect(schema.applyDefaults(undefined, {})).toEqual([1, 2]);
+      expect(schema.applyDefaults(null, {})).toEqual([1, 2]);
+    });
+  });
+
+  describe('castFrom', () => {
+    it('should cast arrays using value schema', () => {
+      const arraySchema = new ArraySchema({
+        name: 'numbers',
+        valueSchema: new NumberSchema({ name: 'item' }),
+      });
+
+      const result = arraySchema.castFrom([1, 2, 3], {} as any);
+
+      expect(result).toEqual([1, 2, 3]);
+    });
+
+    it('should pass through undefined/null for castFrom', () => {
+      const arraySchema = new ArraySchema({
+        name: 'numbers',
+        valueSchema: new NumberSchema({ name: 'item' }),
+      });
+
+      expect(arraySchema.castFrom(undefined, {} as any)).toBeUndefined();
+      expect(arraySchema.castFrom(null, {} as any)).toBeUndefined();
+    });
+
+    it('should throw for non-array values in castFrom', () => {
+      const arraySchema = new ArraySchema({
+        name: 'numbers',
+        valueSchema: new NumberSchema({ name: 'item' }),
+      });
+
+      expect(() => arraySchema.castFrom('not-an-array', {} as any)).toThrow(
+        'cant cast to a array'
+      );
+    });
+
+    it('should return default value for undefined or null value', () => {
+      const schema = new ArraySchema({
+        valueSchema: new NumberSchema({ name: 'item', default: 2 }),
+        default: [1, undefined],
+      });
+      expect(schema.castFrom(undefined, {})).toEqual([1, 2]);
+      expect(schema.castFrom(null, {})).toEqual([1, 2]);
+    });
+
+    it('should execute and return default value for undefined or null value when function is given', () => {
+      const schema = new ArraySchema({
+        valueSchema: new NumberSchema({ name: 'item' }),
+        default: () => [1, 2],
+      });
+      expect(schema.castFrom(undefined, {})).toEqual([1, 2]);
+      expect(schema.castFrom(null, {})).toEqual([1, 2]);
+    });
   });
 });

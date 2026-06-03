@@ -33,6 +33,7 @@ export interface ModelInstance {
 
 export interface ModelOptions {
   isNew?: boolean;
+  defaults?: boolean;
 }
 
 export interface IModel<
