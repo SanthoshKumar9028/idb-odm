@@ -6,6 +6,7 @@ export interface ConfigureIndexedDBProps {
   models: Array<IModel<any, any, any>>;
   onUpgradeNeededPre?: (event: IDBOpenDBRequest) => any;
   onUpgradeNeededPost?: (event: IDBOpenDBRequest) => any;
+  onSuccess?: (idb: IDBDatabase) => any;
 }
 
 /**
@@ -64,8 +65,14 @@ export interface ConfigureIndexedDBProps {
 export const configureIDB = async (
   config: ConfigureIndexedDBProps
 ): Promise<IDBDatabase> => {
-  const { models, db, version, onUpgradeNeededPost, onUpgradeNeededPre } =
-    config;
+  const {
+    models,
+    db,
+    version,
+    onUpgradeNeededPost,
+    onUpgradeNeededPre,
+    onSuccess,
+  } = config;
 
   return new Promise((res, rej) => {
     const openReq = indexedDB.open(db, version);
@@ -76,6 +83,8 @@ export const configureIDB = async (
       models.forEach((model) => {
         model.init(this.result);
       });
+
+      onSuccess && onSuccess(this.result);
 
       res(this.result);
     };

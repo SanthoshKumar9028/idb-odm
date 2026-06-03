@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { configureIDB } from './configure';
+import { configureIDB, ConfigureIndexedDBProps } from './configure';
 import type { IModel } from './model/types';
 
 describe('configureIDB', () => {
@@ -233,6 +233,26 @@ describe('configureIDB', () => {
 
       expect(mockModel.onUpgradeNeeded).toHaveBeenCalledWith(mockDB);
       expect(mockModel2.onUpgradeNeeded).toHaveBeenCalledWith(mockDB);
+    });
+  });
+
+  describe('onsuccess', () => {
+    it('should call model onSuccess when onsuccess callback is triggered', async () => {
+      const mockOnSuccess = vi.fn();
+      const config: ConfigureIndexedDBProps = {
+        db: 'testDB',
+        version: 1,
+        models: [mockModel as IModel],
+        onSuccess: mockOnSuccess,
+      };
+
+      const promise = configureIDB(config);
+
+      (mockOpenRequest as any).onsuccess.call({ result: mockDB });
+
+      await promise;
+
+      expect(mockOnSuccess).toHaveBeenCalledWith(mockDB);
     });
   });
 });
