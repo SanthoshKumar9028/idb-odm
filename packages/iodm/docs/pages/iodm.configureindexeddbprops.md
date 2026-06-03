@@ -69,6 +69,25 @@ Array&lt;[IModel](./iodm.imodel.md)<!-- -->&lt;any, any, any&gt;&gt;
 </td></tr>
 <tr><td>
 
+[onSuccess?](./iodm.configureindexeddbprops.onsuccess.md)
+
+
+</td><td>
+
+
+</td><td>
+
+(idb: IDBDatabase) =&gt; any
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
 [onUpgradeNeededPost?](./iodm.configureindexeddbprops.onupgradeneededpost.md)
 
 

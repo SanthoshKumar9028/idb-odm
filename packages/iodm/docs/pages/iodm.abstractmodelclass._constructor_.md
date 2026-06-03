@@ -9,7 +9,7 @@ Creates an instance of AbstractModel.
 **Signature:**
 
 ```typescript
-constructor(defaultValues: any, options?: ModelOptions);
+constructor(doc: any, options?: ModelOptions);
 ```
 
 ## Parameters
@@ -32,7 +32,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-defaultValues
+doc
 
 
 </td><td>
@@ -41,8 +41,6 @@ any
 
 
 </td><td>
-
-An object containing default values for the instance properties.
 
 
 </td></tr>

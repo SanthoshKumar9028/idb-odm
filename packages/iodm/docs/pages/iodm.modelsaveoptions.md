@@ -2,55 +2,12 @@
 
 [Home](./index.md) &gt; [iodm](./iodm.md) &gt; [ModelSaveOptions](./iodm.modelsaveoptions.md)
 
-## ModelSaveOptions interface
+## ModelSaveOptions type
 
 **Signature:**
 
 ```typescript
-export interface ModelSaveOptions 
+export type ModelSaveOptions = Partial<SchemaSaveMethodOptions>;
 ```
-
-## Properties
-
-<table><thead><tr><th>
-
-Property
-
-
-</th><th>
-
-Modifiers
-
-
-</th><th>
-
-Type
-
-
-</th><th>
-
-Description
-
-
-</th></tr></thead>
-<tbody><tr><td>
-
-[transaction?](./iodm.modelsaveoptions.transaction.md)
-
-
-</td><td>
-
-
-</td><td>
-
-IDBTransaction
-
-
-</td><td>
-
-_(Optional)_
-
-
-</td></tr>
-</tbody></table>
+**References:** [SchemaSaveMethodOptions](./iodm.schemasavemethodoptions.md)
 

@@ -35,6 +35,25 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[defaults?](./iodm.modeloptions.defaults.md)
+
+
+</td><td>
+
+
+</td><td>
+
+boolean
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+<tr><td>
+
 [isNew?](./iodm.modeloptions.isnew.md)
 
 

@@ -4,7 +4,7 @@
 
 ## Schema.getRefNames() method
 
-Get all reference names used in the schema, useful for creating transactions that involve multiple models.
+Get all reference names used in the schema and it's childs, useful for creating transactions that involve multiple models.
 
 **Signature:**
 
@@ -15,5 +15,5 @@ getRefNames(): string[];
 
 string\[\]
 
-array of reference names used in the schema
+array of reference names used in the schema and it's childs
 

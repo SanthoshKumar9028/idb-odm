@@ -9,8 +9,45 @@ Validates the current instance against its schema.
 **Signature:**
 
 ```typescript
-validate(): boolean;
+validate(options?: ModelSaveOptions): boolean;
 ```
+
+## Parameters
+
+<table><thead><tr><th>
+
+Parameter
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+options
+
+
+</td><td>
+
+[ModelSaveOptions](./iodm.modelsaveoptions.md)
+
+
+</td><td>
+
+_(Optional)_
+
+
+</td></tr>
+</tbody></table>
+
 **Returns:**
 
 boolean

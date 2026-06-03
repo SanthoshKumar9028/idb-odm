@@ -147,15 +147,6 @@ Description
 </td></tr>
 <tr><td>
 
-[ModelSaveOptions](./iodm.modelsaveoptions.md)
-
-
-</td><td>
-
-
-</td></tr>
-<tr><td>
-
 [SchemaMethodOptions](./iodm.schemamethodoptions.md)
 
 
@@ -243,6 +234,15 @@ Description
 <tr><td>
 
 [InjectFunctionContext](./iodm.injectfunctioncontext.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[ModelSaveOptions](./iodm.modelsaveoptions.md)
 
 
 </td><td>

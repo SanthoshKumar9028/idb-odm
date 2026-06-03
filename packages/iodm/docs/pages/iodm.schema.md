@@ -221,6 +221,20 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[applyDefaults(doc, options)](./iodm.schema.applydefaults.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Applies default values to the given document according to the schema definition.
+
+
+</td></tr>
+<tr><td>
+
 [applyPlugins()](./iodm.schema.applyplugins.md)
 
 
@@ -313,7 +327,7 @@ Executes the broadcast middlewares for the given context, should be called by th
 
 </td><td>
 
-Get all reference names used in the schema, useful for creating transactions that involve multiple models.
+Get all reference names used in the schema and it's childs, useful for creating transactions that involve multiple models.
 
 
 </td></tr>

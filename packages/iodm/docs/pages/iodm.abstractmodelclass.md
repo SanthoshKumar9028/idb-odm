@@ -33,7 +33,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[(constructor)(defaultValues, options)](./iodm.abstractmodelclass._constructor_.md)
+[(constructor)(doc, options)](./iodm.abstractmodelclass._constructor_.md)
 
 
 </td><td>
@@ -545,7 +545,7 @@ Updates a single document in the database that matches the specified filter with
 </td></tr>
 <tr><td>
 
-[validate()](./iodm.abstractmodelclass.validate.md)
+[validate(options)](./iodm.abstractmodelclass.validate.md)
 
 
 </td><td>
