@@ -34,6 +34,15 @@ Description
 </td></tr>
 <tr><td>
 
+[addBroadcastHook(fn)](./iodm.imodel.addbroadcasthook.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [countDocuments(filter, options)](./iodm.imodel.countdocuments.md)
 
 
@@ -62,6 +71,24 @@ Description
 <tr><td>
 
 [deleteOne(filter, options)](./iodm.imodel.deleteone.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[disableBroadcastFor(event)](./iodm.imodel.disablebroadcastfor.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[enableBroadcastFor(event, data)](./iodm.imodel.enablebroadcastfor.md)
 
 
 </td><td>
@@ -179,6 +206,15 @@ Description
 <tr><td>
 
 [preProcess(doc, options)](./iodm.imodel.preprocess.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[removeBroadcastHook(fn)](./iodm.imodel.removebroadcasthook.md)
 
 
 </td><td>

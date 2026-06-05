@@ -67,6 +67,22 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[addBroadcastHook(fn)](./iodm.abstractmodelclass.addbroadcasthook.md)
+
+
+</td><td>
+
+`static`
+
+
+</td><td>
+
+Adds a middleware to be executed when a broadcast is received for the events enabled for broadcasting, can be used to implement real-time features in the application.
+
+
+</td></tr>
+<tr><td>
+
 [countDocuments(filter, options)](./iodm.abstractmodelclass.countdocuments.md)
 
 
@@ -140,6 +156,54 @@ Deletes multiple documents from the database that match the specified filter.
 </td><td>
 
 Deletes a single document from the database that matches the specified filter.
+
+
+</td></tr>
+<tr><td>
+
+[disableBroadcastFor(event)](./iodm.abstractmodelclass.disablebroadcastfor.md)
+
+
+</td><td>
+
+`static`
+
+
+</td><td>
+
+Disables broadcasting for the given event.
+
+
+</td></tr>
+<tr><td>
+
+[enableBroadcastFor(event, data)](./iodm.abstractmodelclass.enablebroadcastfor.md)
+
+
+</td><td>
+
+`static`
+
+
+</td><td>
+
+Enables broadcasting for the given event, when the event is emitted, the payload prepared by the prepare function will be sent to the middleware registered with the `addBroadcastHook` method, in the other tabs or windows, which can be used to implement real-time features.
+
+
+</td></tr>
+<tr><td>
+
+[execBroadcastHooks(ctx, error, result, args)](./iodm.abstractmodelclass.execbroadcasthooks.md)
+
+
+</td><td>
+
+`static`
+
+
+</td><td>
+
+Executes the broadcast middlewares for the given context.
 
 
 </td></tr>
@@ -432,6 +496,22 @@ Opens a iterable cursor, with the cursor object it's possible to iterate one doc
 </td><td>
 
 Pre-processes a document after retrieving it from the database, applying any necessary transformations defined in the schema.
+
+
+</td></tr>
+<tr><td>
+
+[removeBroadcastHook(fn)](./iodm.abstractmodelclass.removebroadcasthook.md)
+
+
+</td><td>
+
+`static`
+
+
+</td><td>
+
+Removes the added middleware from the broadcast hooks.
 
 
 </td></tr>

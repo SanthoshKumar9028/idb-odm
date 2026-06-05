@@ -17,11 +17,37 @@ export declare class Schema<RawDocType = any, TInstanceMethods = {}, TVirtualPro
 
 Try to avoid creating schemas with reserved properties names, such as
 
-- \_isNew - \_documentMiddleware - save - validate - toJSON - getInstanceSchema - getInstanceDB - getInstanceStoreName - createInstanceTransaction - \_getSchemaMethodOptions
+- \_isNew
+
+- \_documentMiddleware
+
+- save
+
+- validate
+
+- toJSON
+
+- getInstanceSchema
+
+- getInstanceDB
+
+- getInstanceStoreName
+
+- createInstanceTransaction
+
+- \_getSchemaMethodOptions
 
 ## Example
 
-\`\`\`<!-- -->ts const userSchema = new Schema(<!-- -->{ name: { type: String, required: true }<!-- -->, age: { type: Number, min: 0 }<!-- -->, email: { type: String, match: /.+<!-- -->@<!-- -->.+<!-- -->.<!-- -->.+/ }<!-- -->, role: { type: String, enum: \['user', 'admin'\] }<!-- -->, }<!-- -->);
+
+```ts
+const userSchema = new Schema({
+ name: { type: String, required: true },
+ age: { type: Number, min: 0 },
+ email: { type: String, match: /.+\@.+\..+/ },
+ role: { type: String, enum: ['user', 'admin'] },
+});
+```
 
 ## Constructors
 
@@ -81,40 +107,6 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
-
-[broadcastEnabledEvents](./iodm.schema.broadcastenabledevents.md)
-
-
-</td><td>
-
-
-</td><td>
-
-Record&lt;string, [BroadcastEnabledEventsOptions](./iodm.broadcastenabledeventsoptions.md)<!-- -->&gt;
-
-
-</td><td>
-
-
-</td></tr>
-<tr><td>
-
-[broadcastMiddleware](./iodm.schema.broadcastmiddleware.md)
-
-
-</td><td>
-
-
-</td><td>
-
-MiddlewareStore
-
-
-</td><td>
-
-
-</td></tr>
-<tr><td>
 
 [methods](./iodm.schema.methods.md)
 
@@ -249,20 +241,6 @@ Applies all the added plugins to the schema, should be called after adding all p
 </td></tr>
 <tr><td>
 
-[broadcastHook(fn)](./iodm.schema.broadcasthook.md)
-
-
-</td><td>
-
-
-</td><td>
-
-Adds a middleware to be executed when a broadcast is received for the events enabled for broadcasting, can be used to implement real-time features in the application.
-
-
-</td></tr>
-<tr><td>
-
 [castFrom(value, options)](./iodm.schema.castfrom.md)
 
 
@@ -286,34 +264,6 @@ Casts the given value to the schema types
 </td><td>
 
 Clones the created schema
-
-
-</td></tr>
-<tr><td>
-
-[enableBroadcastFor(event, data)](./iodm.schema.enablebroadcastfor.md)
-
-
-</td><td>
-
-
-</td><td>
-
-Enables broadcasting for the given event, when the event is emitted, the payload prepared by the prepare function will be sent to the middleware registered with the `broadcastHook` method, in the other tabs or windows, which can be used to implement real-time features.
-
-
-</td></tr>
-<tr><td>
-
-[execBroadcastHooks(ctx, error, result, args)](./iodm.schema.execbroadcasthooks.md)
-
-
-</td><td>
-
-
-</td><td>
-
-Executes the broadcast middlewares for the given context, should be called by the top level model when a broadcast is received.
 
 
 </td></tr>
