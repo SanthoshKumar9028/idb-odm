@@ -17,7 +17,6 @@ export type {
 } from 'iodm-query';
 export type {
   SchemaDefinition,
-  BroadcastEnabledEventsOptions,
   FindMiddlewareContext,
   InjectFunctionContext,
   PluginFn,
@@ -34,6 +33,7 @@ export type {
   ModelInstance,
   ModelOptions,
   ModelSaveOptions,
+  BroadcastEnabledEventsOptions,
 } from './model/types';
 export type { ConfigureIndexedDBProps } from './configure';
 

@@ -126,9 +126,3 @@ export type PluginFn<
   >,
   opt?: any
 ) => void;
-
-export interface BroadcastEnabledEventsOptions {
-  // can be one of the options pre, post, both
-  type: 'pre' | 'post' | 'both';
-  prepare: (payload: any) => any;
-}

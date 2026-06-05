@@ -312,22 +312,19 @@ describe('AbstractModel', () => {
     });
 
     it('should post message for pre event', () => {
-      const schema = new Schema({ name: String });
-      schema.broadcastEnabledEvents = {
-        testEvent: {
-          type: 'pre',
-          prepare: (payload: any) => ({ prepared: payload }),
-        },
-      };
+      TestModel.enableBroadcastFor('save', {
+        type: 'pre',
+        prepare: (payload: any) => ({ prepared: payload }),
+      });
       (TestModel as any).schema = schema;
       (TestModel as any).storeName = 'testStore';
 
-      (TestModel as any).handlePreExec('testEvent', 'testPayload');
+      (TestModel as any).handlePreExec('save', 'testPayload');
 
       expect(iodm.channel.postMessage).toHaveBeenCalledWith({
         model: 'testStore',
         type: 'pre',
-        event: 'testEvent',
+        event: 'save',
         payload: { prepared: 'testPayload' },
       });
     });
@@ -343,20 +340,35 @@ describe('AbstractModel', () => {
     });
 
     it('should not post message if event type is post', () => {
-      const schema = new Schema({ name: String });
-      schema.broadcastEnabledEvents = {
-        testEvent: {
-          type: 'post',
-          prepare: (payload: any) => ({ prepared: payload }),
-        },
-      };
+      TestModel.enableBroadcastFor('save', {
+        type: 'post',
+        prepare: (payload: any) => ({ prepared: payload }),
+      });
       (TestModel as any).schema = schema;
       (TestModel as any).storeName = 'testStore';
 
-      (TestModel as any).handlePreExec('testEvent', 'testPayload');
+      (TestModel as any).handlePreExec('save', 'testPayload');
 
       expect(iodm.channel.postMessage).not.toHaveBeenCalled();
     });
+  });
+
+  it('should add and remove function as broadcastHook', () => {
+    const testHook = async function () {};
+    TestModel.addBroadcastHook(testHook);
+    (TestModel as any).storeName = 'testStore';
+
+    (TestModel as any).handlePostExec('testEvent', 'testPayload');
+
+    expect(
+      (TestModel as any).broadcastMiddleware.getHooks('broadcast')
+    ).toHaveLength(1);
+
+    TestModel.removeBroadcastHook(testHook);
+
+    expect(
+      (TestModel as any).broadcastMiddleware.getHooks('broadcast')
+    ).toHaveLength(0);
   });
 
   describe('handlePostExec', () => {
@@ -375,22 +387,18 @@ describe('AbstractModel', () => {
     });
 
     it('should post message for post event', () => {
-      const schema = new Schema({ name: String });
-      schema.broadcastEnabledEvents = {
-        testEvent: {
-          type: 'post',
-          prepare: (payload: any) => ({ prepared: payload }),
-        },
-      };
-      (TestModel as any).schema = schema;
+      TestModel.enableBroadcastFor('save', {
+        type: 'post',
+        prepare: (payload: any) => ({ prepared: payload }),
+      });
       (TestModel as any).storeName = 'testStore';
 
-      (TestModel as any).handlePostExec('testEvent', 'testPayload');
+      (TestModel as any).handlePostExec('save', 'testPayload');
 
       expect(iodm.channel.postMessage).toHaveBeenCalledWith({
         model: 'testStore',
         type: 'post',
-        event: 'testEvent',
+        event: 'save',
         payload: { prepared: 'testPayload' },
       });
     });
@@ -405,18 +413,31 @@ describe('AbstractModel', () => {
       expect(iodm.channel.postMessage).not.toHaveBeenCalled();
     });
 
-    it('should not post message if event type is pre', () => {
+    it('should not post message if event is disabled', () => {
       const schema = new Schema({ name: String });
-      schema.broadcastEnabledEvents = {
-        testEvent: {
-          type: 'pre',
-          prepare: (payload: any) => ({ prepared: payload }),
-        },
-      };
+      TestModel.enableBroadcastFor('save', {
+        type: 'post',
+        prepare: (payload: any) => ({ prepared: payload }),
+      });
       (TestModel as any).schema = schema;
       (TestModel as any).storeName = 'testStore';
 
-      (TestModel as any).handlePostExec('testEvent', 'testPayload');
+      TestModel.disableBroadcastFor('save');
+      (TestModel as any).handlePostExec('save', 'testPayload');
+
+      expect(iodm.channel.postMessage).not.toHaveBeenCalled();
+    });
+
+    it('should not post message if event type is pre', () => {
+      const schema = new Schema({ name: String });
+      TestModel.enableBroadcastFor('save', {
+        type: 'pre',
+        prepare: (payload: any) => ({ prepared: payload }),
+      });
+      (TestModel as any).schema = schema;
+      (TestModel as any).storeName = 'testStore';
+
+      (TestModel as any).handlePostExec('save', 'testPayload');
 
       expect(iodm.channel.postMessage).not.toHaveBeenCalled();
     });

@@ -18,9 +18,11 @@ import type {
   QueryDeleteManyOptions,
   QueryCountDocumentsOptions,
   QueryUpdateOneOptions,
+  MiddlewareFn,
 } from 'iodm-query';
 import type { Schema } from '../schema';
 import type { SchemaSaveMethodOptions } from '../schema/types';
+import type { MiddlewareKeys } from '../schema/constants';
 
 export type ModelSaveOptions = Partial<SchemaSaveMethodOptions>;
 
@@ -58,6 +60,23 @@ export interface IModel<
   createTransaction(mode?: IDBTransactionMode | undefined): IDBTransaction;
   preProcess(doc: any, options: QueryExecutorGetCommonOptions): Promise<any>;
   onUpgradeNeeded(idb: IDBDatabase): void;
+  enableBroadcastFor(
+    event: MiddlewareKeys,
+    data: BroadcastEnabledEventsOptions
+  ): void;
+  disableBroadcastFor(event: MiddlewareKeys): void;
+  addBroadcastHook(
+    fn: MiddlewareFn<
+      IModel<TRawDocType, TInstanceMethods>,
+      MessageEvent<PostMessage>
+    >
+  ): void;
+  removeBroadcastHook(
+    fn: MiddlewareFn<
+      IModel<TRawDocType, TInstanceMethods>,
+      MessageEvent<PostMessage>
+    >
+  ): void;
   syncModelToSchema({ name, schema }: { name: string; schema: Schema }): void;
 
   openCursor(
@@ -131,4 +150,9 @@ export interface PostMessage {
   type: 'pre' | 'post';
   event: string;
   payload: any;
+}
+
+export interface BroadcastEnabledEventsOptions {
+  type: 'pre' | 'post' | 'both';
+  prepare: (payload: any) => any;
 }

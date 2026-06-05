@@ -1,6 +1,5 @@
 import type { MiddlewareFn, QueryExecutorGetCommonOptions } from 'iodm-query';
 import type {
-  BroadcastEnabledEventsOptions,
   FindMiddlewareContext,
   InjectFunctionContext,
   PluginFn,
@@ -17,7 +16,6 @@ import type { MiddlewareKeys } from './constants.ts';
 import type { StringSchemaConstructorOptions } from './primitive/string/index.ts';
 import type { DateSchemaConstructorOptions } from './non-primitive/date/index.ts';
 
-import { MiddlewareStore } from 'iodm-query';
 import { BaseSchema } from './base-schema';
 import { ArraySchema } from './non-primitive/array/index.ts';
 import { RefSchema } from './non-primitive/ref/index.ts';
@@ -44,19 +42,28 @@ import { timestampsPlugin } from '../plugins/timestamps-plugin.ts';
  *  email: { type: String, match: /.+\@.+\..+/ },
  *  role: { type: String, enum: ['user', 'admin'] },
  * });
- *
+ * ```
  * @remarks
  * Try to avoid creating schemas with reserved properties names, such as
  *
  * - _isNew
+ *
  * - _documentMiddleware
+ *
  * - save
+ *
  * - validate
+ *
  * - toJSON
+ *
  * - getInstanceSchema
+ *
  * - getInstanceDB
+ *
  * - getInstanceStoreName
+ *
  * - createInstanceTransaction
+ *
  * - _getSchemaMethodOptions
  */
 
@@ -94,8 +101,6 @@ export class Schema<
     >;
     opt?: any;
   }>;
-  broadcastEnabledEvents: Record<string, BroadcastEnabledEventsOptions>;
-  broadcastMiddleware: MiddlewareStore;
 
   constructor(
     definition: SchemaDefinition<RawDocType>,
@@ -111,8 +116,6 @@ export class Schema<
     this.statics = {};
     this.plugins = [];
     this.middleware = new CustomMiddlewareExecutor(this);
-    this.broadcastMiddleware = new MiddlewareStore();
-    this.broadcastEnabledEvents = {};
 
     for (let prop in definition) {
       if (this.rawDefinition?.[prop] && 'type' in this.rawDefinition[prop]) {
@@ -331,8 +334,6 @@ export class Schema<
     newSchema.middleware = this.middleware.clone();
     newSchema.middleware.schema = newSchema;
     newSchema.plugins = [...this.plugins];
-    newSchema.broadcastEnabledEvents = { ...this.broadcastEnabledEvents };
-    newSchema.broadcastMiddleware = this.broadcastMiddleware.clone();
 
     return newSchema;
   }
@@ -682,88 +683,6 @@ export class Schema<
         options
       ) as never;
     }
-  }
-
-  /**
-   * Enables broadcasting for the given event, when the event is emitted, the payload prepared by the prepare function
-   * will be sent to the middleware registered with the `broadcastHook` method, in the other tabs or windows,
-   * which can be used to implement real-time features.
-   *
-   * @remarks
-   * The same tab which emitted the event will not receive the broadcast.
-   *
-   * @example
-   * ```ts
-   * const userSchema = new Schema({
-   *  firstName: String,
-   *  lastName: String,
-   * });
-   *
-   * userSchema.enableBroadcastFor('save', {
-   *  type: 'post',
-   *  prepare: (payload) => {
-   *    return JSON.stringify(payload);
-   *  }
-   * });
-   * ```
-   * @param event - the event for which to enable broadcasting
-   * @param data - the broadcast enabled event options
-   * @returns schema instance for chaining
-   */
-  enableBroadcastFor(
-    event: MiddlewareKeys,
-    data: BroadcastEnabledEventsOptions
-  ) {
-    this.broadcastEnabledEvents[event] = data;
-    return this;
-  }
-
-  /**
-   * Adds a middleware to be executed when a broadcast is received for the events enabled for broadcasting,
-   * can be used to implement real-time features in the application.
-   *
-   * @example
-   * ```ts
-   * const userSchema = new Schema({
-   *  firstName: String,
-   *  lastName: String,
-   * });
-   *
-   * userSchema.enableBroadcastFor('save', {
-   *  // options
-   * });
-   *
-   * userSchema.broadcastHook((payload) => {
-   *  console.log('Received broadcast with payload:', payload);
-   * });
-   * ```
-   *
-   * @remarks
-   * This middleware will be executed for all the events that are enabled for broadcasting, using the `enableBroadcastFor` method,
-   * so the payload should be checked in the middleware to handle different events accordingly.
-   *
-   * @param fn - middleware function to execute when a broadcast is received
-   * @returns schema instance for chaining
-   */
-  broadcastHook(
-    fn: MiddlewareFn<IModel<RawDocType, TInstanceMethods>, MessageEvent<any>>
-  ) {
-    this.broadcastMiddleware.hook('broadcast', fn);
-    return this;
-  }
-
-  /**
-   * Executes the broadcast middlewares for the given context, should be called by the top level model when a broadcast is received.
-   *
-   * @param ctx - context to pass to the broadcast middlewares
-   * @param error - error to pass to the broadcast middlewares, if any
-   * @param result - result to pass to the broadcast middlewares, if any
-   * @param args - additional arguments to pass to the broadcast middlewares
-   * @returns schema instance for chaining
-   */
-  execBroadcastHooks(ctx: any, error?: any, result?: any, ...args: any[]) {
-    this.broadcastMiddleware.exec('broadcast', ctx, error, result, ...args);
-    return this;
   }
 
   /**

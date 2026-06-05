@@ -304,26 +304,6 @@ describe('Schema', () => {
     expect(result).toEqual({ name: 'Alice', age: 30, _id: '1' });
   });
 
-  it('enableBroadcastFor should register broadcast event', () => {
-    const schema = new Schema({ name: String });
-
-    schema.enableBroadcastFor('save', {
-      type: 'post',
-      prepare: (p) => p,
-    });
-
-    expect(schema.broadcastEnabledEvents['save']).toBeDefined();
-  });
-
-  it('broadcastHook should register broadcast hook', () => {
-    const schema = new Schema({ name: String });
-    const fn = vi.fn();
-
-    schema.broadcastHook(fn);
-
-    expect(schema.broadcastMiddleware).toBeDefined();
-  });
-
   describe('Instance Methods (method)', () => {
     it('method should register an instance method', () => {
       const schema = new Schema<{ name: string }, { getName: () => void }>({

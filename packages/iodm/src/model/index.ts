@@ -14,17 +14,20 @@ import type {
   QueryCountDocumentsOptions,
   QueryExecutorUpdateManyUpdater,
   QueryRootFilter,
+  MiddlewareFn,
 } from 'iodm-query';
 import type { Schema } from '../schema';
 import type {
+  BroadcastEnabledEventsOptions,
   IModel,
   ModelInstance,
   ModelOptions,
   ModelSaveOptions,
 } from './types';
 import type CustomMiddlewareExecutor from '../schema/custom-middleware-executor';
+import type { MiddlewareKeys } from '../schema/constants';
 
-import { AbstractQuery, Query } from 'iodm-query';
+import { AbstractQuery, Query, MiddlewareStore } from 'iodm-query';
 import {
   documentMiddlewareKeys,
   queryMiddlewareKeys,
@@ -212,6 +215,11 @@ class AbstractModelClass implements ModelInstance {
   private static storeName: string | null;
   private static db: IDBDatabase | null;
   private static Query: typeof Query<any, any>;
+  private static broadcastEnabledEvents: Record<
+    string,
+    BroadcastEnabledEventsOptions
+  >;
+  private static broadcastMiddleware: MiddlewareStore;
 
   private static insertUniqueKeyIfNotExist(ctx: any, obj?: any) {
     if (!obj || typeof obj !== 'object') return;
@@ -761,10 +769,125 @@ class AbstractModelClass implements ModelInstance {
   }
 
   /**
+   * Enables broadcasting for the given event, when the event is emitted, the payload prepared by the prepare function
+   * will be sent to the middleware registered with the `addBroadcastHook` method, in the other tabs or windows,
+   * which can be used to implement real-time features.
+   *
+   * @remarks
+   * The same tab which emitted the event will not receive the broadcast.
+   *
+   * @example
+   * ```ts
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   *
+   * const UserModel = iodm.model('User', userSchema);
+   *
+   * UserModel.enableBroadcastFor('save', {
+   *  type: 'post',
+   *  prepare: (payload) => {
+   *    return JSON.stringify(payload);
+   *  }
+   * });
+   * ```
+   * @param event - the event for which to enable broadcasting
+   * @param data - the broadcast enabled event options
+   * @returns
+   */
+  static enableBroadcastFor(
+    event: MiddlewareKeys,
+    data: BroadcastEnabledEventsOptions
+  ) {
+    this.broadcastEnabledEvents[event] = data;
+  }
+
+  /**
+   * Disables broadcasting for the given event.
+   *
+   * @param event - the event for which to disable broadcasting
+   * @returns
+   */
+  static disableBroadcastFor(event: MiddlewareKeys) {
+    delete this.broadcastEnabledEvents[event];
+  }
+
+  /**
+   * Adds a middleware to be executed when a broadcast is received for the events enabled for broadcasting,
+   * can be used to implement real-time features in the application.
+   *
+   * @example
+   * ```ts
+   * const userSchema = new Schema({
+   *  firstName: String,
+   *  lastName: String,
+   * });
+   *
+   * const UserModel = iodm.model('User', userSchema);
+   *
+   * UserModel.enableBroadcastFor('save', {
+   *  // options
+   * });
+   *
+   * UserModel.addBroadcastHook((err, payload) => {
+   *  console.log('Received broadcast with payload:', payload);
+   * });
+   * ```
+   *
+   * @remarks
+   * This middleware will be executed for all the events that are enabled for broadcasting, using the `enableBroadcastFor` method,
+   * so the payload should be checked in the middleware to handle different events accordingly.
+   *
+   * @param fn - middleware function to execute when a broadcast is received
+   * @returns
+   */
+  static addBroadcastHook(
+    fn: MiddlewareFn<IModel<any, any>, MessageEvent<any>>
+  ) {
+    this.broadcastMiddleware.hook('broadcast', fn);
+    return this;
+  }
+
+  /**
+   * Removes the added middleware from the broadcast hooks.
+   *
+   * @param fn - middleware function to remove from the broadcast hooks
+   * @returns
+   */
+  static removeBroadcastHook(
+    fn: MiddlewareFn<IModel<any, any>, MessageEvent<any>>
+  ) {
+    this.broadcastMiddleware.removeHook('broadcast', fn);
+  }
+
+  /**
+   * Executes the broadcast middlewares for the given context.
+   *
+   * @remarks
+   * This method is called internally when a broadcast message is received, to execute the registered middlewares with the provided context, error and result.
+   *
+   * @param ctx - context to pass to the broadcast middlewares
+   * @param error - error to pass to the broadcast middlewares, if any
+   * @param result - result to pass to the broadcast middlewares, if any
+   * @param args - additional arguments to pass to the broadcast middlewares
+   *
+   * @returns
+   */
+  static execBroadcastHooks(
+    ctx: any,
+    error?: any,
+    result?: any,
+    ...args: any[]
+  ) {
+    this.broadcastMiddleware.exec('broadcast', ctx, error, result, ...args);
+  }
+
+  /**
    * Handles pre-execution events for the model's schema for Broadcast.
    */
   static handlePreExec(event: string, payload: any) {
-    const options = this.schema?.broadcastEnabledEvents?.[event];
+    const options = this.broadcastEnabledEvents?.[event];
 
     if (!options || options.type === 'post') return;
 
@@ -780,7 +903,7 @@ class AbstractModelClass implements ModelInstance {
    * Handles post-execution events for the model's schema for Broadcast.
    */
   static handlePostExec(event: string, payload: any) {
-    const options = this.schema?.broadcastEnabledEvents?.[event];
+    const options = this.broadcastEnabledEvents?.[event];
 
     if (!options || options.type === 'pre') return;
 
@@ -805,7 +928,7 @@ class AbstractModelClass implements ModelInstance {
       isPostMessage(message) &&
       message.model === this.storeName
     ) {
-      this.schema.execBroadcastHooks(this, null, ev);
+      this.execBroadcastHooks(this, null, ev);
     }
   }
 
@@ -853,6 +976,9 @@ class AbstractModelClass implements ModelInstance {
     this.prototype._documentMiddleware = newSchema.middleware.filter((name) => {
       return documentMiddlewareKeys.includes(name);
     });
+
+    this.broadcastEnabledEvents = {};
+    this.broadcastMiddleware = new MiddlewareStore();
 
     // defining new Query constructor for the model
     this.Query = class extends AbstractQuery {
