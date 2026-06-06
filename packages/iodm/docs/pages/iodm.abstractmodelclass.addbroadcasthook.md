@@ -72,7 +72,7 @@ UserModel.enableBroadcastFor('save', {
  // options
 });
 
-UserModel.addBroadcastHook((payload) => {
+UserModel.addBroadcastHook((err, payload) => {
  console.log('Received broadcast with payload:', payload);
 });
 ```
