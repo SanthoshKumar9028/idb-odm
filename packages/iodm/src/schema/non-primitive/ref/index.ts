@@ -99,16 +99,7 @@ export class RefSchema extends BaseSchema<RefSchemaConstructorOptions> {
   }
 
   applyDefaults(value: unknown, options: SchemaMethodOptions): unknown {
-    const keyPath = this.getRefModel().getSchema().getSchemaOptions().keyPath;
     let val = this.getFinalValue(value);
-
-    if (val && typeof val === 'object') {
-      return this.valueSchema.applyDefaults(
-        val[keyPath as keyof typeof val],
-        options
-      );
-    }
-
     return this.valueSchema.applyDefaults(val, options);
   }
 

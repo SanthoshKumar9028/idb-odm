@@ -263,7 +263,13 @@ export class Schema<
     }
 
     if (constructor instanceof Schema) {
-      return constructor.clone();
+      const clone = constructor.clone();
+
+      clone.setValidate(schemaOptions.validate);
+      clone.setRequired(schemaOptions.required);
+      clone.setDefault(schemaOptions.default);
+
+      return clone;
     }
 
     throw new Error(`Type for ${prop} is not supported`);
@@ -368,7 +374,13 @@ export class Schema<
    * @returns true if value is valid, otherwise throws an error
    */
   validate(value: unknown, options: SchemaMethodOptions) {
-    if (!value || typeof value !== 'object') {
+    this.validationRules.forEach((rule) => rule.validate(value, options));
+
+    if (!value) {
+      return true;
+    }
+
+    if (typeof value !== 'object') {
       throw new Error('value must be an Object');
     }
 
@@ -414,7 +426,10 @@ export class Schema<
    */
   castFrom(value: unknown, options: SchemaMethodOptions) {
     let val = this.getFinalValue(value);
-    if (!val || typeof val !== 'object') {
+    if (!val) {
+      return val === undefined ? undefined : null;
+    }
+    if (typeof val !== 'object') {
       throw new Error('Cant cast value to object schema');
     }
 
@@ -427,6 +442,31 @@ export class Schema<
     }
 
     return obj;
+  }
+
+  /**
+   * Applies default values to the given document according to the schema definition.
+   *
+   * @remarks
+   * This method is called internally by the top level model when creating a new document.
+   * Normally, there is no need to call it manually, unless you want to apply defaults to a document before creating an instance of the model.
+   *
+   * @param value - document to apply default values to
+   * @param options
+   * @returns Returns the document with default values applied
+   */
+  applyDefaults(value: unknown, options: SchemaMethodOptions) {
+    let doc = this.getFinalValue(typeof value === 'object' ? value : undefined);
+    if (!doc || typeof doc !== 'object') return undefined;
+
+    for (const prop in this.tree) {
+      doc[prop as keyof typeof doc] = this.tree[prop].applyDefaults(
+        doc[prop as keyof typeof doc],
+        options
+      );
+    }
+
+    return doc;
   }
 
   /**
@@ -661,28 +701,6 @@ export class Schema<
     this.plugins.forEach(({ fn, opt }) => {
       fn(this, opt);
     });
-  }
-
-  /**
-   * Applies default values to the given document according to the schema definition.
-   *
-   * @remarks
-   * This method is called internally by the top level model when creating a new document.
-   * Normally, there is no need to call it manually, unless you want to apply defaults to a document before creating an instance of the model.
-   *
-   * @param doc
-   * @param options
-   * @returns Returns the document with default values applied
-   */
-  applyDefaults(doc: unknown, options: SchemaMethodOptions) {
-    if (!doc || typeof doc !== 'object') return;
-
-    for (const prop in this.tree) {
-      doc[prop as keyof typeof doc] = this.tree[prop].applyDefaults(
-        doc[prop as keyof typeof doc],
-        options
-      ) as never;
-    }
   }
 
   /**

@@ -69,15 +69,8 @@ export abstract class BaseSchema<
     this.schemaOptions = applySchemaOptionsDefaults(options);
     this.constructorOptions = { ...constructorOptions };
 
-    if (validate) {
-      this.validationRules.push(new ValidationRule(validate));
-    }
-
-    if (required) {
-      this.validationRules.push(
-        new RequiredValidationRule({ message: '{KEY} is required!' })
-      );
-    }
+    this.setValidate(validate);
+    this.setRequired(required ?? false);
   }
 
   getIsVirtual() {
@@ -112,6 +105,24 @@ export abstract class BaseSchema<
 
   applyDefaults(value: unknown, _: SchemaMethodOptions): unknown {
     return this.getFinalValue(value);
+  }
+
+  setValidate(validate?: Required<ValidationRuleOptions>) {
+    if (validate) {
+      this.validationRules.push(new ValidationRule(validate));
+    }
+  }
+
+  setRequired(isRequired?: boolean) {
+    if (isRequired) {
+      this.validationRules.push(
+        new RequiredValidationRule({ message: '{KEY} is required!' })
+      );
+    }
+  }
+
+  setDefault(value: any) {
+    this.defVal = value;
   }
 
   protected getDefaultValue() {

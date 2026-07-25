@@ -518,8 +518,8 @@ describe('RefArraySchema', () => {
         default: [{ _id: 2 }],
         ref: 'User',
       });
-      expect(schema2.applyDefaults(undefined, {})).toEqual([2]);
-      expect(schema2.applyDefaults(null, {})).toEqual([2]);
+      expect(schema2.applyDefaults(undefined, {})).toEqual([{ _id: 2 }]);
+      expect(schema2.applyDefaults(null, {})).toEqual([{ _id: 2 }]);
     });
   });
 

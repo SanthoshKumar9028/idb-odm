@@ -30,7 +30,7 @@ export interface ModelInstance {
   save(options?: ModelSaveOptions): Promise<any>;
   validate(): boolean;
   createInstanceTransaction(mode?: string): IDBTransaction;
-  toJSON(): Record<string, any>;
+  toJSON(): Record<string, any> | undefined | null;
 }
 
 export interface ModelOptions {

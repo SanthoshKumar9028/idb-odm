@@ -105,7 +105,7 @@ export class RefArraySchema extends RefSchema {
 
   applyDefaults(value: unknown, options: SchemaMethodOptions) {
     const val = this.getArrayFinalValue(value);
-    return val?.map((v) => super.applyDefaults(v, options));
+    return val?.map((v) => this.valueSchema.applyDefaults(v, options));
   }
 
   castFrom(value: unknown, options: SchemaMethodOptions) {

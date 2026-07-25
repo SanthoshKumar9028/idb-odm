@@ -118,7 +118,7 @@ describe('Schema', () => {
     const schema = new Schema({ tags: [String] });
     const result = schema.castFrom({ tags: ['a', 'b'], _id: '1' }, {} as any);
 
-    expect(result.tags).toEqual(['a', 'b']);
+    expect(result?.tags).toEqual(['a', 'b']);
   });
 
   it('should throw for empty array type', () => {
@@ -151,17 +151,6 @@ describe('Schema', () => {
     );
   });
 
-  it('clone should copy schema properties', () => {
-    const schema = new Schema({ name: String });
-    schema.virtual('fullName');
-
-    const cloned = schema.clone();
-
-    expect(cloned).not.toBe(schema);
-    expect(cloned.getRefNames()).toEqual(schema.getRefNames());
-    expect(Object.keys(cloned.virtuals)).toEqual(Object.keys(schema.virtuals));
-  });
-
   it('validate should call all tree validators', () => {
     const schema = new Schema({ name: String, age: { type: Number, min: 0 } });
 
@@ -176,9 +165,8 @@ describe('Schema', () => {
   it('validate should throw if value is not object', () => {
     const schema = new Schema({ name: String });
 
-    expect(() => schema.validate(null, {} as any)).toThrow(
-      'value must be an Object'
-    );
+    expect(schema.validate(null, {} as any)).toBe(true);
+    expect(schema.validate(undefined, {} as any)).toBe(true);
     expect(() => schema.validate('string', {} as any)).toThrow(
       'value must be an Object'
     );
@@ -199,7 +187,9 @@ describe('Schema', () => {
   it('castFrom should throw if value is not object', () => {
     const schema = new Schema({ name: String });
 
-    expect(() => schema.castFrom(null, {} as any)).toThrow(
+    expect(schema.castFrom(null, {} as any)).toBe(null);
+    expect(schema.castFrom(undefined, {} as any)).toBe(undefined);
+    expect(() => schema.castFrom('string', {} as any)).toThrow(
       'Cant cast value to object schema'
     );
   });
@@ -302,6 +292,60 @@ describe('Schema', () => {
     );
 
     expect(result).toEqual({ name: 'Alice', age: 30, _id: '1' });
+  });
+
+  describe('clone', () => {
+    it('clone should copy schema properties', () => {
+      const schema = new Schema({ name: String });
+      schema.virtual('fullName');
+
+      const cloned = schema.clone();
+
+      expect(cloned).not.toBe(schema);
+      expect(cloned.getRefNames()).toEqual(schema.getRefNames());
+      expect(Object.keys(cloned.virtuals)).toEqual(
+        Object.keys(schema.virtuals)
+      );
+    });
+
+    it('multiple clones should be independent', () => {
+      const schema = new Schema({ name: String });
+      schema.virtual('fullName');
+
+      const cloned1 = schema.clone();
+      const cloned2 = schema.clone();
+
+      cloned1.virtual('age');
+      cloned2.virtual('address');
+
+      expect(Object.keys(cloned1.virtuals)).toEqual(['fullName', 'age']);
+      expect(Object.keys(cloned2.virtuals)).toEqual(['fullName', 'address']);
+    });
+
+    it('multiple clones with nested schemas should be independent', () => {
+      const addressSchema = new Schema({ street: String, city: String });
+      const schema = new Schema({
+        name: String,
+        address: {
+          type: addressSchema,
+          required: true, // validation 1
+          validate: {
+            // validation 2
+            message: 'Invalid address',
+            validator(value) {
+              return true;
+            },
+          },
+        },
+      });
+
+      const nesatedClone = schema.clone().clone().clone();
+
+      expect(nesatedClone.getSchemaFor('address')).not.toBe(addressSchema);
+      expect(nesatedClone.getSchemaFor('address').validationRules).toHaveLength(
+        2
+      );
+    });
   });
 
   describe('Instance Methods (method)', () => {
