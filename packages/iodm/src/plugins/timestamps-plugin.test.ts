@@ -14,6 +14,7 @@ describe('timestampsPlugin', () => {
   beforeEach(() => {
     schema = {
       pre: vi.fn(),
+      post: vi.fn(),
       setSchemaFor: vi.fn(),
     };
     vi.clearAllMocks();
@@ -55,6 +56,10 @@ describe('timestampsPlugin', () => {
       );
       expect(schema.pre).toHaveBeenCalledWith(
         'findByIdAndUpdate',
+        expect.any(Function)
+      );
+      expect(schema.post).toHaveBeenCalledWith(
+        'save',
         expect.any(Function)
       );
 

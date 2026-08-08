@@ -39,6 +39,7 @@ export const timestampsPlugin: PluginFn<any, any, any, any, any> = (
   if (enableCreatedAt || enableUpdatedAt) {
     schema.pre('insertMany', addCreatedAt);
     schema.pre('insertOne', addCreatedAt);
+    schema.post('save', copyTimestamps);
   }
 
   if (enableUpdatedAt) {
@@ -118,5 +119,13 @@ export const timestampsPlugin: PluginFn<any, any, any, any, any> = (
         }
         break;
     }
+  }
+
+  function copyTimestamps(this: any, err: any, res: any) {
+    if (!err) {
+      if (res[createdAtKeyName]) this[createdAtKeyName] = res[createdAtKeyName];
+      if (res[updatedAtKeyName]) this[updatedAtKeyName] = res[updatedAtKeyName];
+    }
+    return res;
   }
 };
