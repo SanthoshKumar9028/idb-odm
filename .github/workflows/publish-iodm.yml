@@ -1,4 +1,4 @@
-name: Publish iodm package to npm
+name: Publish iodm
 
 on:
   workflow_dispatch:

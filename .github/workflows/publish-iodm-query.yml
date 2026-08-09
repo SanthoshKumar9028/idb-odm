@@ -1,4 +1,4 @@
-name: Publish iodm-query package to npm
+name: Publish iodm-query
 
 on:
   workflow_dispatch:
