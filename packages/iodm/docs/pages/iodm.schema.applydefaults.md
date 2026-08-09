@@ -9,7 +9,7 @@ Applies default values to the given document according to the schema definition.
 **Signature:**
 
 ```typescript
-applyDefaults(doc: unknown, options: SchemaMethodOptions): void;
+applyDefaults(value: unknown, options: SchemaMethodOptions): any;
 ```
 
 ## Parameters
@@ -32,7 +32,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-doc
+value
 
 
 </td><td>
@@ -41,6 +41,8 @@ unknown
 
 
 </td><td>
+
+document to apply default values to
 
 
 </td></tr>
@@ -62,7 +64,7 @@ options
 
 **Returns:**
 
-void
+any
 
 Returns the document with default values applied
 

@@ -7,9 +7,9 @@
 **Signature:**
 
 ```typescript
-toJSON(): Record<string, any>;
+toJSON(): Record<string, any> | undefined | null;
 ```
 **Returns:**
 
-Record&lt;string, any&gt;
+Record&lt;string, any&gt; \| undefined \| null
 

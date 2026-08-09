@@ -9,7 +9,7 @@ Casts the given value to the schema types
 **Signature:**
 
 ```typescript
-castFrom(value: unknown, options: SchemaMethodOptions): Record<string, any>;
+castFrom(value: unknown, options: SchemaMethodOptions): Record<string, any> | null | undefined;
 ```
 
 ## Parameters
@@ -66,7 +66,7 @@ casting options
 
 **Returns:**
 
-Record&lt;string, any&gt;
+Record&lt;string, any&gt; \| null \| undefined
 
 casted value
 

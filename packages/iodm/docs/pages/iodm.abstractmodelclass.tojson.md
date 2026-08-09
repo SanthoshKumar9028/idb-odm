@@ -9,11 +9,11 @@ Converts the instance to a plain JavaScript object, applying schema casting.
 **Signature:**
 
 ```typescript
-toJSON(): Record<string, any>;
+toJSON(): Record<string, any> | null | undefined;
 ```
 **Returns:**
 
-Record&lt;string, any&gt;
+Record&lt;string, any&gt; \| null \| undefined
 
 A plain JavaScript object representing the instance.
 

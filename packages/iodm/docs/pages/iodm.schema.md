@@ -213,7 +213,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[applyDefaults(doc, options)](./iodm.schema.applydefaults.md)
+[applyDefaults(value, options)](./iodm.schema.applydefaults.md)
 
 
 </td><td>
