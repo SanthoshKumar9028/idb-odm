@@ -4,6 +4,8 @@
 
 ## AbstractQuery class
 
+AbstractQuery class is the base class for all query operations in the IndexedDB. It provides methods for performing various query operations such as find, insert, update, delete, and more. The class is designed to be extended by specific query classes that implement the actual query execution logic.
+
 **Signature:**
 
 ```typescript

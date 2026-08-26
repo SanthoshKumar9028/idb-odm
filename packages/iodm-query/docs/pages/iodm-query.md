@@ -51,7 +51,7 @@ Description
 
 </td><td>
 
-**_(BETA)_** Query builder for IndexedDB
+Query builder for IndexedDB
 
 
 </td></tr>
@@ -85,6 +85,8 @@ Description
 
 
 </td><td>
+
+AbstractQuery class is the base class for all query operations in the IndexedDB. It provides methods for performing various query operations such as find, insert, update, delete, and more. The class is designed to be extended by specific query classes that implement the actual query execution logic.
 
 
 </td></tr>

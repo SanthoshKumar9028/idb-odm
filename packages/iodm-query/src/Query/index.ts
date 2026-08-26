@@ -23,6 +23,11 @@ import type {
 } from './type';
 import { MiddlewareExecutor } from '../utils/MiddlewareExecutor';
 
+/**
+ * AbstractQuery class is the base class for all query operations in the IndexedDB.
+ * It provides methods for performing various query operations such as find, insert, update, delete, and more.
+ * The class is designed to be extended by specific query classes that implement the actual query execution logic.
+ */
 export abstract class AbstractQuery<
   ResultType = unknown,
   DocType = unknown,
@@ -877,8 +882,6 @@ export abstract class AbstractQuery<
  * const query2 = new Query(idb, "store-name");
  * const item = await query2.findById(id);
  * ```
- *
- * @beta
  */
 export class Query<
   ResultType = unknown,
