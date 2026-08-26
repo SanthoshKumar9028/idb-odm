@@ -5,7 +5,7 @@ The `iodm` package is an Object Data Modeling library for IndexedDB. It provides
 
 [![Build Status](https://github.com/SanthoshKumar9028/idb-odm/workflows/Publish%20iodm/badge.svg)](https://github.com/SanthoshKumar9028/idb-odm)
 [![npm version](https://badge.fury.io/js/iodm.svg)](https://badge.fury.io/js/iodm)
-[![Socket Badge](https://badge.socket.dev/npm/package/iodm/1.0.0-rc.5)](https://badge.socket.dev/npm/package/iodm/1.0.0-rc.5)
+[![Socket Badge](https://badge.socket.dev/npm/package/iodm)](https://badge.socket.dev/npm/package/iodm)
 
 - [Documentation](./packages/iodm/docs/pages/index.md)
 
@@ -14,6 +14,6 @@ The `iodm-query` is a helper package that provides a powerful query interface fo
 
 [![Build Status](https://github.com/SanthoshKumar9028/idb-odm/workflows/Publish%20iodm-query/badge.svg)](https://github.com/SanthoshKumar9028/idb-odm)
 [![npm version](https://badge.fury.io/js/iodm-query.svg)](https://badge.fury.io/js/iodm-query)
-[![Socket Badge](https://badge.socket.dev/npm/package/iodm-query/1.0.0-rc.1)](https://badge.socket.dev/npm/package/iodm-query/1.0.0-rc.1)
+[![Socket Badge](https://badge.socket.dev/npm/package/iodm-query)](https://badge.socket.dev/npm/package/iodm-query)
 
 - [Documentation](./packages/iodm-query/docs/pages/index.md)
